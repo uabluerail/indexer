@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: "postgres:16"
+    volumes:
+      - "${DATA_DIR:?specify data dir in .env file}/postgres:/var/lib/postgresql/data:rw"
+    restart: always
+    environment:
+      POSTGRES_DB: bluesky
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?specify password in .env file}"
+  lister:
+    build:
+      context: .
+      dockerfile: cmd/lister/Dockerfile
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: always
+    image: uabluerail/repo-lister
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    links:
+      - postgres:db
+    environment:
+      LISTER_METRICS_PORT: '8080'
+      LISTER_POSTGRES_URL: "postgres://postgres:${POSTGRES_PASSWORD}@db/bluesky?sslmode=disable"
+      ATP_PLC_ADDR: "${PLC_ADDRESS:-https://plc.directory}"
+    ports:
+      - "0.0.0.0:11001:8080"
+    command: ["--log-level=0"]
+  consumer:
+    build:
+      context: .
+      dockerfile: cmd/consumer/Dockerfile
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: always
+    image: uabluerail/firehose-consumer
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    links:
+      - postgres:db
+    environment:
+      CONSUMER_METRICS_PORT: '8080'
+      CONSUMER_POSTGRES_URL: "postgres://postgres:${POSTGRES_PASSWORD}@db/bluesky?sslmode=disable"
+      ATP_PLC_ADDR: "${PLC_ADDRESS:-https://plc.directory}"
+    ports:
+      - "0.0.0.0:11002:8080"
+    command: ["--log-level=0"]
+
+  record-indexer:
+    build:
+      context: .
+      dockerfile: cmd/record-indexer/Dockerfile
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: always
+    image: uabluerail/record-indexer
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+    links:
+      - postgres:db
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+    environment:
+      INDEXER_METRICS_PORT: '8080'
+      INDEXER_POSTGRES_URL: "postgres://postgres:${POSTGRES_PASSWORD}@db/bluesky?sslmode=disable"
+      INDEXER_WORKERS: 50
+      ATP_PLC_ADDR: "${PLC_ADDRESS:-https://plc.directory}"
+    ports:
+      - "0.0.0.0:11003:8080"
+    command: ["--log-level=0"]
