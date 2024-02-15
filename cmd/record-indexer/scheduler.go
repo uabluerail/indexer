@@ -106,12 +106,11 @@ func (s *Scheduler) fillQueue(ctx context.Context) error {
 	for _, remote := range remotes {
 		repos := []repo.Repo{}
 
-		err := s.db.Model(&repos).
-			Where(`pds = ? AND (
-				last_indexed_rev is null OR last_indexed_rev = ''
-				 OR (first_rev_since_reset is not null AND first_rev_since_reset <> '' AND last_indexed_rev < first_rev_since_reset))`,
-				remote.ID).
-			Limit(perPDSLimit).Find(&repos).Error
+		err := s.db.Raw(`SELECT * FROM "repos" WHERE pds = ? AND (last_indexed_rev is null OR last_indexed_rev = '')
+UNION
+SELECT * FROM "repos" WHERE pds = ? AND (first_rev_since_reset is not null AND first_rev_since_reset <> '' AND last_indexed_rev < first_rev_since_reset) LIMIT ?`,
+			remote.ID, remote.ID, perPDSLimit).
+			Scan(&repos).Error
 
 		if err != nil {
 			return fmt.Errorf("querying DB: %w", err)
