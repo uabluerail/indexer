@@ -117,7 +117,7 @@ func (p *WorkerPool) worker(ctx context.Context, signal chan struct{}) {
 			}
 			updates.LastIndexAttempt = time.Now()
 			err := p.db.Model(&repo.Repo{}).
-				Where(&repo.Repo{Model: gorm.Model{ID: work.Repo.ID}}).
+				Where(&repo.Repo{ID: work.Repo.ID}).
 				Updates(updates).Error
 			if err != nil {
 				log.Error().Err(err).Msgf("Failed to update repo info for %q: %s", work.Repo.DID, err)
@@ -216,7 +216,7 @@ retry:
 		}
 	}
 
-	err = p.db.Model(&repo.Repo{}).Where(&repo.Repo{Model: gorm.Model{ID: work.Repo.ID}}).
+	err = p.db.Model(&repo.Repo{}).Where(&repo.Repo{ID: work.Repo.ID}).
 		Updates(&repo.Repo{LastIndexedRev: newRev}).Error
 	if err != nil {
 		return fmt.Errorf("updating repo rev: %w", err)

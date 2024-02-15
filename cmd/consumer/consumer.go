@@ -151,7 +151,7 @@ func (c *Consumer) checkForCursorReset(ctx context.Context, seq int64) error {
 func (c *Consumer) resetCursor(ctx context.Context, seq int64) error {
 	zerolog.Ctx(ctx).Warn().Str("pds", c.remote.Host).Msgf("Cursor reset: %d -> %d", c.remote.Cursor, seq)
 	err := c.db.Model(&c.remote).
-		Where(&pds.PDS{Model: gorm.Model{ID: c.remote.ID}}).
+		Where(&pds.PDS{ID: c.remote.ID}).
 		Updates(&pds.PDS{FirstCursorSinceReset: seq}).Error
 	if err != nil {
 		return fmt.Errorf("updating FirstCursorSinceReset: %w", err)
@@ -167,7 +167,7 @@ func (c *Consumer) updateCursor(ctx context.Context, seq int64) error {
 	}
 
 	err := c.db.Model(&c.remote).
-		Where(&pds.PDS{Model: gorm.Model{ID: c.remote.ID}}).
+		Where(&pds.PDS{ID: c.remote.ID}).
 		Updates(&pds.PDS{Cursor: seq}).Error
 	if err != nil {
 		return fmt.Errorf("updating Cursor: %w", err)
@@ -271,7 +271,7 @@ func (c *Consumer) processMessage(ctx context.Context, typ string, r io.Reader, 
 
 		if payload.TooBig {
 			// Just trigger a re-index by resetting rev.
-			err := c.db.Model(r).Where(&repo.Repo{Model: gorm.Model{ID: repoInfo.ID}}).
+			err := c.db.Model(r).Where(&repo.Repo{ID: repoInfo.ID}).
 				Updates(&repo.Repo{
 					FirstCursorSinceReset: c.remote.FirstCursorSinceReset,
 					FirstRevSinceReset:    payload.Rev,
@@ -282,7 +282,7 @@ func (c *Consumer) processMessage(ctx context.Context, typ string, r io.Reader, 
 		}
 
 		if repoInfo.FirstCursorSinceReset != c.remote.FirstCursorSinceReset {
-			err := c.db.Model(r).Where(&repo.Repo{Model: gorm.Model{ID: repoInfo.ID}}).
+			err := c.db.Model(r).Where(&repo.Repo{ID: repoInfo.ID}).
 				Updates(&repo.Repo{
 					FirstCursorSinceReset: c.remote.FirstCursorSinceReset,
 					FirstRevSinceReset:    payload.Rev,

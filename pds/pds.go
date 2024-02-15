@@ -4,10 +4,14 @@ import (
 	"time"
 
 	"gorm.io/gorm"
+
+	"github.com/uabluerail/indexer/models"
 )
 
 type PDS struct {
-	gorm.Model
+	ID                    models.ID `gorm:"primarykey"`
+	CreatedAt             time.Time
+	UpdatedAt             time.Time
 	Host                  string `gorm:"uniqueIndex"`
 	Cursor                int64
 	FirstCursorSinceReset int64

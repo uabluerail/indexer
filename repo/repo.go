@@ -16,7 +16,9 @@ import (
 )
 
 type Repo struct {
-	gorm.Model
+	ID                    models.ID `gorm:"primarykey"`
+	CreatedAt             time.Time
+	UpdatedAt             time.Time
 	PDS                   models.ID `gorm:"index:rev_state_index,priority:2;index:was_indexed,priority:2"`
 	DID                   string    `gorm:"uniqueIndex;column:did"`
 	LastIndexedRev        string    `gorm:"index:rev_state_index,expression:(last_indexed_rev < first_rev_since_reset),priority:1;index:was_indexed,expression:(last_indexed_rev is null OR last_indexed_rev = ''),priority:1"`
@@ -28,7 +30,9 @@ type Repo struct {
 }
 
 type Record struct {
-	gorm.Model
+	ID         models.ID `gorm:"primarykey"`
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
 	Repo       models.ID       `gorm:"index:idx_repo_record_key,unique,priority:1;not null"`
 	Collection string          `gorm:"index:idx_repo_record_key,unique,priority:2;not null"`
 	Rkey       string          `gorm:"index:idx_repo_record_key,unique,priority:3"`
