@@ -40,6 +40,8 @@ func (r *fallbackResolver) GetDocument(ctx context.Context, didstr string) (*did
 	for _, res := range r.resolvers {
 		if d, err := res.GetDocument(ctx, didstr); err == nil {
 			return d, nil
+		} else {
+			errs = append(errs, err)
 		}
 	}
 	return nil, errors.Join(errs...)
