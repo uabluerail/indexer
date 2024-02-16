@@ -14,6 +14,7 @@ import (
 	"gorm.io/gorm/clause"
 
 	comatproto "github.com/bluesky-social/indigo/api/atproto"
+	"github.com/bluesky-social/indigo/util"
 	"github.com/bluesky-social/indigo/xrpc"
 
 	"github.com/uabluerail/bsky-tools/xrpcauth"
@@ -158,6 +159,8 @@ func (p *WorkerPool) doWork(ctx context.Context, work WorkItem) error {
 
 	client := xrpcauth.NewAnonymousClient(ctx)
 	client.Host = u.String()
+	client.Client = util.RobustHTTPClient()
+	client.Client.Timeout = 30 * time.Minute
 
 retry:
 	if p.limiter != nil {
