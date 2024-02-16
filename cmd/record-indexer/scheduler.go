@@ -91,6 +91,7 @@ func (s *Scheduler) run(ctx context.Context) {
 
 func (s *Scheduler) fillQueue(ctx context.Context) error {
 	const maxQueueLen = 10000
+	const maxAttempts = 3
 
 	if len(s.queue)+len(s.inProgress) >= maxQueueLen {
 		return nil
@@ -106,10 +107,10 @@ func (s *Scheduler) fillQueue(ctx context.Context) error {
 	for _, remote := range remotes {
 		repos := []repo.Repo{}
 
-		err := s.db.Raw(`SELECT * FROM "repos" WHERE pds = ? AND (last_indexed_rev is null OR last_indexed_rev = '')
+		err := s.db.Raw(`SELECT * FROM "repos" WHERE pds = ? AND (last_indexed_rev is null OR last_indexed_rev = '') AND failed_attempts < ?
 UNION
-SELECT * FROM "repos" WHERE pds = ? AND (first_rev_since_reset is not null AND first_rev_since_reset <> '' AND last_indexed_rev < first_rev_since_reset) LIMIT ?`,
-			remote.ID, remote.ID, perPDSLimit).
+SELECT * FROM "repos" WHERE pds = ? AND (first_rev_since_reset is not null AND first_rev_since_reset <> '' AND last_indexed_rev < first_rev_since_reset) AND failed_attempts < ? LIMIT ?`,
+			remote.ID, maxAttempts, remote.ID, maxAttempts, perPDSLimit).
 			Scan(&repos).Error
 
 		if err != nil {

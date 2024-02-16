@@ -111,13 +111,16 @@ func (p *WorkerPool) worker(ctx context.Context, signal chan struct{}) {
 			if err := p.doWork(ctx, work); err != nil {
 				log.Error().Err(err).Msgf("Work task %q failed: %s", work.Repo.DID, err)
 				updates.LastError = err.Error()
+				updates.FailedAttempts = work.Repo.FailedAttempts + 1
 				reposIndexed.WithLabelValues("false").Inc()
 			} else {
+				updates.FailedAttempts = 0
 				reposIndexed.WithLabelValues("true").Inc()
 			}
 			updates.LastIndexAttempt = time.Now()
 			err := p.db.Model(&repo.Repo{}).
 				Where(&repo.Repo{ID: work.Repo.ID}).
+				Select("last_error", "last_index_attempt", "failed_attempts").
 				Updates(updates).Error
 			if err != nil {
 				log.Error().Err(err).Msgf("Failed to update repo info for %q: %s", work.Repo.DID, err)

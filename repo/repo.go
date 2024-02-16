@@ -27,6 +27,7 @@ type Repo struct {
 	TombstonedAt          time.Time
 	LastIndexAttempt      time.Time
 	LastError             string
+	FailedAttempts        int `gorm:"default:0"`
 }
 
 type Record struct {
