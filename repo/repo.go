@@ -34,9 +34,10 @@ type Record struct {
 	ID         models.ID `gorm:"primarykey"`
 	CreatedAt  time.Time
 	UpdatedAt  time.Time
-	Repo       models.ID       `gorm:"index:idx_repo_record_key,unique,priority:1;not null"`
+	Repo       models.ID       `gorm:"index:idx_repo_record_key,unique,priority:1;not null;index:idx_repo_rev"`
 	Collection string          `gorm:"index:idx_repo_record_key,unique,priority:2;not null"`
 	Rkey       string          `gorm:"index:idx_repo_record_key,unique,priority:3"`
+	AtRev      string          `gorm:"index:idx_repo_rev"`
 	Content    json.RawMessage `gorm:"type:JSONB"`
 	Deleted    bool
 }

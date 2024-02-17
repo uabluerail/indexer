@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"net/url"
+	"regexp"
 	"strings"
 	"time"
 
@@ -131,6 +132,12 @@ func (p *WorkerPool) worker(ctx context.Context, signal chan struct{}) {
 	}
 }
 
+var postgresFixRegexp = regexp.MustCompile(`[^\\](\\\\)*(\\u0000)`)
+
+func escapeNullCharForPostgres(b []byte) []byte {
+	return postgresFixRegexp.ReplaceAll(b, []byte(`$1<0x00>`))
+}
+
 func (p *WorkerPool) doWork(ctx context.Context, work WorkItem) error {
 	log := zerolog.Ctx(ctx)
 	defer close(work.signal)
@@ -201,19 +208,32 @@ retry:
 			log.Warn().Msgf("Unexpected key format: %q", k)
 			continue
 		}
+		v = regexp.MustCompile(`[^\\](\\\\)*(\\u0000)`).ReplaceAll(v, []byte(`$1<0x00>`))
 		recs = append(recs, repo.Record{
 			Repo:       models.ID(work.Repo.ID),
 			Collection: parts[0],
 			Rkey:       parts[1],
-			Content:    v,
+			// XXX: proper replacement of \u0000 would require full parsing of JSON
+			// and recursive iteration over all string values, but this
+			// should work well enough for now.
+			Content: escapeNullCharForPostgres(v),
+			AtRev:   newRev,
 		})
 	}
 	recordsFetched.Add(float64(len(recs)))
 	if len(recs) > 0 {
 		for _, batch := range splitInBatshes(recs, 500) {
 			result := p.db.Model(&repo.Record{}).
-				Clauses(clause.OnConflict{DoUpdates: clause.AssignmentColumns([]string{"content"}),
-					Columns: []clause.Column{{Name: "repo"}, {Name: "collection"}, {Name: "rkey"}}}).
+				Clauses(clause.OnConflict{
+					Where: clause.Where{Exprs: []clause.Expression{clause.Or(
+						clause.Eq{Column: clause.Column{Name: "at_rev", Table: "records"}, Value: nil},
+						clause.Eq{Column: clause.Column{Name: "at_rev", Table: "records"}, Value: ""},
+						clause.Lt{
+							Column: clause.Column{Name: "at_rev", Table: "records"},
+							Value:  clause.Column{Name: "at_rev", Table: "excluded"}},
+					)}},
+					DoUpdates: clause.AssignmentColumns([]string{"content", "at_rev"}),
+					Columns:   []clause.Column{{Name: "repo"}, {Name: "collection"}, {Name: "rkey"}}}).
 				Create(batch)
 			if err := result.Error; err != nil {
 				return fmt.Errorf("inserting records into the database: %w", err)
@@ -228,6 +248,9 @@ retry:
 	if err != nil {
 		return fmt.Errorf("updating repo rev: %w", err)
 	}
+
+	// TODO: check for records that are missing in the repo download
+	// and mark them as deleted.
 
 	return nil
 }

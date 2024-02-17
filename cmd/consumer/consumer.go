@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"regexp"
 	"strings"
 	"time"
 
@@ -177,6 +178,12 @@ func (c *Consumer) updateCursor(ctx context.Context, seq int64) error {
 
 }
 
+var postgresFixRegexp = regexp.MustCompile(`[^\\](\\\\)*(\\u0000)`)
+
+func escapeNullCharForPostgres(b []byte) []byte {
+	return postgresFixRegexp.ReplaceAll(b, []byte(`$1<0x00>`))
+}
+
 func (c *Consumer) processMessage(ctx context.Context, typ string, r io.Reader, first bool) error {
 	log := zerolog.Ctx(ctx)
 
@@ -253,7 +260,11 @@ func (c *Consumer) processMessage(ctx context.Context, typ string, r io.Reader, 
 				Repo:       models.ID(repoInfo.ID),
 				Collection: parts[0],
 				Rkey:       parts[1],
-				Content:    v,
+				// XXX: proper replacement of \u0000 would require full parsing of JSON
+				// and recursive iteration over all string values, but this
+				// should work well enough for now.
+				Content: escapeNullCharForPostgres(v),
+				AtRev:   payload.Rev,
 			})
 		}
 		if len(recs) == 0 && expectRecords {
@@ -261,8 +272,16 @@ func (c *Consumer) processMessage(ctx context.Context, typ string, r io.Reader, 
 		}
 		if len(recs) > 0 || expectRecords {
 			err = c.db.Model(&repo.Record{}).
-				Clauses(clause.OnConflict{DoUpdates: clause.AssignmentColumns([]string{"content"}),
-					Columns: []clause.Column{{Name: "repo"}, {Name: "collection"}, {Name: "rkey"}}}).
+				Clauses(clause.OnConflict{
+					Where: clause.Where{Exprs: []clause.Expression{clause.Or(
+						clause.Eq{Column: clause.Column{Name: "at_rev", Table: "records"}, Value: nil},
+						clause.Eq{Column: clause.Column{Name: "at_rev", Table: "records"}, Value: ""},
+						clause.Lt{
+							Column: clause.Column{Name: "at_rev", Table: "records"},
+							Value:  clause.Column{Name: "at_rev", Table: "excluded"}},
+					)}},
+					DoUpdates: clause.AssignmentColumns([]string{"content", "at_rev"}),
+					Columns:   []clause.Column{{Name: "repo"}, {Name: "collection"}, {Name: "rkey"}}}).
 				Create(recs).Error
 			if err != nil {
 				return fmt.Errorf("inserting records into the database: %w", err)
