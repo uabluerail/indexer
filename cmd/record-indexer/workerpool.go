@@ -78,6 +78,7 @@ func (p *WorkerPool) run(ctx context.Context) {
 				close(ch)
 			}
 			// also wait for all workers to stop?
+			return
 		case newSize := <-p.resize:
 			switch {
 			case newSize > len(p.workerSignals):
