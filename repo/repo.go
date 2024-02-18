@@ -46,14 +46,14 @@ func AutoMigrate(db *gorm.DB) error {
 	return db.AutoMigrate(&Repo{}, &Record{})
 }
 
-func EnsureExists(ctx context.Context, db *gorm.DB, did string) (*Repo, error) {
+func EnsureExists(ctx context.Context, db *gorm.DB, did string) (*Repo, bool, error) {
 	r := Repo{}
 	if err := db.Model(&r).Where(&Repo{DID: did}).Take(&r).Error; err == nil {
 		// Already have a row, just return it.
-		return &r, nil
+		return &r, false, nil
 	} else {
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, fmt.Errorf("querying DB: %w", err)
+			return nil, false, fmt.Errorf("querying DB: %w", err)
 		}
 	}
 
@@ -68,7 +68,7 @@ func EnsureExists(ctx context.Context, db *gorm.DB, did string) (*Repo, error) {
 
 	doc, err := resolver.GetDocument(ctx, did)
 	if err != nil {
-		return nil, fmt.Errorf("fetching DID Document: %w", err)
+		return nil, false, fmt.Errorf("fetching DID Document: %w", err)
 	}
 
 	pdsHost := ""
@@ -79,31 +79,34 @@ func EnsureExists(ctx context.Context, db *gorm.DB, did string) (*Repo, error) {
 		pdsHost = srv.ServiceEndpoint
 	}
 	if pdsHost == "" {
-		return nil, fmt.Errorf("did not find any PDS in DID Document")
+		return nil, false, fmt.Errorf("did not find any PDS in DID Document")
 	}
 	u, err := url.Parse(pdsHost)
 	if err != nil {
-		return nil, fmt.Errorf("PDS endpoint (%q) is an invalid URL: %w", pdsHost, err)
+		return nil, false, fmt.Errorf("PDS endpoint (%q) is an invalid URL: %w", pdsHost, err)
 	}
 	if u.Host == "" {
-		return nil, fmt.Errorf("PDS endpoint (%q) doesn't have a host part", pdsHost)
+		return nil, false, fmt.Errorf("PDS endpoint (%q) doesn't have a host part", pdsHost)
 	}
 	remote := pds.PDS{Host: u.String()}
 	if err := db.Model(&remote).Where(&pds.PDS{Host: remote.Host}).FirstOrCreate(&remote).Error; err != nil {
-		return nil, fmt.Errorf("failed to get PDS record from DB for %q: %w", remote.Host, err)
+		return nil, false, fmt.Errorf("failed to get PDS record from DB for %q: %w", remote.Host, err)
 	}
 	r = Repo{DID: did, PDS: models.ID(remote.ID)}
+	created := false
 	err = db.Transaction(func(tx *gorm.DB) error {
-		if err := tx.Model(&r).Where(&Repo{DID: r.DID}).FirstOrCreate(&r).Error; err != nil {
+		result := tx.Model(&r).Where(&Repo{DID: r.DID}).FirstOrCreate(&r)
+		if err := result.Error; err != nil {
 			return fmt.Errorf("looking for repo: %w", err)
 		}
 		if r.PDS != models.ID(remote.ID) {
 			return tx.Model(&r).Select("FirstRevSinceReset").Updates(&Repo{FirstRevSinceReset: ""}).Error
 		}
+		created = result.RowsAffected > 0
 		return nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("upserting repo record: %w", err)
+		return nil, false, fmt.Errorf("upserting repo record: %w", err)
 	}
-	return &r, nil
+	return &r, created, nil
 }

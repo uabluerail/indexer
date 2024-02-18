@@ -187,12 +187,16 @@ func escapeNullCharForPostgres(b []byte) []byte {
 func (c *Consumer) processMessage(ctx context.Context, typ string, r io.Reader, first bool) error {
 	log := zerolog.Ctx(ctx)
 
+	eventCounter.WithLabelValues(c.remote.Host, typ).Inc()
+
 	switch typ {
 	case "#commit":
 		payload := &comatproto.SyncSubscribeRepos_Commit{}
 		if err := payload.UnmarshalCBOR(r); err != nil {
 			return fmt.Errorf("failed to unmarshal commit: %w", err)
 		}
+
+		exportEventTimestamp(ctx, c.remote.Host, payload.Time)
 
 		if c.remote.FirstCursorSinceReset == 0 {
 			if err := c.resetCursor(ctx, payload.Seq); err != nil {
@@ -205,7 +209,7 @@ func (c *Consumer) processMessage(ctx context.Context, typ string, r io.Reader, 
 			}
 		}
 
-		repoInfo, err := repo.EnsureExists(ctx, c.db, payload.Repo)
+		repoInfo, created, err := repo.EnsureExists(ctx, c.db, payload.Repo)
 		if err != nil {
 			return fmt.Errorf("repo.EnsureExists(%q): %w", payload.Repo, err)
 		}
@@ -213,6 +217,9 @@ func (c *Consumer) processMessage(ctx context.Context, typ string, r io.Reader, 
 			log.Error().Str("did", payload.Repo).Str("rev", payload.Rev).
 				Msgf("Commit from an incorrect PDS, skipping")
 			return nil
+		}
+		if created {
+			reposDiscovered.WithLabelValues(c.remote.Host).Inc()
 		}
 
 		// TODO: verify signature
@@ -320,6 +327,8 @@ func (c *Consumer) processMessage(ctx context.Context, typ string, r io.Reader, 
 			return fmt.Errorf("failed to unmarshal commit: %w", err)
 		}
 
+		exportEventTimestamp(ctx, c.remote.Host, payload.Time)
+
 		if c.remote.FirstCursorSinceReset == 0 {
 			if err := c.resetCursor(ctx, payload.Seq); err != nil {
 				return fmt.Errorf("handling cursor reset: %w", err)
@@ -339,6 +348,8 @@ func (c *Consumer) processMessage(ctx context.Context, typ string, r io.Reader, 
 		if err := payload.UnmarshalCBOR(r); err != nil {
 			return fmt.Errorf("failed to unmarshal commit: %w", err)
 		}
+
+		exportEventTimestamp(ctx, c.remote.Host, payload.Time)
 
 		if c.remote.FirstCursorSinceReset == 0 {
 			if err := c.resetCursor(ctx, payload.Seq); err != nil {
@@ -361,6 +372,8 @@ func (c *Consumer) processMessage(ctx context.Context, typ string, r io.Reader, 
 		if err := payload.UnmarshalCBOR(r); err != nil {
 			return fmt.Errorf("failed to unmarshal commit: %w", err)
 		}
+
+		exportEventTimestamp(ctx, c.remote.Host, payload.Time)
 
 		if c.remote.FirstCursorSinceReset == 0 {
 			if err := c.resetCursor(ctx, payload.Seq); err != nil {
@@ -447,4 +460,12 @@ func parseError(node datamodel.Node) (xrpc.XRPCError, error) {
 	}
 
 	return r, nil
+}
+
+func exportEventTimestamp(ctx context.Context, remote string, timestamp string) {
+	if t, err := time.Parse(time.RFC3339, timestamp); err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Str("pds", remote).Msgf("Failed to parse %q as a timestamp: %s", timestamp, err)
+	} else {
+		lastEventTimestamp.WithLabelValues(remote).Set(float64(t.Unix()))
+	}
 }

@@ -91,10 +91,13 @@ func (l *Lister) run(ctx context.Context) {
 				break
 			}
 			log.Info().Msgf("Received %d DIDs from %q", len(dids), remote.Host)
+			reposListed.WithLabelValues(remote.Host).Add(float64(len(dids)))
 
 			for _, did := range dids {
-				if _, err := repo.EnsureExists(ctx, l.db, did); err != nil {
+				if _, created, err := repo.EnsureExists(ctx, l.db, did); err != nil {
 					log.Error().Err(err).Msgf("Failed to ensure that we have a record for the repo %q: %s", did, err)
+				} else if created {
+					reposDiscovered.WithLabelValues(remote.Host).Inc()
 				}
 			}
 
