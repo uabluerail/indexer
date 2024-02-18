@@ -14,7 +14,6 @@ services:
   grafana:
     build:
       context: ./grafana
-    container_name: grafana
     user: root
     extra_hosts:
       - "host.docker.internal:host-gateway"
