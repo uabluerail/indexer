@@ -11,3 +11,6 @@ scrape_configs:
  - job_name: indexer
    static_configs:
     - targets: [ host.docker.internal:11001, host.docker.internal:11002, host.docker.internal:11003 ]
+ - job_name: db
+   static_configs:
+    - targets: ['host.docker.internal:9560']

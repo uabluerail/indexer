@@ -6,6 +6,10 @@ services:
     volumes:
       - "${DATA_DIR:?specify data dir in .env file}/postgres:/var/lib/postgresql/data:rw"
     restart: always
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "0.0.0.0:15432:5432"
     environment:
       POSTGRES_DB: bluesky
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?specify password in .env file}"
@@ -29,7 +33,7 @@ services:
       ATP_PLC_ADDR: "${PLC_ADDRESS:-https://plc.directory}"
     ports:
       - "0.0.0.0:11001:8080"
-    command: ["--log-level=0"]
+    command: [ "--log-level=0" ]
   consumer:
     build:
       context: .
@@ -50,7 +54,7 @@ services:
       ATP_PLC_ADDR: "${PLC_ADDRESS:-https://plc.directory}"
     ports:
       - "0.0.0.0:11002:8080"
-    command: ["--log-level=0"]
+    command: [ "--log-level=0" ]
 
   record-indexer:
     build:
@@ -76,4 +80,4 @@ services:
       ATP_PLC_ADDR: "${PLC_ADDRESS:-https://plc.directory}"
     ports:
       - "0.0.0.0:11003:8080"
-    command: ["--log-level=0"]
+    command: [ "--log-level=0" ]

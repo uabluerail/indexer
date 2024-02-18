@@ -1,9 +1,23 @@
+# Graceful shutdown/restart
+
+`docker compose stop lister`
+`docker compose stop consumer`
+`docker compose stop record-indexer`
+
+Take a look at grafana, once all quiet
+
+`docker compose stop postgres`
+
+Start everything up
+
+`docker compose up -d --build`
+
 # Control number of workers
 
 Full throttle
 `curl 'localhost:11003/pool/resize?size=50'`
 
-Half throttle
+Half throttle (recommended)
 `curl 'localhost:11003/pool/resize?size=25'`
 
 Stop eating all of my Internet

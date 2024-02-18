@@ -1,0 +1,23 @@
+databases:
+  db1:
+    dsn: postgres://postgres:postgres@host.docker.internal:15432/bluesky?sslmode=disable
+
+metrics:
+  repos_fully_indexed:
+    type: gauge
+    description: Repositories fully indexed
+  repos_seen:
+    type: gauge
+    description: Repositories seen
+
+queries:
+  query1:
+    interval: 30
+    databases: [db1]
+    metrics: [repos_fully_indexed]
+    sql: select count(*) as repos_fully_indexed from repos where last_indexed_rev <> '' and (last_indexed_rev >= first_rev_since_reset or first_rev_since_reset is null or first_rev_since_reset = '');
+  query2:
+    interval: 30
+    databases: [db1]
+    metrics: [repos_seen]
+    sql: select count(*) as repos_seen from repos;
