@@ -1047,8 +1047,7 @@
                         "axisCenteredZero": false,
                         "axisColorMode": "text",
                         "axisLabel": "",
-                        "axisPlacement": "auto",
-                        "axisSoftMin": 0,
+                        "axisPlacement": "left",
                         "barAlignment": 0,
                         "drawStyle": "line",
                         "fillOpacity": 0,
@@ -1082,25 +1081,38 @@
                             {
                                 "color": "green",
                                 "value": null
-                            },
-                            {
-                                "color": "red",
-                                "value": 80
                             }
                         ]
                     },
-                    "unit": "records/s",
+                    "unit": "s",
                     "unitScale": true
                 },
-                "overrides": []
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byFrameRefID",
+                            "options": "B"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.axisPlacement",
+                                "value": "right"
+                            },
+                            {
+                                "id": "unit",
+                                "value": "commits/s"
+                            }
+                        ]
+                    }
+                ]
             },
             "gridPos": {
-                "h": 9,
+                "h": 8,
                 "w": 12,
                 "x": 0,
                 "y": 13
             },
-            "id": 4,
+            "id": 13,
             "options": {
                 "legend": {
                     "calcs": [],
@@ -1108,6 +1120,9 @@
                     "placement": "bottom",
                     "showLegend": true
                 },
+                "timezone": [
+                    ""
+                ],
                 "tooltip": {
                     "mode": "multi",
                     "sort": "none"
@@ -1119,15 +1134,19 @@
                         "type": "prometheus",
                         "uid": "PBFA97CFB590B2093"
                     },
+                    "disableTextWrap": false,
                     "editorMode": "code",
-                    "expr": "sum(rate(indexer_records_fetched_count[$rate_interval]))",
+                    "expr": "time() - label_replace(repo_commit_received_timestamp, \"remote\", \"$1\", \"remote\", \"https://(.*).us-(west|east).host.bsky.network\")",
+                    "fullMetaSearch": false,
+                    "includeNullMetadata": true,
                     "instant": false,
-                    "legendFormat": "__auto",
+                    "legendFormat": "{{remote}}",
                     "range": true,
-                    "refId": "A"
+                    "refId": "A",
+                    "useBackend": false
                 }
             ],
-            "title": "Record indexing",
+            "title": "Delay",
             "type": "timeseries"
         },
         {
@@ -1207,7 +1226,7 @@
                 ]
             },
             "gridPos": {
-                "h": 9,
+                "h": 8,
                 "w": 12,
                 "x": 12,
                 "y": 13
@@ -1273,6 +1292,222 @@
                     }
                 }
             ],
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "PBFA97CFB590B2093"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisBorderShow": false,
+                        "axisCenteredZero": false,
+                        "axisColorMode": "text",
+                        "axisLabel": "",
+                        "axisPlacement": "left",
+                        "barAlignment": 0,
+                        "drawStyle": "line",
+                        "fillOpacity": 43,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "insertNulls": false,
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "auto",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "normal"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            }
+                        ]
+                    },
+                    "unit": "s",
+                    "unitScale": true
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byFrameRefID",
+                            "options": "B"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.axisPlacement",
+                                "value": "right"
+                            },
+                            {
+                                "id": "unit",
+                                "value": "commits/s"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 21
+            },
+            "id": 14,
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "timezone": [
+                    ""
+                ],
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "none"
+                }
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "PBFA97CFB590B2093"
+                    },
+                    "disableTextWrap": false,
+                    "editorMode": "builder",
+                    "expr": "label_replace(sum by(remote) (rate(repo_commits_received_counter[$rate_interval])), \"remote\", \"$1\", \"remote\", \"https://(.*).us-(west|east).host.bsky.network\")",
+                    "fullMetaSearch": false,
+                    "hide": false,
+                    "includeNullMetadata": true,
+                    "instant": false,
+                    "legendFormat": "{{remote}}",
+                    "range": true,
+                    "refId": "B",
+                    "useBackend": false
+                }
+            ],
+            "title": "Consumer",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "PBFA97CFB590B2093"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisBorderShow": false,
+                        "axisCenteredZero": false,
+                        "axisColorMode": "text",
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "axisSoftMin": 0,
+                        "barAlignment": 0,
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "insertNulls": false,
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "auto",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    },
+                    "unit": "records/s",
+                    "unitScale": true
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 21
+            },
+            "id": 4,
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "none"
+                }
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "PBFA97CFB590B2093"
+                    },
+                    "editorMode": "code",
+                    "expr": "sum(rate(indexer_records_fetched_count[$rate_interval]))",
+                    "instant": false,
+                    "legendFormat": "__auto",
+                    "range": true,
+                    "refId": "A"
+                }
+            ],
+            "title": "Record indexing",
             "type": "timeseries"
         }
     ],
@@ -1345,13 +1580,13 @@
         ]
     },
     "time": {
-        "from": "now-30m",
+        "from": "now-1h",
         "to": "now"
     },
     "timepicker": {},
     "timezone": "",
     "title": "Bluesky indexer",
     "uid": "aXw6dQhSz",
-    "version": 17,
+    "version": 19,
     "weekStart": ""
 }
