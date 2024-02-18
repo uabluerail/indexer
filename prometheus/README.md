@@ -1,3 +1,5 @@
+# Install Node-exporter
+
 You'll need to install node exporter for monitoring
 
 1. Download Node Exporter
@@ -5,14 +7,14 @@ As first step, you need to download the Node Exporter binary which is available 
 
 Node Exporter Ubuntu Linux
 
-In this case the latest available version is the 1.3.1. Copy the .tar.gz URL and download it somewhere in your server using wget or cURL:
+In this case the latest available version is the 1.7.0. Copy the .tar.gz URL and download it somewhere in your server using wget or cURL:
 
-`wget https://github.com/prometheus/node_exporter/releases/download/v1.3.1/node_exporter-1.3.1.linux-amd64.tar.gz`
+`wget https://github.com/prometheus/node_exporter/releases/download/v1.7.0/node_exporter-1.7.0.linux-amd64.tar.gz`
 
 2. Extract Node Exporter and move binary
 After downloading the latest version of Node Exporter, proceed to extract the content of the downloaded tar using the following command:
 
-`tar xvf node_exporter-1.3.1.linux-amd64.tar.gz`
+`tar xvf node_exporter-1.7.0.linux-amd64.tar.gz`
 The content of the zip will be extracted in the current directory, the extracted directory will contain 3 files:
 
 LICENSE (license text file)
@@ -20,7 +22,7 @@ node_exporter (binary)
 NOTICE (license text file)
 You only need to move the binary file node_exporter to the /usr/local/bin directory of your system. Switch to the node_exporter directory:
 
-`cd node_exporter-1.3.1.linux-amd64`
+`cd node_exporter-1.7.0.linux-amd64`
 And then copy the binary file with the following command:
 
 `sudo cp node_exporter /usr/local/bin`
@@ -30,7 +32,7 @@ Then you can remove the directory that we created after extracting the zip file 
 `cd ..`
 
 # Remove the extracted directory
-`rm -rf ./node_exporter-1.3.1.linux-amd64`
+`rm -rf ./node_exporter-1.7.0.linux-amd64`
 3. Create Node Exporter User
 As a good practice, create an user in the system for Node Exporter:
 
@@ -58,7 +60,7 @@ ExecStart=/usr/local/bin/node_exporter
 Restart=always
 RestartSec=3
 
-[Install]
+[Install]https://github.com/prometheus/node_exporter/releases/download
 WantedBy=multi-user.target
 ```
 
@@ -72,6 +74,7 @@ And then start the service:
 
 `sudo systemctl start node_exporter`
 
+`sudo ufw allow 9090`
 `sudo ufw allow 9100`
 
-now go to localhost:9100
+now go to `http://localhost:9100/metrics`
