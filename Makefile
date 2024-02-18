@@ -6,6 +6,7 @@ all:
 .env: example.env
 	@cp example.env .env
 	@echo "Please edit .env to suit your environment before proceeding"
+	@exit 1
 
 build: .env
 	@docker compose build
