@@ -60,7 +60,7 @@ ExecStart=/usr/local/bin/node_exporter
 Restart=always
 RestartSec=3
 
-[Install]https://github.com/prometheus/node_exporter/releases/download
+[Install]
 WantedBy=multi-user.target
 ```
 
