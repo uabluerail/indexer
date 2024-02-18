@@ -1,0 +1,24 @@
+version: '3.8'
+services:
+  prometheus:
+    image: prom/prometheus
+    # needed if mounted in custom volume
+    user: root
+    volumes:
+      - "./prometheus.yml:/etc/prometheus/prometheus.yml"
+      - "${PROMETHEUS_DATA_DIR:?specify data dir in .env file}:/prometheus"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - 9090:9090
+  grafana:
+    build:
+      context: ./grafana
+    container_name: grafana
+    user: root
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - 9000:3000
+    volumes:
+      - ${GRAFANA_DATA_DIR:?specify data dir in .env file}:/var/lib/grafana

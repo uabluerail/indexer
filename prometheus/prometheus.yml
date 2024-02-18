@@ -1,0 +1,13 @@
+global:
+  scrape_interval: 10s
+scrape_configs:
+ - job_name: prometheus
+   static_configs:
+    - targets:
+       - host.docker.internal:9090
+ - job_name: node
+   static_configs:
+    - targets: ['host.docker.internal:9100']
+ - job_name: indexer
+   static_configs:
+    - targets: [ host.docker.internal:11001, host.docker.internal:11002, host.docker.internal:11003 ]
