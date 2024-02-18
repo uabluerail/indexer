@@ -28,3 +28,5 @@ status:
 logs:
 	@docker compose logs -f -n 50 lister consumer record-indexer
 
+psql:
+	@docker compose exec -it postgres psql -U postgres -d bluesky
