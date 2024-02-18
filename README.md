@@ -1,6 +1,6 @@
 # Clone repo, cd to `$REPO_HOME/indexer`
 
-docker compose up -d --build
+`docker compose up -d --build`
 
 
 # Add PDSs

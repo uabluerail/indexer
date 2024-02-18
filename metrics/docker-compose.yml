@@ -5,7 +5,7 @@ services:
     # needed if mounted in custom volume
     user: root
     volumes:
-      - "./prometheus.yml:/etc/prometheus/prometheus.yml"
+      - "./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml"
       - "${PROMETHEUS_DATA_DIR:?specify data dir in .env file}:/prometheus"
     extra_hosts:
       - "host.docker.internal:host-gateway"
