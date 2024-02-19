@@ -101,8 +101,10 @@ func (s *Scheduler) fillQueue(ctx context.Context) error {
 	if err := s.db.Find(&remotes).Error; err != nil {
 		return fmt.Errorf("failed to get the list of PDSs: %w", err)
 	}
-
-	perPDSLimit := maxQueueLen * 2 / len(remotes)
+	perPDSLimit := 0
+	if len(remotes) > 0 {
+		perPDSLimit = maxQueueLen * 2 / len(remotes)
+	}
 
 	for _, remote := range remotes {
 		repos := []repo.Repo{}
