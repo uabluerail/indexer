@@ -181,23 +181,31 @@
                 "type": "prometheus",
                 "uid": "PBFA97CFB590B2093"
             },
+            "description": "",
             "fieldConfig": {
                 "defaults": {
                     "color": {
                         "mode": "thresholds"
                     },
                     "mappings": [],
-                    "min": 0,
                     "thresholds": {
-                        "mode": "absolute",
+                        "mode": "percentage",
                         "steps": [
                             {
                                 "color": "green",
                                 "value": null
+                            },
+                            {
+                                "color": "#EAB839",
+                                "value": 80
+                            },
+                            {
+                                "color": "dark-red",
+                                "value": 90
                             }
                         ]
                     },
-                    "unit": "none",
+                    "unit": "percent",
                     "unitScale": true
                 },
                 "overrides": []
@@ -208,11 +216,11 @@
                 "x": 6,
                 "y": 0
             },
-            "id": 12,
+            "id": 15,
+            "links": [],
             "options": {
-                "colorMode": "value",
-                "graphMode": "area",
-                "justifyMode": "auto",
+                "minVizHeight": 75,
+                "minVizWidth": 75,
                 "orientation": "auto",
                 "reduceOptions": {
                     "calcs": [
@@ -221,9 +229,9 @@
                     "fields": "",
                     "values": false
                 },
-                "showPercentChange": false,
-                "textMode": "auto",
-                "wideLayout": true
+                "showThresholdLabels": false,
+                "showThresholdMarkers": true,
+                "sizing": "auto"
             },
             "pluginVersion": "10.3.3",
             "targets": [
@@ -233,15 +241,15 @@
                         "uid": "PBFA97CFB590B2093"
                     },
                     "editorMode": "code",
-                    "expr": "repos_seen{job=\"db\"}",
+                    "expr": "100 * (node_filesystem_size_bytes{mountpoint='/4t'}-node_filesystem_free_bytes{mountpoint='/4t'})/(node_filesystem_size_bytes{mountpoint='/4t'})",
                     "instant": false,
                     "legendFormat": "__auto",
                     "range": true,
                     "refId": "A"
                 }
             ],
-            "title": "Repos seen",
-            "type": "stat"
+            "title": "Filesystem space usage",
+            "type": "gauge"
         },
         {
             "datasource": {
@@ -315,31 +323,23 @@
                 "type": "prometheus",
                 "uid": "PBFA97CFB590B2093"
             },
-            "description": "",
             "fieldConfig": {
                 "defaults": {
                     "color": {
                         "mode": "thresholds"
                     },
                     "mappings": [],
+                    "min": 0,
                     "thresholds": {
-                        "mode": "percentage",
+                        "mode": "absolute",
                         "steps": [
                             {
                                 "color": "green",
                                 "value": null
-                            },
-                            {
-                                "color": "#EAB839",
-                                "value": 80
-                            },
-                            {
-                                "color": "dark-red",
-                                "value": 90
                             }
                         ]
                     },
-                    "unit": "percent",
+                    "unit": "none",
                     "unitScale": true
                 },
                 "overrides": []
@@ -350,11 +350,11 @@
                 "x": 14,
                 "y": 0
             },
-            "id": 15,
-            "links": [],
+            "id": 12,
             "options": {
-                "minVizHeight": 75,
-                "minVizWidth": 75,
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
                 "orientation": "auto",
                 "reduceOptions": {
                     "calcs": [
@@ -363,9 +363,9 @@
                     "fields": "",
                     "values": false
                 },
-                "showThresholdLabels": false,
-                "showThresholdMarkers": true,
-                "sizing": "auto"
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
             },
             "pluginVersion": "10.3.3",
             "targets": [
@@ -375,15 +375,15 @@
                         "uid": "PBFA97CFB590B2093"
                     },
                     "editorMode": "code",
-                    "expr": "100 * (node_filesystem_size_bytes{mountpoint='/4t'}-node_filesystem_free_bytes{mountpoint='/4t'})/(node_filesystem_size_bytes{mountpoint='/4t'})",
+                    "expr": "repos_seen{job=\"db\"}",
                     "instant": false,
                     "legendFormat": "__auto",
                     "range": true,
                     "refId": "A"
                 }
             ],
-            "title": "Filesystem space usage",
-            "type": "gauge"
+            "title": "Repos seen",
+            "type": "stat"
         },
         {
             "datasource": {
@@ -1680,6 +1680,6 @@
     "timezone": "",
     "title": "Bluesky indexer",
     "uid": "aXw6dQhSz",
-    "version": 22,
+    "version": 23,
     "weekStart": ""
 }
