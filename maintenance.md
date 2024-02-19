@@ -33,6 +33,19 @@ Seen repos
 Fully indexed repos
 `select count(*) from repos where last_indexed_rev <> '' and (last_indexed_rev >= first_rev_since_reset or first_rev_since_reset is null or first_rev_since_reset = '');`
 
+Count all records
+
+`analyze records; select relname, reltuples::int from pg_class where relname like 'records';`
+
+View errors
+
+`select last_error, count(*) from repos where failed_attempts > 0 group by last_error;`
+
+Restart errors
+
+`update repos set failed_attempts=0, last_error='' where failed_attempts >0;`
+
+Take a look at slow queries
 ```
 SELECT pid, age(clock_timestamp(), query_start), state, query
 FROM pg_stat_activity
