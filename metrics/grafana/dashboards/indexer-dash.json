@@ -1175,7 +1175,7 @@
                             },
                             {
                                 "id": "unit",
-                                "value": "commits/s"
+                                "value": "s/s"
                             }
                         ]
                     }
@@ -1210,14 +1210,32 @@
                         "uid": "PBFA97CFB590B2093"
                     },
                     "disableTextWrap": false,
-                    "editorMode": "code",
+                    "editorMode": "builder",
                     "expr": "time() - label_replace(repo_commit_received_timestamp, \"remote\", \"$1\", \"remote\", \"https://(.*).us-(west|east).host.bsky.network\")",
                     "fullMetaSearch": false,
+                    "hide": false,
                     "includeNullMetadata": true,
                     "instant": false,
                     "legendFormat": "{{remote}}",
                     "range": true,
                     "refId": "A",
+                    "useBackend": false
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "PBFA97CFB590B2093"
+                    },
+                    "disableTextWrap": false,
+                    "editorMode": "builder",
+                    "expr": "label_replace(rate(repo_commit_received_timestamp[$rate_interval]), \"remote\", \"$1\", \"remote\", \"https://(.*).us-(west|east).host.bsky.network\")",
+                    "fullMetaSearch": false,
+                    "hide": false,
+                    "includeNullMetadata": true,
+                    "instant": false,
+                    "legendFormat": "{{remote}}",
+                    "range": true,
+                    "refId": "B",
                     "useBackend": false
                 }
             ],
@@ -1598,8 +1616,8 @@
                 "auto_min": "10s",
                 "current": {
                     "selected": false,
-                    "text": "5m",
-                    "value": "5m"
+                    "text": "30m",
+                    "value": "30m"
                 },
                 "hide": 0,
                 "label": "Rate interval",
@@ -1611,7 +1629,7 @@
                         "value": "1m"
                     },
                     {
-                        "selected": true,
+                        "selected": false,
                         "text": "5m",
                         "value": "5m"
                     },
@@ -1621,7 +1639,7 @@
                         "value": "10m"
                     },
                     {
-                        "selected": false,
+                        "selected": true,
                         "text": "30m",
                         "value": "30m"
                     },
@@ -1655,13 +1673,13 @@
         ]
     },
     "time": {
-        "from": "now-1h",
+        "from": "now-3h",
         "to": "now"
     },
     "timepicker": {},
     "timezone": "",
     "title": "Bluesky indexer",
     "uid": "aXw6dQhSz",
-    "version": 20,
+    "version": 22,
     "weekStart": ""
 }
