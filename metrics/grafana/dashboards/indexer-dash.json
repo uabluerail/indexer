@@ -1135,7 +1135,7 @@
                         "insertNulls": false,
                         "lineInterpolation": "linear",
                         "lineWidth": 1,
-                        "pointSize": 5,
+                        "pointSize": 4,
                         "scaleDistribution": {
                             "type": "linear"
                         },
@@ -1673,13 +1673,13 @@
         ]
     },
     "time": {
-        "from": "now-3h",
+        "from": "now-12h",
         "to": "now"
     },
     "timepicker": {},
     "timezone": "",
     "title": "Bluesky indexer",
     "uid": "aXw6dQhSz",
-    "version": 23,
+    "version": 24,
     "weekStart": ""
 }
