@@ -84,6 +84,8 @@ services:
 
   query-exporter:
     image: adonato/query-exporter:latest
+    environment:
+      POSTGRES_URL: "postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/bluesky?sslmode=disable"
     volumes:
       - "./metrics/prometheus/exporters/query-exporter/config.yaml:/config.yaml"
     extra_hosts:
@@ -91,4 +93,4 @@ services:
     ports:
       - "0.0.0.0:9560:9560"
     links:
-      - postgres
+      - postgres:postgres
