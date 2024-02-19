@@ -81,12 +81,10 @@ now go to `http://localhost:9100/metrics`
 
 # Install query exporter
 
-`sudo snap install query-exporter`
+Query-exporter is started in indexer's docker.
 
-Run query exporter
+To allow viewing it on local network:
 
 `cd exporters`
-
-`query-exporter config.yaml -H 0.0.0.0`
 
 `sudo ufw allow 9560`

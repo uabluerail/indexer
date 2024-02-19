@@ -262,7 +262,80 @@
                         "mode": "thresholds"
                     },
                     "mappings": [],
-                    "min": 0,
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "#EAB839",
+                                "value": 10000
+                            },
+                            {
+                                "color": "red",
+                                "value": 100000
+                            }
+                        ]
+                    },
+                    "unit": "none",
+                    "unitScale": true
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 3,
+                "x": 10,
+                "y": 0
+            },
+            "id": 16,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+            },
+            "pluginVersion": "10.3.3",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "PBFA97CFB590B2093"
+                    },
+                    "editorMode": "code",
+                    "expr": "repos_seen{job=\"db\"}-repos_fully_indexed{job=\"db\"}",
+                    "instant": false,
+                    "legendFormat": "__auto",
+                    "range": true,
+                    "refId": "A"
+                }
+            ],
+            "title": "Repos to index",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "PBFA97CFB590B2093"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [],
                     "thresholds": {
                         "mode": "absolute",
                         "steps": [
@@ -279,8 +352,8 @@
             },
             "gridPos": {
                 "h": 4,
-                "w": 4,
-                "x": 10,
+                "w": 3,
+                "x": 13,
                 "y": 0
             },
             "id": 11,
@@ -329,7 +402,6 @@
                         "mode": "thresholds"
                     },
                     "mappings": [],
-                    "min": 0,
                     "thresholds": {
                         "mode": "absolute",
                         "steps": [
@@ -346,8 +418,8 @@
             },
             "gridPos": {
                 "h": 4,
-                "w": 4,
-                "x": 14,
+                "w": 3,
+                "x": 16,
                 "y": 0
             },
             "id": 12,
@@ -410,8 +482,8 @@
             },
             "gridPos": {
                 "h": 4,
-                "w": 6,
-                "x": 18,
+                "w": 5,
+                "x": 19,
                 "y": 0
             },
             "id": 7,
@@ -465,8 +537,7 @@
                         "axisCenteredZero": false,
                         "axisColorMode": "text",
                         "axisLabel": "",
-                        "axisPlacement": "auto",
-                        "axisSoftMin": 0,
+                        "axisPlacement": "left",
                         "barAlignment": 0,
                         "drawStyle": "line",
                         "fillOpacity": 0,
@@ -479,7 +550,7 @@
                         "insertNulls": false,
                         "lineInterpolation": "linear",
                         "lineWidth": 1,
-                        "pointSize": 5,
+                        "pointSize": 4,
                         "scaleDistribution": {
                             "type": "linear"
                         },
@@ -503,32 +574,10 @@
                             }
                         ]
                     },
+                    "unit": "s",
                     "unitScale": true
                 },
                 "overrides": [
-                    {
-                        "matcher": {
-                            "id": "byFrameRefID",
-                            "options": "A"
-                        },
-                        "properties": [
-                            {
-                                "id": "custom.axisPlacement",
-                                "value": "right"
-                            },
-                            {
-                                "id": "custom.stacking",
-                                "value": {
-                                    "group": "A",
-                                    "mode": "normal"
-                                }
-                            },
-                            {
-                                "id": "custom.fillOpacity",
-                                "value": 33
-                            }
-                        ]
-                    },
                     {
                         "matcher": {
                             "id": "byFrameRefID",
@@ -536,38 +585,12 @@
                         },
                         "properties": [
                             {
+                                "id": "custom.axisPlacement",
+                                "value": "right"
+                            },
+                            {
                                 "id": "unit",
-                                "value": "repos/s"
-                            }
-                        ]
-                    },
-                    {
-                        "matcher": {
-                            "id": "byName",
-                            "options": "Fail rate"
-                        },
-                        "properties": [
-                            {
-                                "id": "color",
-                                "value": {
-                                    "fixedColor": "red",
-                                    "mode": "fixed"
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        "matcher": {
-                            "id": "byName",
-                            "options": "Success rate"
-                        },
-                        "properties": [
-                            {
-                                "id": "color",
-                                "value": {
-                                    "fixedColor": "green",
-                                    "mode": "fixed"
-                                }
+                                "value": "s/s"
                             }
                         ]
                     }
@@ -579,7 +602,7 @@
                 "x": 0,
                 "y": 4
             },
-            "id": 2,
+            "id": 13,
             "options": {
                 "legend": {
                     "calcs": [],
@@ -587,6 +610,9 @@
                     "placement": "bottom",
                     "showLegend": true
                 },
+                "timezone": [
+                    ""
+                ],
                 "tooltip": {
                     "mode": "multi",
                     "sort": "none"
@@ -598,44 +624,148 @@
                         "type": "prometheus",
                         "uid": "PBFA97CFB590B2093"
                     },
+                    "disableTextWrap": false,
                     "editorMode": "code",
-                    "expr": "sum by(state) (indexer_queue_length)",
+                    "expr": "label_replace(time() - repo_commit_received_timestamp, \"remote\", \"delay-$1\", \"remote\", \"https://(.*).us-(west|east).host.bsky.network\")",
+                    "fullMetaSearch": false,
+                    "hide": false,
+                    "includeNullMetadata": true,
                     "instant": false,
-                    "legendFormat": "{{state}}",
+                    "legendFormat": "{{remote}}",
                     "range": true,
-                    "refId": "A"
+                    "refId": "A",
+                    "useBackend": false
                 },
                 {
                     "datasource": {
                         "type": "prometheus",
                         "uid": "PBFA97CFB590B2093"
                     },
+                    "disableTextWrap": false,
                     "editorMode": "code",
-                    "expr": "sum by(success) (rate(indexer_repos_indexed_count[$rate_interval]))",
+                    "expr": "label_replace(deriv(repo_commit_received_timestamp[$rate_interval]), \"remote\", \"catchup-$1\", \"remote\", \"https://(.*).us-(west|east).host.bsky.network\")",
+                    "fullMetaSearch": false,
                     "hide": false,
+                    "includeNullMetadata": true,
                     "instant": false,
-                    "legendFormat": "__auto",
+                    "legendFormat": "{{remote}}",
                     "range": true,
-                    "refId": "B"
+                    "refId": "B",
+                    "useBackend": false
                 }
             ],
-            "title": "Indexing queue",
-            "transformations": [
-                {
-                    "id": "renameByRegex",
-                    "options": {
-                        "regex": "false",
-                        "renamePattern": "Fail rate"
-                    }
+            "title": "Delay-Catchup",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "PBFA97CFB590B2093"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic",
+                        "seriesBy": "max"
+                    },
+                    "custom": {
+                        "axisBorderShow": false,
+                        "axisCenteredZero": false,
+                        "axisColorMode": "text",
+                        "axisLabel": "",
+                        "axisPlacement": "left",
+                        "barAlignment": 0,
+                        "drawStyle": "line",
+                        "fillOpacity": 43,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "insertNulls": false,
+                        "lineInterpolation": "linear",
+                        "lineStyle": {
+                            "fill": "solid"
+                        },
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "linearThreshold": 4,
+                            "type": "linear"
+                        },
+                        "showPoints": "auto",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "normal"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "fieldMinMax": false,
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            }
+                        ]
+                    },
+                    "unit": "commits/s",
+                    "unitScale": true
                 },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 9,
+                "w": 12,
+                "x": 12,
+                "y": 4
+            },
+            "id": 14,
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true,
+                    "width": 0
+                },
+                "timezone": [
+                    ""
+                ],
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
                 {
-                    "id": "renameByRegex",
-                    "options": {
-                        "regex": "true",
-                        "renamePattern": "Success rate"
-                    }
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "PBFA97CFB590B2093"
+                    },
+                    "disableTextWrap": false,
+                    "editorMode": "builder",
+                    "exemplar": false,
+                    "expr": "label_replace(sum by(remote) (rate(repo_commits_received_counter[$rate_interval])), \"remote\", \"$1\", \"remote\", \"https://(.*).us-(west|east).host.bsky.network\")",
+                    "format": "time_series",
+                    "fullMetaSearch": false,
+                    "hide": false,
+                    "includeNullMetadata": true,
+                    "instant": false,
+                    "interval": "",
+                    "legendFormat": "{{remote}}",
+                    "range": true,
+                    "refId": "B",
+                    "useBackend": false
                 }
             ],
+            "title": "Firehose",
             "type": "timeseries"
         },
         {
@@ -674,7 +804,7 @@
                         "spanNulls": false,
                         "stacking": {
                             "group": "A",
-                            "mode": "none"
+                            "mode": "normal"
                         },
                         "thresholdsStyle": {
                             "mode": "off"
@@ -1059,10 +1189,10 @@
                 ]
             },
             "gridPos": {
-                "h": 9,
+                "h": 8,
                 "w": 12,
-                "x": 12,
-                "y": 4
+                "x": 0,
+                "y": 13
             },
             "id": 10,
             "options": {
@@ -1073,7 +1203,7 @@
                     "showLegend": true
                 },
                 "tooltip": {
-                    "mode": "single",
+                    "mode": "multi",
                     "sort": "none"
                 }
             },
@@ -1105,404 +1235,6 @@
                 }
             ],
             "title": "Network Traffic",
-            "type": "timeseries"
-        },
-        {
-            "datasource": {
-                "type": "prometheus",
-                "uid": "PBFA97CFB590B2093"
-            },
-            "fieldConfig": {
-                "defaults": {
-                    "color": {
-                        "mode": "palette-classic"
-                    },
-                    "custom": {
-                        "axisBorderShow": false,
-                        "axisCenteredZero": false,
-                        "axisColorMode": "text",
-                        "axisLabel": "",
-                        "axisPlacement": "left",
-                        "barAlignment": 0,
-                        "drawStyle": "line",
-                        "fillOpacity": 0,
-                        "gradientMode": "none",
-                        "hideFrom": {
-                            "legend": false,
-                            "tooltip": false,
-                            "viz": false
-                        },
-                        "insertNulls": false,
-                        "lineInterpolation": "linear",
-                        "lineWidth": 1,
-                        "pointSize": 4,
-                        "scaleDistribution": {
-                            "type": "linear"
-                        },
-                        "showPoints": "auto",
-                        "spanNulls": false,
-                        "stacking": {
-                            "group": "A",
-                            "mode": "none"
-                        },
-                        "thresholdsStyle": {
-                            "mode": "off"
-                        }
-                    },
-                    "mappings": [],
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "green",
-                                "value": null
-                            }
-                        ]
-                    },
-                    "unit": "s",
-                    "unitScale": true
-                },
-                "overrides": [
-                    {
-                        "matcher": {
-                            "id": "byFrameRefID",
-                            "options": "B"
-                        },
-                        "properties": [
-                            {
-                                "id": "custom.axisPlacement",
-                                "value": "right"
-                            },
-                            {
-                                "id": "unit",
-                                "value": "s/s"
-                            }
-                        ]
-                    }
-                ]
-            },
-            "gridPos": {
-                "h": 8,
-                "w": 12,
-                "x": 0,
-                "y": 13
-            },
-            "id": 13,
-            "options": {
-                "legend": {
-                    "calcs": [],
-                    "displayMode": "list",
-                    "placement": "bottom",
-                    "showLegend": true
-                },
-                "timezone": [
-                    ""
-                ],
-                "tooltip": {
-                    "mode": "multi",
-                    "sort": "none"
-                }
-            },
-            "targets": [
-                {
-                    "datasource": {
-                        "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
-                    },
-                    "disableTextWrap": false,
-                    "editorMode": "builder",
-                    "expr": "time() - label_replace(repo_commit_received_timestamp, \"remote\", \"$1\", \"remote\", \"https://(.*).us-(west|east).host.bsky.network\")",
-                    "fullMetaSearch": false,
-                    "hide": false,
-                    "includeNullMetadata": true,
-                    "instant": false,
-                    "legendFormat": "{{remote}}",
-                    "range": true,
-                    "refId": "A",
-                    "useBackend": false
-                },
-                {
-                    "datasource": {
-                        "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
-                    },
-                    "disableTextWrap": false,
-                    "editorMode": "builder",
-                    "expr": "label_replace(rate(repo_commit_received_timestamp[$rate_interval]), \"remote\", \"$1\", \"remote\", \"https://(.*).us-(west|east).host.bsky.network\")",
-                    "fullMetaSearch": false,
-                    "hide": false,
-                    "includeNullMetadata": true,
-                    "instant": false,
-                    "legendFormat": "{{remote}}",
-                    "range": true,
-                    "refId": "B",
-                    "useBackend": false
-                }
-            ],
-            "title": "Delay",
-            "type": "timeseries"
-        },
-        {
-            "datasource": {
-                "type": "prometheus",
-                "uid": "PBFA97CFB590B2093"
-            },
-            "fieldConfig": {
-                "defaults": {
-                    "color": {
-                        "mode": "palette-classic"
-                    },
-                    "custom": {
-                        "axisBorderShow": false,
-                        "axisCenteredZero": false,
-                        "axisColorMode": "text",
-                        "axisLabel": "",
-                        "axisPlacement": "auto",
-                        "barAlignment": 0,
-                        "drawStyle": "line",
-                        "fillOpacity": 0,
-                        "gradientMode": "none",
-                        "hideFrom": {
-                            "legend": false,
-                            "tooltip": false,
-                            "viz": false
-                        },
-                        "insertNulls": false,
-                        "lineInterpolation": "linear",
-                        "lineWidth": 1,
-                        "pointSize": 5,
-                        "scaleDistribution": {
-                            "type": "linear"
-                        },
-                        "showPoints": "auto",
-                        "spanNulls": false,
-                        "stacking": {
-                            "group": "A",
-                            "mode": "none"
-                        },
-                        "thresholdsStyle": {
-                            "mode": "off"
-                        }
-                    },
-                    "mappings": [],
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "green",
-                                "value": null
-                            }
-                        ]
-                    },
-                    "unitScale": true
-                },
-                "overrides": [
-                    {
-                        "matcher": {
-                            "id": "byFrameRefID",
-                            "options": "A"
-                        },
-                        "properties": [
-                            {
-                                "id": "custom.stacking",
-                                "value": {
-                                    "group": "A",
-                                    "mode": "normal"
-                                }
-                            },
-                            {
-                                "id": "custom.fillOpacity",
-                                "value": 28
-                            }
-                        ]
-                    }
-                ]
-            },
-            "gridPos": {
-                "h": 8,
-                "w": 12,
-                "x": 12,
-                "y": 13
-            },
-            "id": 6,
-            "options": {
-                "legend": {
-                    "calcs": [],
-                    "displayMode": "list",
-                    "placement": "bottom",
-                    "showLegend": true
-                },
-                "tooltip": {
-                    "mode": "multi",
-                    "sort": "desc"
-                }
-            },
-            "targets": [
-                {
-                    "datasource": {
-                        "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
-                    },
-                    "disableTextWrap": false,
-                    "editorMode": "builder",
-                    "expr": "label_replace(sum by(remote, success) (rate(indexer_repos_fetched_count{success=\"true\"}[$rate_interval])), \"remote\", \"$1\", \"remote\", \"https://(.*).us-(west|east).host.bsky.network\")",
-                    "fullMetaSearch": false,
-                    "includeNullMetadata": true,
-                    "instant": false,
-                    "legendFormat": "{{remote}}",
-                    "range": true,
-                    "refId": "A",
-                    "useBackend": false
-                },
-                {
-                    "datasource": {
-                        "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
-                    },
-                    "editorMode": "code",
-                    "expr": "sum(rate(indexer_repos_fetched_count{success=\"false\"}[$rate_interval]))",
-                    "hide": false,
-                    "instant": false,
-                    "legendFormat": "{{remote}}",
-                    "range": true,
-                    "refId": "B"
-                }
-            ],
-            "title": "Repo fetch rate",
-            "transformations": [
-                {
-                    "id": "renameByRegex",
-                    "options": {
-                        "regex": "true https://([^.]*).*",
-                        "renamePattern": "$1"
-                    }
-                },
-                {
-                    "id": "renameByRegex",
-                    "options": {
-                        "regex": "false https://([^.]*).*",
-                        "renamePattern": "$1:fail"
-                    }
-                }
-            ],
-            "type": "timeseries"
-        },
-        {
-            "datasource": {
-                "type": "prometheus",
-                "uid": "PBFA97CFB590B2093"
-            },
-            "fieldConfig": {
-                "defaults": {
-                    "color": {
-                        "mode": "palette-classic"
-                    },
-                    "custom": {
-                        "axisBorderShow": false,
-                        "axisCenteredZero": false,
-                        "axisColorMode": "text",
-                        "axisLabel": "",
-                        "axisPlacement": "left",
-                        "barAlignment": 0,
-                        "drawStyle": "line",
-                        "fillOpacity": 43,
-                        "gradientMode": "none",
-                        "hideFrom": {
-                            "legend": false,
-                            "tooltip": false,
-                            "viz": false
-                        },
-                        "insertNulls": false,
-                        "lineInterpolation": "linear",
-                        "lineWidth": 1,
-                        "pointSize": 5,
-                        "scaleDistribution": {
-                            "type": "linear"
-                        },
-                        "showPoints": "auto",
-                        "spanNulls": false,
-                        "stacking": {
-                            "group": "A",
-                            "mode": "normal"
-                        },
-                        "thresholdsStyle": {
-                            "mode": "off"
-                        }
-                    },
-                    "mappings": [],
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "green",
-                                "value": null
-                            }
-                        ]
-                    },
-                    "unit": "s",
-                    "unitScale": true
-                },
-                "overrides": [
-                    {
-                        "matcher": {
-                            "id": "byFrameRefID",
-                            "options": "B"
-                        },
-                        "properties": [
-                            {
-                                "id": "custom.axisPlacement",
-                                "value": "right"
-                            },
-                            {
-                                "id": "unit",
-                                "value": "commits/s"
-                            }
-                        ]
-                    }
-                ]
-            },
-            "gridPos": {
-                "h": 8,
-                "w": 12,
-                "x": 0,
-                "y": 21
-            },
-            "id": 14,
-            "options": {
-                "legend": {
-                    "calcs": [],
-                    "displayMode": "list",
-                    "placement": "bottom",
-                    "showLegend": true
-                },
-                "timezone": [
-                    ""
-                ],
-                "tooltip": {
-                    "mode": "multi",
-                    "sort": "none"
-                }
-            },
-            "targets": [
-                {
-                    "datasource": {
-                        "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
-                    },
-                    "disableTextWrap": false,
-                    "editorMode": "builder",
-                    "expr": "label_replace(sum by(remote) (rate(repo_commits_received_counter[$rate_interval])), \"remote\", \"$1\", \"remote\", \"https://(.*).us-(west|east).host.bsky.network\")",
-                    "fullMetaSearch": false,
-                    "hide": false,
-                    "includeNullMetadata": true,
-                    "instant": false,
-                    "legendFormat": "{{remote}}",
-                    "range": true,
-                    "refId": "B",
-                    "useBackend": false
-                }
-            ],
-            "title": "Consumer",
             "type": "timeseries"
         },
         {
@@ -1571,7 +1303,7 @@
                 "h": 8,
                 "w": 12,
                 "x": 12,
-                "y": 21
+                "y": 13
             },
             "id": 4,
             "options": {
@@ -1602,6 +1334,340 @@
             ],
             "title": "Record indexing",
             "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "PBFA97CFB590B2093"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisBorderShow": false,
+                        "axisCenteredZero": false,
+                        "axisColorMode": "text",
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "axisSoftMin": 0,
+                        "barAlignment": 0,
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "insertNulls": false,
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "auto",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            }
+                        ]
+                    },
+                    "unitScale": true
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byFrameRefID",
+                            "options": "A"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.axisPlacement",
+                                "value": "right"
+                            },
+                            {
+                                "id": "custom.stacking",
+                                "value": {
+                                    "group": "A",
+                                    "mode": "normal"
+                                }
+                            },
+                            {
+                                "id": "custom.fillOpacity",
+                                "value": 33
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byFrameRefID",
+                            "options": "B"
+                        },
+                        "properties": [
+                            {
+                                "id": "unit",
+                                "value": "repos/s"
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "Fail rate"
+                        },
+                        "properties": [
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "red",
+                                    "mode": "fixed"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "Success rate"
+                        },
+                        "properties": [
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "green",
+                                    "mode": "fixed"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 21
+            },
+            "id": 2,
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "none"
+                }
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "PBFA97CFB590B2093"
+                    },
+                    "editorMode": "code",
+                    "expr": "sum by(state) (indexer_queue_length)",
+                    "instant": false,
+                    "legendFormat": "{{state}}",
+                    "range": true,
+                    "refId": "A"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "PBFA97CFB590B2093"
+                    },
+                    "editorMode": "code",
+                    "expr": "sum by(success) (rate(indexer_repos_indexed_count[$rate_interval]))",
+                    "hide": false,
+                    "instant": false,
+                    "legendFormat": "__auto",
+                    "range": true,
+                    "refId": "B"
+                }
+            ],
+            "title": "Indexing queue",
+            "transformations": [
+                {
+                    "id": "renameByRegex",
+                    "options": {
+                        "regex": "false",
+                        "renamePattern": "Fail rate"
+                    }
+                },
+                {
+                    "id": "renameByRegex",
+                    "options": {
+                        "regex": "true",
+                        "renamePattern": "Success rate"
+                    }
+                }
+            ],
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "PBFA97CFB590B2093"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisBorderShow": false,
+                        "axisCenteredZero": false,
+                        "axisColorMode": "text",
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "insertNulls": false,
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "auto",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            }
+                        ]
+                    },
+                    "unit": "repos/min",
+                    "unitScale": true
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byFrameRefID",
+                            "options": "A"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.stacking",
+                                "value": {
+                                    "group": "A",
+                                    "mode": "normal"
+                                }
+                            },
+                            {
+                                "id": "custom.fillOpacity",
+                                "value": 28
+                            }
+                        ]
+                    }
+                ]
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 21
+            },
+            "id": 6,
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "PBFA97CFB590B2093"
+                    },
+                    "disableTextWrap": false,
+                    "editorMode": "code",
+                    "expr": "label_replace(sum by(remote, success) (rate(indexer_repos_fetched_count{success=\"true\"}[$rate_interval])), \"remote\", \"$1\", \"remote\", \"https://(.*).us-(west|east).host.bsky.network\")*60",
+                    "fullMetaSearch": false,
+                    "includeNullMetadata": true,
+                    "instant": false,
+                    "legendFormat": "{{remote}}",
+                    "range": true,
+                    "refId": "A",
+                    "useBackend": false
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "PBFA97CFB590B2093"
+                    },
+                    "editorMode": "code",
+                    "expr": "sum(rate(indexer_repos_fetched_count{success=\"false\"}[$rate_interval]))",
+                    "hide": false,
+                    "instant": false,
+                    "legendFormat": "{{remote}}",
+                    "range": true,
+                    "refId": "B"
+                }
+            ],
+            "title": "Repo fetch rate",
+            "transformations": [
+                {
+                    "id": "renameByRegex",
+                    "options": {
+                        "regex": "true https://([^.]*).*",
+                        "renamePattern": "$1"
+                    }
+                },
+                {
+                    "id": "renameByRegex",
+                    "options": {
+                        "regex": "false https://([^.]*).*",
+                        "renamePattern": "$1:fail"
+                    }
+                }
+            ],
+            "type": "timeseries"
         }
     ],
     "refresh": "10s",
@@ -1616,8 +1682,8 @@
                 "auto_min": "10s",
                 "current": {
                     "selected": false,
-                    "text": "30m",
-                    "value": "30m"
+                    "text": "5m",
+                    "value": "5m"
                 },
                 "hide": 0,
                 "label": "Rate interval",
@@ -1629,7 +1695,7 @@
                         "value": "1m"
                     },
                     {
-                        "selected": false,
+                        "selected": true,
                         "text": "5m",
                         "value": "5m"
                     },
@@ -1639,7 +1705,7 @@
                         "value": "10m"
                     },
                     {
-                        "selected": true,
+                        "selected": false,
                         "text": "30m",
                         "value": "30m"
                     },
@@ -1673,13 +1739,13 @@
         ]
     },
     "time": {
-        "from": "now-12h",
+        "from": "now-1h",
         "to": "now"
     },
     "timepicker": {},
     "timezone": "",
     "title": "Bluesky indexer",
     "uid": "aXw6dQhSz",
-    "version": 24,
+    "version": 31,
     "weekStart": ""
 }

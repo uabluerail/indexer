@@ -81,3 +81,14 @@ services:
     ports:
       - "0.0.0.0:11003:8080"
     command: [ "--log-level=0" ]
+
+  query-exporter:
+    image: adonato/query-exporter:latest
+    volumes:
+      - "./metrics/prometheus/exporters/query-exporter/config.yaml:/config.yaml"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "0.0.0.0:9560:9560"
+    links:
+      - postgres
