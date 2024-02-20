@@ -12,6 +12,11 @@ metrics:
   repos_failed:
     type: gauge
     description: Repositories that we failed to index
+  # posts_lang:
+  #   type: summary
+  #   description: Posts by language
+  #   labels: [uk, lt, et, lv, pl, ga, fi, sv,
+  #   en, jp, de, fr, pt, es, nl, ko, tr, zh, ru]
 
 queries:
   query1:
@@ -29,3 +34,8 @@ queries:
     databases: [db1]
     metrics: [repos_failed]
     sql: select count(*) as repos_failed from repos where failed_attempts >= 3;
+  # query4:
+  #   interval: 300
+  #   databases: [db1]
+  #   metrics: [posts_lang]
+  #   sql: select count(*) as uk from records where collection in ('app.bsky.feed.post') and content::text like '%"langs": ["uk"]%';
