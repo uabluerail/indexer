@@ -31,3 +31,16 @@ with moved_rows as (
 insert into records select * from moved_rows;
 
 alter table records attach partition records_like for values in ('app.bsky.feed.like');
+
+
+create index idx_like_subject
+on records_like
+(split_part(jsonb_extract_path_text(content, 'subject', 'uri'), '/', 3));
+
+create index idx_follow_subject
+on records_follow
+(jsonb_extract_path_text(content, 'subject'));
+
+create index idx_reply_subject
+on records_post
+(split_part(jsonb_extract_path_text(content, 'reply', 'parent', 'uri'), '/', 3));
