@@ -13,6 +13,7 @@ services:
     environment:
       POSTGRES_DB: bluesky
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?specify password in .env file}"
+    command: ["-c", "max_connections=1000"]
   lister:
     build:
       context: .
