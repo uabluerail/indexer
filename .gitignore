@@ -1,2 +1,3 @@
 go.work*
 .env
+*.csv
