@@ -58,6 +58,6 @@ kill-csv-export:
 	@kill -9 `pgrep csv_export.sh`
 
 csv-compress:
-	@tar cvzf csv_export.tgz handles.csv post_counts.csv follows.csv like_counts.csv
+	@tar cvzf csv_export.tgz dids.csv handles.csv post_counts.csv follows.csv like_counts.csv
 
 # ---------------------------- CSV Export ----------------------------

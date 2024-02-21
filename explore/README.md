@@ -38,12 +38,11 @@ Get list blocks
 non-partitioned (very slow)
 
 ```
-select count(*) from (select distinct repo from records where collection in ('app.bsky.graph.listblock') and content['subject']::tex
-t like '"at://did:plc:bmjomljebcsuxolnygfgqtap/%');
+select count(*) from (select distinct repo from records where collection in ('app.bsky.graph.listblock') and deleted=false and content['subject']::text like '"at://did:plc:bmjomljebcsuxolnygfgqtap/%');
 ```
 
 partitioned (slow)
-`select count(*) from (select distinct repo from records_listblock where content['subject']::text like '"at://did:plc:bmjomljebcsuxolnygfgqtap/%');`
+`select count(*) from (select distinct repo from records_listblock where deleted=false and content['subject']::text like '"at://did:plc:bmjomljebcsuxolnygfgqtap/%');`
 
 Count all records
 
