@@ -43,7 +43,7 @@ func (r *fallbackResolver) GetDocument(ctx context.Context, didstr string) (*did
 		if d, err := res.GetDocument(ctx, didstr); err == nil {
 			return d, nil
 		} else {
-			log.Warn().Err(err).Str("plc", res.(*api.PLCServer).Host).
+			log.Trace().Err(err).Str("plc", res.(*api.PLCServer).Host).
 				Msgf("Failed to resolve %q using %q: %s", didstr, res.(*api.PLCServer).Host, err)
 			errs = append(errs, err)
 		}
