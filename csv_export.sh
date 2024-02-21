@@ -70,7 +70,7 @@ EOF
 
 echo "Dumping DIDs..."
 docker compose exec -it postgres psql -U postgres -d bluesky \
-  -c "copy (${posts_query}) to stdout with csv header;" > dids.csv
+  -c "${dids_query}" > dids.csv
 echo "Done: $(ls -lh dids.csv)"
 
 docker exec -it plc-postgres-1 psql -U postgres -d plc \
