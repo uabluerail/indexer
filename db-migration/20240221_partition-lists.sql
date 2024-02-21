@@ -15,3 +15,31 @@ with moved_rows as (
 insert into records select * from moved_rows;
 
 alter table records attach partition records_default default;
+
+create index listitem_uri_subject
+on records_listitem
+(
+  jsonb_extract_path_text(content, 'list'),
+  jsonb_extract_path_text(content, 'subject'))
+include (deleted);
+
+create index listitem_subject_uri
+on records_listitem
+(
+  jsonb_extract_path_text(content, 'subject'),
+  jsonb_extract_path_text(content, 'list'))
+include (deleted);
+
+create view listitems as
+  select *, jsonb_extract_path_text(content, 'list') as list,
+    jsonb_extract_path_text(content, 'subject') as subject
+    from records_listitem;
+
+
+create view lists as
+  select records_list.*,
+    jsonb_extract_path_text(content, 'name') as name,
+    jsonb_extract_path_text(content, 'description') as description,
+    jsonb_extract_path_text(content, 'purpose') as purpose,
+    'at://' || repos.did || '/app.bsky.graph.list/' || rkey as uri
+  from records_list join repos on records_list.repo = repos.id;
