@@ -106,6 +106,9 @@ func (s *Scheduler) fillQueue(ctx context.Context) error {
 		perPDSLimit = maxQueueLen * 2 / len(remotes)
 	}
 
+	// Fake remote to account for repos we didn't have a PDS for yet.
+	remotes = append(remotes, pds.PDS{ID: pds.Unknown})
+
 	for _, remote := range remotes {
 		repos := []repo.Repo{}
 

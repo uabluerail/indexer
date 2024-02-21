@@ -20,6 +20,7 @@ import (
 
 	"github.com/uabluerail/bsky-tools/xrpcauth"
 	"github.com/uabluerail/indexer/models"
+	"github.com/uabluerail/indexer/pds"
 	"github.com/uabluerail/indexer/repo"
 	"github.com/uabluerail/indexer/util/resolver"
 )
@@ -191,6 +192,17 @@ retry:
 		return fmt.Errorf("failed to fetch repo: %w", err)
 	}
 	reposFetched.WithLabelValues(u.String(), "true").Inc()
+
+	if work.Repo.PDS == pds.Unknown {
+		remote, err := pds.EnsureExists(ctx, p.db, u.String())
+		if err != nil {
+			return err
+		}
+		work.Repo.PDS = remote.ID
+		if err := p.db.Model(&work.Repo).Where(&repo.Repo{ID: work.Repo.ID}).Updates(&repo.Repo{PDS: work.Repo.PDS}).Error; err != nil {
+			return fmt.Errorf("failed to set repo's PDS: %w", err)
+		}
+	}
 
 	newRev, err := repo.GetRev(ctx, bytes.NewReader(b))
 	if err != nil {

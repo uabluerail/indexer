@@ -88,8 +88,8 @@ func EnsureExists(ctx context.Context, db *gorm.DB, did string) (*Repo, bool, er
 	if u.Host == "" {
 		return nil, false, fmt.Errorf("PDS endpoint (%q) doesn't have a host part", pdsHost)
 	}
-	remote := pds.PDS{Host: u.String()}
-	if err := db.Model(&remote).Where(&pds.PDS{Host: remote.Host}).FirstOrCreate(&remote).Error; err != nil {
+	remote, err := pds.EnsureExists(ctx, db, u.String())
+	if err != nil {
 		return nil, false, fmt.Errorf("failed to get PDS record from DB for %q: %w", remote.Host, err)
 	}
 	r = Repo{DID: did, PDS: models.ID(remote.ID)}
