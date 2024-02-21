@@ -54,7 +54,6 @@ init-db: init.sql
 csv-export:
 
 	@nohup ./csv_export.sh > csv_export.out &
-	@tail -f csv_export.out
 
 kill-csv-export:
 	@kill -9 `pgrep csv_export.sh`

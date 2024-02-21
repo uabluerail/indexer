@@ -32,6 +32,10 @@ docker compose exec -it postgres psql -U postgres -d bluesky \
   -c "copy (${likes_query}) to stdout with csv header;" > like_counts.csv
 echo "Done: $(ls -lh like_counts.csv)"
 
+# ------------------------------ LIKES ----------------------------------
+
+# ------------------------------ REPLIES ----------------------------------
+
 posts_query="$(cat <<- EOF
       select repos.did as ":START_ID", subject_did as ":END_ID", "count:long" from
         repos join lateral (
@@ -40,10 +44,6 @@ posts_query="$(cat <<- EOF
       where repos.did <> subject_did
 EOF
 )"
-
-# ------------------------------ LIKES ----------------------------------
-
-# ------------------------------ REPLIES ----------------------------------
 
 echo "Dumping posts..."
 docker compose exec -it postgres psql -U postgres -d bluesky \
