@@ -1,0 +1,45 @@
+{
+    "did": "did:web:skyfeed.me",
+    "$type": "app.bsky.feed.generator",
+    "createdAt": "2024-02-11T18:10:26.365Z",
+    "description": "絵描きさんと繋がりたい\n創作クラスタさんと繋がりたい\nクラスタフォロー\nの単語が含まれているPostのフィードです",
+    "displayName": "絵描きさん探し",
+    "skyfeedBuilder": {
+        "blocks": [
+            {
+                "id": "aaajsgtnqrcm6",
+                "did": "did:plc:l425td4tg5lq7y5gsrvfyhp5",
+                "type": "input",
+                "inputType": "firehose",
+                "firehoseSeconds": 604800
+            },
+            {
+                "id": "aaajsgtnqqgya",
+                "type": "remove",
+                "subject": "language",
+                "language": "ja"
+            },
+            {
+                "id": "aaajsgtnqqobo",
+                "type": "regex",
+                "value": "絵描きさんと繋がりたい|創作クラスタさんと繋がりたい|クラスタフォロー",
+                "target": "text|alt_text",
+                "caseSensitive": false
+            },
+            {
+                "id": "aaajsrd2o422c",
+                "type": "remove",
+                "value": "0",
+                "subject": "image_count"
+            },
+            {
+                "id": "aaajsgtnqsjne",
+                "type": "sort",
+                "sortType": "created_at",
+                "sortDirection": "desc"
+            }
+        ],
+        "license": "EUPL-1.2",
+        "displayName": "絵描きさん探し"
+    }
+}

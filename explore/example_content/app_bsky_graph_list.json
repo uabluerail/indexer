@@ -1,0 +1,24 @@
+[
+    {
+        "name": "絵師",
+        "$type": "app.bsky.graph.list",
+        "purpose": "app.bsky.graph.defs#curatelist",
+        "createdAt": "2024-02-07T03:28:14.317Z",
+        "description": ""
+    },
+    {
+        "name": "AI Art Bros",
+        "$type": "app.bsky.graph.list",
+        "avatar": {
+            "ref": {
+                "/": "bafkreicsl3dkam2uswcmck3j7xt7nvqwuxnpwydnkqeu5ncsgf22er46iu"
+            },
+            "size": 58526,
+            "$type": "blob",
+            "mimeType": "image/jpeg"
+        },
+        "purpose": "app.bsky.graph.defs#modlist",
+        "createdAt": "2024-02-07T21:29:36.219Z",
+        "description": "A list of ai art makers. We like to put our soul in our art. Get outta here! This list will expand overtime as I catch em >:D"
+    }
+]

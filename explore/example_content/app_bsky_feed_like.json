@@ -1,0 +1,8 @@
+{
+    "$type": "app.bsky.feed.like",
+    "subject": {
+        "cid": "bafyreiacuywksad5m72btsueyedsirbfamtovqdfdof2ulg2io7oofziv4",
+        "uri": "at://did:plc:iq5uninsn3ovpycv7rkth3ik/app.bsky.feed.post/3kjbob2uwra25"
+    },
+    "createdAt": "2024-02-06T15:23:11.641Z"
+}

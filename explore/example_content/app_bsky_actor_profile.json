@@ -1,0 +1,29 @@
+{
+    "$type": "app.bsky.actor.profile",
+    "avatar": {
+        "ref": {
+            "/": "bafkreihcxxwlssxseaxa2dclcci3l6qpnhy25igjqmqhig44iddlxneymm"
+        },
+        "size": 169608,
+        "$type": "blob",
+        "mimeType": "image/jpeg"
+    },
+    "banner": {
+        "ref": {
+            "/": "bafkreiejgeq5mo4kxx5s4t3jpmxxr3kirdgv7ozkvfm4hfh3p7eaow6xyu"
+        },
+        "size": 272387,
+        "$type": "blob",
+        "mimeType": "image/jpeg"
+    },
+    "labels": {
+        "$type": "com.atproto.label.defs#selfLabels",
+        "values": [
+            {
+                "val": "!no-unauthenticated"
+            }
+        ]
+    },
+    "description": "Full time parent, part time gamer. [He/Him]\n\nNeurodivergent [AuDHD] Demi 🦜\n\nSci-fi/Fantasy, video games, music, cats, anime, horror, crows, clothing, and human cognition are my jam. Not the extent of my interests - just what I'm willing to admit 😁 [NSFW]",
+    "displayName": "Flux 🤍🩶💜🖤"
+}

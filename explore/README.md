@@ -33,6 +33,18 @@ Seen repos
 Fully indexed repos
 `select count(*) from repos where last_indexed_rev <> '' and (last_indexed_rev >= first_rev_since_reset or first_rev_since_reset is null or first_rev_since_reset = '');`
 
+Get list blocks
+
+non-partitioned (very slow)
+
+```
+select count(*) from (select distinct repo from records where collection in ('app.bsky.graph.listblock') and content['subject']::tex
+t like '"at://did:plc:bmjomljebcsuxolnygfgqtap/%');
+```
+
+partitioned (slow)
+`select count(*) from (select distinct repo from records_listblock where content['subject']::text like '"at://did:plc:bmjomljebcsuxolnygfgqtap/%');`
+
 Count all records
 
 `analyze records; select relname, reltuples::int from pg_class where relname like 'records';`
@@ -51,4 +63,23 @@ SELECT pid, age(clock_timestamp(), query_start), state, query
 FROM pg_stat_activity
 WHERE query != '<IDLE>' AND query NOT ILIKE '%pg_stat_activity%'
 ORDER BY query_start asc;
+```
+
+Explore new collection types
+
+```
+select * from records where collection not in (
+    'app.bsky.actor.profile',
+    'app.bsky.feed.generator',
+    'app.bsky.feed.like',
+    'app.bsky.feed.post',
+    'app.bsky.feed.repost',
+    'app.bsky.feed.threadgate',
+    'app.bsky.graph.block',
+    'app.bsky.graph.follow',
+    'app.bsky.graph.listitem',
+    'app.bsky.graph.list',
+    'app.bsky.graph.listblock'
+    ) limit 20;
+
 ```

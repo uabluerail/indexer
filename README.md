@@ -1,1 +1,1 @@
-# See Makefile and maitenance.md
+# See Makefile and `explore/README.md`

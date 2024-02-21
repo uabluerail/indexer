@@ -1,0 +1,18 @@
+{
+    "text": "Чесно кажучи це один з найкращих епізодів, на ряду з безсмертним другом",
+    "$type": "app.bsky.feed.post",
+    "langs": [
+        "uk"
+    ],
+    "reply": {
+        "root": {
+            "cid": "bafyreienbpdlpqqwcovc56lgao2botzjleuqjocitapq5f2eficz2j2hdy",
+            "uri": "at://did:plc:wymxmgvtvzuumvldtnz76aez/app.bsky.feed.post/3kjr2i3gsl22v"
+        },
+        "parent": {
+            "cid": "bafyreienbpdlpqqwcovc56lgao2botzjleuqjocitapq5f2eficz2j2hdy",
+            "uri": "at://did:plc:wymxmgvtvzuumvldtnz76aez/app.bsky.feed.post/3kjr2i3gsl22v"
+        }
+    },
+    "createdAt": "2024-01-24T23:37:39.813Z"
+}
