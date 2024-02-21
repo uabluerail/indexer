@@ -1,3 +1,5 @@
 go.work*
 .env
 *.csv
+*.out
+csv_export.gz
