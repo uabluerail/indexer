@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/url"
 	"time"
 
 	"gorm.io/gorm"
@@ -66,28 +65,11 @@ func EnsureExists(ctx context.Context, db *gorm.DB, did string) (*Repo, bool, er
 	//     if we do - compare PDS IDs
 	//        if they don't match - also reset FirstRevSinceReset
 
-	doc, err := resolver.GetDocument(ctx, did)
+	u, err := resolver.GetPDSEndpoint(ctx, did)
 	if err != nil {
 		return nil, false, fmt.Errorf("fetching DID Document: %w", err)
 	}
 
-	pdsHost := ""
-	for _, srv := range doc.Service {
-		if srv.Type != "AtprotoPersonalDataServer" {
-			continue
-		}
-		pdsHost = srv.ServiceEndpoint
-	}
-	if pdsHost == "" {
-		return nil, false, fmt.Errorf("did not find any PDS in DID Document")
-	}
-	u, err := url.Parse(pdsHost)
-	if err != nil {
-		return nil, false, fmt.Errorf("PDS endpoint (%q) is an invalid URL: %w", pdsHost, err)
-	}
-	if u.Host == "" {
-		return nil, false, fmt.Errorf("PDS endpoint (%q) doesn't have a host part", pdsHost)
-	}
 	remote, err := pds.EnsureExists(ctx, db, u.String())
 	if err != nil {
 		return nil, false, fmt.Errorf("failed to get PDS record from DB for %q: %w", remote.Host, err)
