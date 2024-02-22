@@ -132,10 +132,12 @@ func (p *WorkerPool) worker(ctx context.Context, signal chan struct{}) {
 	}
 }
 
-var postgresFixRegexp = regexp.MustCompile(`[^\\](\\\\)*(\\u0000)`)
+var postgresFixRegexp = regexp.MustCompile(`([^\\](\\\\)*)(\\u0000)+`)
 
 func escapeNullCharForPostgres(b []byte) []byte {
-	return postgresFixRegexp.ReplaceAll(b, []byte(`$1<0x00>`))
+	return postgresFixRegexp.ReplaceAllFunc(b, func(b []byte) []byte {
+		return bytes.ReplaceAll(b, []byte(`\u0000`), []byte(`<0x00>`))
+	})
 }
 
 func (p *WorkerPool) doWork(ctx context.Context, work WorkItem) error {
@@ -212,7 +214,6 @@ retry:
 			log.Warn().Msgf("Unexpected key format: %q", k)
 			continue
 		}
-		v = regexp.MustCompile(`[^\\](\\\\)*(\\u0000)`).ReplaceAll(v, []byte(`$1<0x00>`))
 		// lang, err := repo.GetLang(ctx, v)
 		// if err == nil {
 		// 	postsByLanguageIndexed.WithLabelValues(u.String(), lang).Inc()
