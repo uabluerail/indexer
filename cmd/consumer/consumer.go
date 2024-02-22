@@ -458,6 +458,19 @@ func (c *Consumer) processMessage(ctx context.Context, typ string, r io.Reader, 
 		default:
 			log.Error().Msgf("Unknown #info message %q: %+v", payload.Name, payload)
 		}
+	case "#identity":
+		payload := &comatproto.SyncSubscribeRepos_Identity{}
+		if err := payload.UnmarshalCBOR(r); err != nil {
+			return fmt.Errorf("failed to unmarshal commit: %w", err)
+		}
+
+		exportEventTimestamp(ctx, c.remote.Host, payload.Time)
+		log.Trace().Str("did", payload.Did).Str("type", typ).Int64("seq", payload.Seq).
+			Msgf("#identity message: %s seq=%d time=%q", payload.Did, payload.Seq, payload.Time)
+
+		resolver.Resolver.FlushCacheFor(payload.Did)
+
+		// TODO: fetch DID doc and update PDS field?
 	default:
 		b, err := io.ReadAll(r)
 		if err != nil {
