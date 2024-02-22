@@ -23,6 +23,8 @@ partition of records for values in ('app.bsky.feed.repost');
 create table records_profile
 partition of records for values in ('app.bsky.actor.profile');
 
+
+-- SLOW, can run overnight, make sure to run in tmux or eternal terminal
 with moved_rows as (
         delete from records_like r
         where collection <> 'app.bsky.feed.like'

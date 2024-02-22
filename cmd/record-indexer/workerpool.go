@@ -221,6 +221,10 @@ retry:
 			continue
 		}
 		v = regexp.MustCompile(`[^\\](\\\\)*(\\u0000)`).ReplaceAll(v, []byte(`$1<0x00>`))
+		// lang, err := repo.GetLang(ctx, v)
+		// if err == nil {
+		// 	postsByLanguageIndexed.WithLabelValues(u.String(), lang).Inc()
+		// }
 		recs = append(recs, repo.Record{
 			Repo:       models.ID(work.Repo.ID),
 			Collection: parts[0],

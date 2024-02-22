@@ -294,3 +294,25 @@ func GetRev(ctx context.Context, b io.Reader) (string, error) {
 	}
 	return s, nil
 }
+
+// func GetLang(ctx context.Context, value json.RawMessage) (string, error) {
+// 	var content map[string]interface{}
+// 	var lang string
+// 	err := json.Unmarshal([]byte(value), &content)
+
+// 	if err != nil {
+// 		return "", fmt.Errorf("failed to extract lang from content")
+// 	}
+
+// 	if content["$type"] != "app.bsky.feed.post" ||
+// 		content["langs"] == nil ||
+// 		content["langs"].([]string) == nil ||
+// 		len(content["langs"].([]string)) == 0 {
+// 		return "", errors.New("not a post")
+// 	}
+
+// 	//todo: do something a bit less dumb than that
+// 	lang = content["langs"].([]string)[0]
+
+// 	return lang, nil
+// }
