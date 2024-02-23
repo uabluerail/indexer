@@ -45,6 +45,9 @@ init-db:
 	@docker compose stop lister
 	@cat ./db-migration/init.sql | docker exec -i "$$(docker compose ps --format '{{.Names}}' postgres)" psql -U postgres -d bluesky
 
+sqltop:
+	watch -n 1 'cat top.sql|docker compose exec -i postgres psql -U postgres -d bluesky'
+
 # ---------------------------- Database ----------------------------
 
 
