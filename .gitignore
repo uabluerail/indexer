@@ -4,3 +4,4 @@ go.work*
 *.out
 *.log
 csv_export.tgz
+*.override.yml
