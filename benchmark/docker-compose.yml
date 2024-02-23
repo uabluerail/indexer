@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: "postgres:16"
+    volumes:
+      - "${DATA_DIR:?specify data dir in .env file}/benchmark:/var/lib/postgresql/data:rw"
+    restart: always
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      POSTGRES_DB: bluesky
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?specify password in .env file}"
+    command: ["-c", "max_connections=1000"]

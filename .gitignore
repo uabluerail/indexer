@@ -2,4 +2,5 @@ go.work*
 .env
 *.csv
 *.out
+*.log
 csv_export.tgz
