@@ -48,6 +48,9 @@ init-db:
 sqltop:
 	watch -n 1 'cat top.sql|docker compose exec -i postgres psql -U postgres -d bluesky'
 
+sqldu:
+	cat du.sql | docker compose exec -iT postgres psql -U postgres -d bluesky
+
 # ---------------------------- Database ----------------------------
 
 
