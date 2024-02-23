@@ -57,7 +57,7 @@ func (l *Lister) run(ctx context.Context) {
 
 			remote := pds.PDS{}
 			if err := db.Model(&remote).
-				Where("disabled=false and (last_list is null or last_list < ?)", time.Now().Add(-l.listRefreshInterval)).
+				Where("(disabled=false or disabled is null) and (last_list is null or last_list < ?)", time.Now().Add(-l.listRefreshInterval)).
 				Take(&remote).Error; err != nil {
 				if !errors.Is(err, gorm.ErrRecordNotFound) {
 					log.Error().Err(err).Msgf("Failed to query DB for a PDS to list repos from: %s", err)
