@@ -163,7 +163,7 @@
                 "x": 0,
                 "y": 0
             },
-            "id": 18,
+            "id": 25,
             "options": {
                 "legend": {
                     "calcs": [],
@@ -192,23 +192,6 @@
                     "legendFormat": "{{lang}}",
                     "range": true,
                     "refId": "A",
-                    "useBackend": false
-                },
-                {
-                    "datasource": {
-                        "type": "prometheus",
-                        "uid": "${DS_PROMETHEUS}"
-                    },
-                    "disableTextWrap": false,
-                    "editorMode": "builder",
-                    "expr": "label_replace(sum by(remote) (rate(indexer_posts_by_language_count{lang=\"uk\"}[$rate_interval])), \"\", \"$1\", \"\", \"(.*)\")",
-                    "fullMetaSearch": false,
-                    "hide": true,
-                    "includeNullMetadata": true,
-                    "instant": false,
-                    "legendFormat": "__auto",
-                    "range": true,
-                    "refId": "B",
                     "useBackend": false
                 }
             ],
@@ -239,7 +222,7 @@
             },
             "gridPos": {
                 "h": 10,
-                "w": 6,
+                "w": 5,
                 "x": 12,
                 "y": 0
             },
@@ -268,14 +251,14 @@
                         "uid": "${DS_PROMETHEUS}"
                     },
                     "editorMode": "code",
-                    "expr": "repos_fully_indexed{job=\"db\"}",
+                    "expr": "5000000+repos_fully_indexed{job=\"db\"}",
                     "instant": false,
                     "legendFormat": "__auto",
                     "range": true,
                     "refId": "A"
                 }
             ],
-            "title": "Repos indexed",
+            "title": "Total Users",
             "type": "stat"
         },
         {
@@ -306,8 +289,8 @@
             },
             "gridPos": {
                 "h": 10,
-                "w": 6,
-                "x": 18,
+                "w": 7,
+                "x": 17,
                 "y": 0
             },
             "id": 24,
@@ -334,15 +317,15 @@
                         "type": "prometheus",
                         "uid": "${DS_PROMETHEUS}"
                     },
-                    "editorMode": "builder",
-                    "expr": "5000000/(rate(repos_fully_indexed{job=\"db\"}[$rate_interval])*60*60)",
+                    "editorMode": "code",
+                    "expr": "5000000/(rate(repos_fully_indexed{job=\"db\"}[$rate_interval])*60*60)*5",
                     "instant": false,
                     "legendFormat": "__auto",
                     "range": true,
                     "refId": "A"
                 }
             ],
-            "title": "Time to 5mil",
+            "title": "Time to 10 milion users",
             "type": "stat"
         },
         {
@@ -404,15 +387,46 @@
                     "unit": "posts/h",
                     "unitScale": true
                 },
-                "overrides": []
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byFrameRefID",
+                            "options": "B"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.axisPlacement",
+                                "value": "right"
+                            },
+                            {
+                                "id": "custom.fillOpacity",
+                                "value": 0
+                            },
+                            {
+                                "id": "custom.lineWidth",
+                                "value": 4
+                            },
+                            {
+                                "id": "custom.lineStyle",
+                                "value": {
+                                    "dash": [
+                                        0,
+                                        10
+                                    ],
+                                    "fill": "dot"
+                                }
+                            }
+                        ]
+                    }
+                ]
             },
             "gridPos": {
-                "h": 8,
+                "h": 10,
                 "w": 12,
                 "x": 0,
                 "y": 10
             },
-            "id": 19,
+            "id": 18,
             "options": {
                 "legend": {
                     "calcs": [],
@@ -432,19 +446,19 @@
                         "uid": "${DS_PROMETHEUS}"
                     },
                     "disableTextWrap": false,
-                    "editorMode": "code",
-                    "expr": "label_replace(sum by(remote) (rate(indexer_posts_by_language_count{lang=\"uk\", remote=~\"https://amanita.us-east.host.bsky.network|https://enoki.us-east.host.bsky.network|https://inkcap.us-east.host.bsky.network|https://lionsmane.us-east.host.bsky.network|https://morel.us-east.host.bsky.network|https://oyster.us-east.host.bsky.network|https://porcini.us-east.host.bsky.network|https://puffball.us-east.host.bsky.network|https://shiitake.us-east.host.bsky.network\"}[$rate_interval])*60*60), \"remote\", \"$1\", \"remote\", \"https://(.*).us-(west|east).host.bsky.network\")",
+                    "editorMode": "builder",
+                    "expr": "sum by(lang) (rate(indexer_posts_by_language_count{lang=~\"bg|cs|da|el|et|fi|ga|hr|hu|lt|lv|nl|ro|sk|sl|sv|uk|uk-UA|pl\"}[$rate_interval])) * 60 * 60",
                     "fullMetaSearch": false,
                     "hide": false,
                     "includeNullMetadata": true,
                     "instant": false,
-                    "legendFormat": "__auto",
+                    "legendFormat": "{{lang}}",
                     "range": true,
-                    "refId": "B",
+                    "refId": "A",
                     "useBackend": false
                 }
             ],
-            "title": "Language by [old] PDS (uk)",
+            "title": "Posts by non-colonial language (Europe only)",
             "type": "timeseries"
         },
         {
@@ -506,15 +520,46 @@
                     "unit": "posts/h",
                     "unitScale": true
                 },
-                "overrides": []
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byFrameRefID",
+                            "options": "B"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.axisPlacement",
+                                "value": "right"
+                            },
+                            {
+                                "id": "custom.fillOpacity",
+                                "value": 0
+                            },
+                            {
+                                "id": "custom.lineWidth",
+                                "value": 4
+                            },
+                            {
+                                "id": "custom.lineStyle",
+                                "value": {
+                                    "dash": [
+                                        0,
+                                        10
+                                    ],
+                                    "fill": "dot"
+                                }
+                            }
+                        ]
+                    }
+                ]
             },
             "gridPos": {
-                "h": 8,
+                "h": 10,
                 "w": 12,
                 "x": 12,
                 "y": 10
             },
-            "id": 21,
+            "id": 26,
             "options": {
                 "legend": {
                     "calcs": [],
@@ -534,19 +579,19 @@
                         "uid": "${DS_PROMETHEUS}"
                     },
                     "disableTextWrap": false,
-                    "editorMode": "code",
-                    "expr": "label_replace(sum by(remote) (rate(indexer_posts_by_language_count{lang=\"uk\", remote!~\"https://amanita.us-east.host.bsky.network|https://enoki.us-east.host.bsky.network|https://inkcap.us-east.host.bsky.network|https://lionsmane.us-east.host.bsky.network|https://oyster.us-east.host.bsky.network|https://morel.us-east.host.bsky.network|https://porcini.us-east.host.bsky.network|https://puffball.us-east.host.bsky.network|https://shiitake.us-east.host.bsky.network\"}[$rate_interval])*60*60), \"remote\", \"$1\", \"remote\", \"https://(.*).us-(west|east).host.bsky.network\")",
+                    "editorMode": "builder",
+                    "expr": "sum by(lang) (rate(indexer_posts_by_language_count{lang!~\"en|de|ja|fr|es|pt|tr|ru|en-GB|de-DE|en-NZ|en-US|es-AR|es-ES|English|fr-CA|fr-FR|ja-JP|pt-BR|zh|Fr|it\"}[$rate_interval])) * 60 * 60",
                     "fullMetaSearch": false,
                     "hide": false,
                     "includeNullMetadata": true,
                     "instant": false,
-                    "legendFormat": "__auto",
+                    "legendFormat": "{{lang}}",
                     "range": true,
-                    "refId": "B",
+                    "refId": "A",
                     "useBackend": false
                 }
             ],
-            "title": "Language by [new] PDS (uk)",
+            "title": "Posts by non-imperial language (Worldwide)",
             "type": "timeseries"
         },
         {
@@ -614,7 +659,7 @@
                 "h": 8,
                 "w": 12,
                 "x": 0,
-                "y": 18
+                "y": 20
             },
             "id": 20,
             "options": {
@@ -716,7 +761,211 @@
                 "h": 8,
                 "w": 12,
                 "x": 12,
-                "y": 18
+                "y": 20
+            },
+            "id": 21,
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${DS_PROMETHEUS}"
+                    },
+                    "disableTextWrap": false,
+                    "editorMode": "code",
+                    "expr": "label_replace(sum by(remote) (rate(indexer_posts_by_language_count{lang=\"uk\", remote!~\"https://amanita.us-east.host.bsky.network|https://enoki.us-east.host.bsky.network|https://inkcap.us-east.host.bsky.network|https://lionsmane.us-east.host.bsky.network|https://oyster.us-east.host.bsky.network|https://morel.us-east.host.bsky.network|https://porcini.us-east.host.bsky.network|https://puffball.us-east.host.bsky.network|https://shiitake.us-east.host.bsky.network\"}[$rate_interval])*60*60), \"remote\", \"$1\", \"remote\", \"https://(.*).us-(west|east).host.bsky.network\")",
+                    "fullMetaSearch": false,
+                    "hide": false,
+                    "includeNullMetadata": true,
+                    "instant": false,
+                    "legendFormat": "__auto",
+                    "range": true,
+                    "refId": "B",
+                    "useBackend": false
+                }
+            ],
+            "title": "Language by [new] PDS (uk)",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisBorderShow": false,
+                        "axisCenteredZero": false,
+                        "axisColorMode": "text",
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "drawStyle": "line",
+                        "fillOpacity": 14,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "insertNulls": false,
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 4,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "auto",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "normal"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    },
+                    "unit": "posts/h",
+                    "unitScale": true
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 28
+            },
+            "id": 19,
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${DS_PROMETHEUS}"
+                    },
+                    "disableTextWrap": false,
+                    "editorMode": "code",
+                    "expr": "label_replace(sum by(remote) (rate(indexer_posts_by_language_count{lang=\"uk\", remote=~\"https://amanita.us-east.host.bsky.network|https://enoki.us-east.host.bsky.network|https://inkcap.us-east.host.bsky.network|https://lionsmane.us-east.host.bsky.network|https://morel.us-east.host.bsky.network|https://oyster.us-east.host.bsky.network|https://porcini.us-east.host.bsky.network|https://puffball.us-east.host.bsky.network|https://shiitake.us-east.host.bsky.network\"}[$rate_interval])*60*60), \"remote\", \"$1\", \"remote\", \"https://(.*).us-(west|east).host.bsky.network\")",
+                    "fullMetaSearch": false,
+                    "hide": false,
+                    "includeNullMetadata": true,
+                    "instant": false,
+                    "legendFormat": "__auto",
+                    "range": true,
+                    "refId": "B",
+                    "useBackend": false
+                }
+            ],
+            "title": "Language by [old] PDS (uk)",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisBorderShow": false,
+                        "axisCenteredZero": false,
+                        "axisColorMode": "text",
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "drawStyle": "line",
+                        "fillOpacity": 14,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "insertNulls": false,
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 4,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "auto",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "normal"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    },
+                    "unit": "posts/h",
+                    "unitScale": true
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 28
             },
             "id": 22,
             "options": {
@@ -766,8 +1015,8 @@
                 "auto_min": "10s",
                 "current": {
                     "selected": false,
-                    "text": "1h",
-                    "value": "1h"
+                    "text": "10m",
+                    "value": "10m"
                 },
                 "hide": 0,
                 "label": "Rate interval",
@@ -784,7 +1033,7 @@
                         "value": "5m"
                     },
                     {
-                        "selected": false,
+                        "selected": true,
                         "text": "10m",
                         "value": "10m"
                     },
@@ -794,7 +1043,7 @@
                         "value": "30m"
                     },
                     {
-                        "selected": true,
+                        "selected": false,
                         "text": "1h",
                         "value": "1h"
                     },
@@ -830,6 +1079,6 @@
     "timezone": "",
     "title": "Bsky Stats",
     "uid": "aXw6dQhSa",
-    "version": 2,
+    "version": 4,
     "weekStart": ""
 }
