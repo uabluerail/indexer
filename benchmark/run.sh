@@ -20,6 +20,6 @@ lz4cat ../records.sql.lz4 | docker compose exec -iT postgres psql -U postgres -d
 
 echo "$(date): Data import done"
 
-cat ../db-migration/20240217_partition.sql \
+cat ../db-migration/migrations/20240217_partition.sql \
   | docker compose exec -iT postgres psql -U postgres -d bluesky --echo-queries -c '\timing' \
   | tee -a "${output}"
