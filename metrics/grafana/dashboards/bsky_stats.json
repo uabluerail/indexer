@@ -447,7 +447,7 @@
                     },
                     "disableTextWrap": false,
                     "editorMode": "builder",
-                    "expr": "sum by(lang) (rate(indexer_posts_by_language_count{lang=~\"bg|cs|da|el|et|fi|ga|hr|hu|lt|lv|nl|ro|sk|sl|sv|uk|uk-UA|pl\"}[$rate_interval])) * 60 * 60",
+                    "expr": "sum by(lang) (rate(indexer_posts_by_language_count{lang=~\"bg|cs|da|el|et|fi|ga|hr|hu|lt|lv|nl|ro|sk|sl|sv|uk|uk-UA|pl|de|it\"}[$rate_interval])) * 60 * 60",
                     "fullMetaSearch": false,
                     "hide": false,
                     "includeNullMetadata": true,
@@ -580,7 +580,7 @@
                     },
                     "disableTextWrap": false,
                     "editorMode": "builder",
-                    "expr": "sum by(lang) (rate(indexer_posts_by_language_count{lang!~\"en|de|ja|fr|es|pt|tr|ru|en-GB|de-DE|en-NZ|en-US|es-AR|es-ES|English|fr-CA|fr-FR|ja-JP|pt-BR|zh|Fr|it\"}[$rate_interval])) * 60 * 60",
+                    "expr": "sum by(lang) (rate(indexer_posts_by_language_count{lang!~\"en|fr|es|pt|tr|ru|en-GB|de-DE|en-NZ|en-US|es-AR|es-ES|English|fr-CA|fr-FR|ja-JP|pt-BR|zh|Fr|hi|bn|ar\"}[$rate_interval])) * 60 * 60",
                     "fullMetaSearch": false,
                     "hide": false,
                     "includeNullMetadata": true,
@@ -591,7 +591,7 @@
                     "useBackend": false
                 }
             ],
-            "title": "Posts by non-imperial language (Worldwide)",
+            "title": "Posts by non-colonial language (Worldwide)",
             "type": "timeseries"
         },
         {
@@ -661,7 +661,7 @@
                 "x": 0,
                 "y": 20
             },
-            "id": 20,
+            "id": 19,
             "options": {
                 "legend": {
                     "calcs": [],
@@ -682,7 +682,7 @@
                     },
                     "disableTextWrap": false,
                     "editorMode": "code",
-                    "expr": "label_replace(sum by(remote) (rate(indexer_posts_by_language_count{lang=\"ru\", remote=~\"https://amanita.us-east.host.bsky.network|https://enoki.us-east.host.bsky.network|https://inkcap.us-east.host.bsky.network|https://lionsmane.us-east.host.bsky.network|https://oyster.us-east.host.bsky.network|https://morel.us-east.host.bsky.network|https://porcini.us-east.host.bsky.network|https://puffball.us-east.host.bsky.network|https://shiitake.us-east.host.bsky.network\"}[$rate_interval])*60*60), \"remote\", \"$1\", \"remote\", \"https://(.*).us-(west|east).host.bsky.network\")",
+                    "expr": "label_replace(sum by(remote) (rate(indexer_posts_by_language_count{lang=\"uk\", remote=~\"https://amanita.us-east.host.bsky.network|https://enoki.us-east.host.bsky.network|https://inkcap.us-east.host.bsky.network|https://lionsmane.us-east.host.bsky.network|https://morel.us-east.host.bsky.network|https://oyster.us-east.host.bsky.network|https://porcini.us-east.host.bsky.network|https://puffball.us-east.host.bsky.network|https://shiitake.us-east.host.bsky.network\"}[$rate_interval])*60*60), \"remote\", \"$1\", \"remote\", \"https://(.*).us-(west|east).host.bsky.network\")",
                     "fullMetaSearch": false,
                     "hide": false,
                     "includeNullMetadata": true,
@@ -693,7 +693,7 @@
                     "useBackend": false
                 }
             ],
-            "title": "Language by [old] PDS (ru)",
+            "title": "Language by [old] PDS (uk)",
             "type": "timeseries"
         },
         {
@@ -865,7 +865,7 @@
                 "x": 0,
                 "y": 28
             },
-            "id": 19,
+            "id": 20,
             "options": {
                 "legend": {
                     "calcs": [],
@@ -886,7 +886,7 @@
                     },
                     "disableTextWrap": false,
                     "editorMode": "code",
-                    "expr": "label_replace(sum by(remote) (rate(indexer_posts_by_language_count{lang=\"uk\", remote=~\"https://amanita.us-east.host.bsky.network|https://enoki.us-east.host.bsky.network|https://inkcap.us-east.host.bsky.network|https://lionsmane.us-east.host.bsky.network|https://morel.us-east.host.bsky.network|https://oyster.us-east.host.bsky.network|https://porcini.us-east.host.bsky.network|https://puffball.us-east.host.bsky.network|https://shiitake.us-east.host.bsky.network\"}[$rate_interval])*60*60), \"remote\", \"$1\", \"remote\", \"https://(.*).us-(west|east).host.bsky.network\")",
+                    "expr": "label_replace(sum by(remote) (rate(indexer_posts_by_language_count{lang=\"ru\", remote=~\"https://amanita.us-east.host.bsky.network|https://enoki.us-east.host.bsky.network|https://inkcap.us-east.host.bsky.network|https://lionsmane.us-east.host.bsky.network|https://oyster.us-east.host.bsky.network|https://morel.us-east.host.bsky.network|https://porcini.us-east.host.bsky.network|https://puffball.us-east.host.bsky.network|https://shiitake.us-east.host.bsky.network\"}[$rate_interval])*60*60), \"remote\", \"$1\", \"remote\", \"https://(.*).us-(west|east).host.bsky.network\")",
                     "fullMetaSearch": false,
                     "hide": false,
                     "includeNullMetadata": true,
@@ -897,7 +897,7 @@
                     "useBackend": false
                 }
             ],
-            "title": "Language by [old] PDS (uk)",
+            "title": "Language by [old] PDS (ru)",
             "type": "timeseries"
         },
         {
@@ -1015,8 +1015,8 @@
                 "auto_min": "10s",
                 "current": {
                     "selected": false,
-                    "text": "10m",
-                    "value": "10m"
+                    "text": "1h",
+                    "value": "1h"
                 },
                 "hide": 0,
                 "label": "Rate interval",
@@ -1033,7 +1033,7 @@
                         "value": "5m"
                     },
                     {
-                        "selected": true,
+                        "selected": false,
                         "text": "10m",
                         "value": "10m"
                     },
@@ -1043,7 +1043,7 @@
                         "value": "30m"
                     },
                     {
-                        "selected": false,
+                        "selected": true,
                         "text": "1h",
                         "value": "1h"
                     },
@@ -1072,13 +1072,13 @@
         ]
     },
     "time": {
-        "from": "now-1h",
+        "from": "now-3h",
         "to": "now"
     },
     "timepicker": {},
     "timezone": "",
     "title": "Bsky Stats",
     "uid": "aXw6dQhSa",
-    "version": 4,
+    "version": 8,
     "weekStart": ""
 }
