@@ -320,11 +320,9 @@ func (c *Consumer) processMessage(ctx context.Context, typ string, r io.Reader, 
 			}
 			langs, _, err := repo.GetLang(ctx, v)
 			if err == nil {
-				lang := ""
-				if len(langs) != 0 {
-					lang = langs[0]
+				for _, lang := range langs {
+					postsByLanguageIndexed.WithLabelValues(c.remote.Host, lang).Inc()
 				}
-				postsByLanguageIndexed.WithLabelValues(c.remote.Host, lang).Inc()
 			}
 			recs = append(recs, repo.Record{
 				Repo:       models.ID(repoInfo.ID),
