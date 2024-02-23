@@ -22,7 +22,7 @@ create index post_created_at on records_post (parse_timestamp(jsonb_extract_path
 
 create view posts as
   select *, jsonb_extract_path(content, 'langs') as langs,
-    parse_timestamp(jsonb_extract_path_text(content, 'createdAt')) as created_at
+    parse_timestamp(jsonb_extract_path_text(content, 'createdAt')) as content_created_at
     from records_post;
 
 explain select count(*) from posts where langs ? 'uk' and content_created_at > now() - interval '1 day';

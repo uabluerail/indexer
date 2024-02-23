@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"time"
 
 	"github.com/ipfs/go-cid"
 	"github.com/ipld/go-car"
@@ -295,24 +296,26 @@ func GetRev(ctx context.Context, b io.Reader) (string, error) {
 	return s, nil
 }
 
-// func GetLang(ctx context.Context, value json.RawMessage) (string, error) {
-// 	var content map[string]interface{}
-// 	var lang string
-// 	err := json.Unmarshal([]byte(value), &content)
+func GetLang(ctx context.Context, value json.RawMessage) ([]string, time.Time, error) {
+	var content struct {
+		Type  string   `json:"$type"`
+		Langs []string `json:"langs"`
+		Time  string   `json:"createdAt"`
+	}
+	err := json.Unmarshal([]byte(value), &content)
 
-// 	if err != nil {
-// 		return "", fmt.Errorf("failed to extract lang from content")
-// 	}
+	if err != nil {
+		return nil, time.Now(), fmt.Errorf("failed to extract lang from content: %w", err)
+	}
+	if content.Type != "app.bsky.feed.post" {
+		return nil, time.Now(), errors.New("not a post")
+	}
 
-// 	if content["$type"] != "app.bsky.feed.post" ||
-// 		content["langs"] == nil ||
-// 		content["langs"].([]string) == nil ||
-// 		len(content["langs"].([]string)) == 0 {
-// 		return "", errors.New("not a post")
-// 	}
-
-// 	//todo: do something a bit less dumb than that
-// 	lang = content["langs"].([]string)[0]
-
-// 	return lang, nil
-// }
+	var timestamp time.Time
+	if t, err := time.Parse(time.RFC3339, content.Time); err != nil {
+		return nil, time.Now(), fmt.Errorf("failed to extract time from content: %w", err)
+	} else {
+		timestamp = t
+	}
+	return content.Langs, timestamp, nil
+}

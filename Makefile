@@ -39,11 +39,11 @@ logs:
 psql:
 	@docker compose exec -it postgres psql -U postgres -d bluesky
 
-init-db: init.sql
+init-db:
 	@docker compose up -d --build lister
 	@sleep 10
 	@docker compose stop lister
-	@cat db-migration/init.sql | docker exec -i "$$(docker compose ps --format '{{.Names}}' postgres)" psql -U postgres -d bluesky
+	@cat ./db-migration/init.sql | docker exec -i "$$(docker compose ps --format '{{.Names}}' postgres)" psql -U postgres -d bluesky
 
 # ---------------------------- Database ----------------------------
 

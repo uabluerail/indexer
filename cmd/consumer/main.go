@@ -39,6 +39,25 @@ type Config struct {
 
 var config Config
 
+// todo figure out how to use this shit
+
+// type LangTimestampCollector struct {
+// 	metric *prometheus.Desc
+// }
+
+// func (c *LangTimestampCollector) Describe(ch chan<- *prometheus.Desc) {
+// 	ch <- c.metric
+// }
+
+// func (c *LangTimestampCollector) Collect(ch chan<- prometheus.Metric) {
+// 	// your logic should be placed here
+
+// 	t := time.Date(2009, time.November, 10, 23, 0, 0, 12345678, time.UTC)
+// 	s := prometheus.NewMetricWithTimestamp(t, prometheus.MustNewConstMetric(c.metric, prometheus.CounterValue, 123))
+
+// 	ch <- s
+// }
+
 func runMain(ctx context.Context) error {
 	ctx = setupLogging(ctx)
 	log := zerolog.Ctx(ctx)
@@ -68,6 +87,16 @@ func runMain(ctx context.Context) error {
 			return fmt.Errorf("failed ot start a consumer for %q: %w", remote.Host, err)
 		}
 	}
+
+	// collector := &LangTimestampCollector{
+	// 	metric: prometheus.NewDesc(
+	// 		"indexer_posts_by_language_timestamp_count",
+	// 		"Language metric with custom TS",
+	// 		nil,
+	// 		nil,
+	// 	),
+	// }
+	// prometheus.MustRegister(collector)
 
 	log.Info().Msgf("Starting HTTP listener on %q...", config.MetricsPort)
 	http.Handle("/metrics", promhttp.Handler())

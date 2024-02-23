@@ -35,11 +35,6 @@ var recordsInserted = promauto.NewCounter(prometheus.CounterOpts{
 	Help: "Number of records inserted into DB",
 })
 
-// var postsByLanguageIndexed = promauto.NewCounterVec(prometheus.CounterOpts{
-// 	Name: "indexer_posts_by_language_inserted_count",
-// 	Help: "Number of posts inserted into DB by language",
-// }, []string{"lang"})
-
 var workerPoolSize = promauto.NewGauge(prometheus.GaugeOpts{
 	Name: "indexer_workers_count",
 	Help: "Current number of workers running",

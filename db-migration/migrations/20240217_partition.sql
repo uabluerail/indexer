@@ -23,8 +23,22 @@ partition of records for values in ('app.bsky.feed.repost');
 create table records_profile
 partition of records for values in ('app.bsky.actor.profile');
 
+ALTER TABLE records_like
+   ADD CHECK (collection in ('app.bsky.feed.like'));
 
--- SLOW, can run overnight, make sure to run in tmux or eternal terminal
+ALTER TABLE records_post
+   ADD CHECK (collection in ('app.bsky.feed.post'));
+
+ALTER TABLE records_follow
+   ADD CHECK (collection in ('app.bsky.graph.follow'));
+
+ALTER TABLE records_repost
+   ADD CHECK (collection in ('app.bsky.feed.repost'));
+
+ALTER TABLE records_profile
+   ADD CHECK (collection in ('app.bsky.actor.profile'));
+
+-- SLOW, can run overnight
 with moved_rows as (
         delete from records_like r
         where collection <> 'app.bsky.feed.like'
@@ -32,8 +46,8 @@ with moved_rows as (
 )
 insert into records select * from moved_rows;
 
+-- ULTRA SLOW, DO NOT RUN on large DB
 alter table records attach partition records_like for values in ('app.bsky.feed.like');
-
 
 create index idx_like_subject
 on records_like

@@ -19,3 +19,8 @@ var reposDiscovered = promauto.NewCounterVec(prometheus.CounterOpts{
 	Name: "repo_discovered_counter",
 	Help: "Counter of newly discovered repos",
 }, []string{"remote"})
+
+var postsByLanguageIndexed = promauto.NewCounterVec(prometheus.CounterOpts{
+	Name: "indexer_posts_by_language_count",
+	Help: "Number of posts by language",
+}, []string{"remote", "lang"})

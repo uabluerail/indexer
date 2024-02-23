@@ -56,6 +56,11 @@ Restart errors
 
 `update repos set failed_attempts=0, last_error='' where failed_attempts >0;`
 
+# MONITORING
+
+More verbose logging for queries DEBUG1-DEBUG5
+`set client_min_messages = 'DEBUG5';`
+
 Take a look at slow queries
 ```
 SELECT pid, age(clock_timestamp(), query_start), state, query
@@ -63,6 +68,9 @@ FROM pg_stat_activity
 WHERE query != '<IDLE>' AND query NOT ILIKE '%pg_stat_activity%'
 ORDER BY query_start asc;
 ```
+
+Monitor index progress
+`select * from pg_stat_progress_create_index;`
 
 Explore new collection types
 

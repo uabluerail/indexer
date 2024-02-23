@@ -295,6 +295,14 @@ func (c *Consumer) processMessage(ctx context.Context, typ string, r io.Reader, 
 				log.Warn().Msgf("Unexpected key format: %q", k)
 				continue
 			}
+			langs, _, err := repo.GetLang(ctx, v)
+			if err == nil {
+				lang := ""
+				if len(langs) != 0 {
+					lang = langs[0]
+				}
+				postsByLanguageIndexed.WithLabelValues(c.remote.Host, lang).Inc()
+			}
 			recs = append(recs, repo.Record{
 				Repo:       models.ID(repoInfo.ID),
 				Collection: parts[0],

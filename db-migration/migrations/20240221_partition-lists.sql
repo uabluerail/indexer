@@ -7,6 +7,15 @@ partition of records for values in ('app.bsky.graph.listblock');
 create table records_listitem
 partition of records for values in ('app.bsky.graph.listitem');
 
+ALTER TABLE records_list
+   ADD CHECK (collection in ('app.bsky.graph.list'));
+
+ALTER TABLE records_listblock
+   ADD CHECK (collection in ('app.bsky.graph.listblock'));
+
+ALTER TABLE records_listitem
+   ADD CHECK (collection in ('app.bsky.graph.listitem'));
+
 with moved_rows as (
         delete from records_default r
         where collection in ('app.bsky.graph.list', 'app.bsky.graph.listblock', 'app.bsky.graph.listitem')
