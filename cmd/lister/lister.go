@@ -57,13 +57,22 @@ func (l *Lister) run(ctx context.Context) {
 
 			remote := pds.PDS{}
 			if err := db.Model(&remote).
-				Where("last_list is null or last_list < ?", time.Now().Add(-l.listRefreshInterval)).
+				Where("disabled=false and (last_list is null or last_list < ?)", time.Now().Add(-l.listRefreshInterval)).
 				Take(&remote).Error; err != nil {
 				if !errors.Is(err, gorm.ErrRecordNotFound) {
 					log.Error().Err(err).Msgf("Failed to query DB for a PDS to list repos from: %s", err)
 				}
 				break
 			}
+
+			if !pds.IsWhitelisted(remote.Host) {
+				log.Info().Msgf("PDS %q is not whitelisted, disabling it", remote.Host)
+				if err := db.Model(&remote).Where(&pds.PDS{ID: remote.ID}).Updates(&pds.PDS{Disabled: true}).Error; err != nil {
+					log.Error().Err(err).Msgf("Failed to disable PDS %q: %s", remote.Host, err)
+				}
+				break
+			}
+
 			client := xrpcauth.NewAnonymousClient(ctx)
 			client.Host = remote.Host
 

@@ -3,7 +3,7 @@ module github.com/uabluerail/indexer
 go 1.21.0
 
 require (
-	github.com/bluesky-social/indigo v0.0.0-20240213052310-89516fdbfe38
+	github.com/bluesky-social/indigo v0.0.0-20240222031037-d6ed4eb62c91
 	github.com/ipfs/go-cid v0.4.1
 	github.com/ipld/go-car v0.6.2
 	github.com/ipld/go-ipld-prime v0.21.0

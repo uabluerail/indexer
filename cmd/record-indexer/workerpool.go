@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"net/url"
 	"regexp"
 	"strings"
 	"time"
@@ -133,37 +132,32 @@ func (p *WorkerPool) worker(ctx context.Context, signal chan struct{}) {
 	}
 }
 
-var postgresFixRegexp = regexp.MustCompile(`[^\\](\\\\)*(\\u0000)`)
+var postgresFixRegexp = regexp.MustCompile(`([^\\](\\\\)*)(\\u0000)+`)
 
 func escapeNullCharForPostgres(b []byte) []byte {
-	return postgresFixRegexp.ReplaceAll(b, []byte(`$1<0x00>`))
+	return postgresFixRegexp.ReplaceAllFunc(b, func(b []byte) []byte {
+		return bytes.ReplaceAll(b, []byte(`\u0000`), []byte(`<0x00>`))
+	})
 }
 
 func (p *WorkerPool) doWork(ctx context.Context, work WorkItem) error {
 	log := zerolog.Ctx(ctx)
 	defer close(work.signal)
 
-	doc, err := resolver.GetDocument(ctx, work.Repo.DID)
+	u, err := resolver.GetPDSEndpoint(ctx, work.Repo.DID)
 	if err != nil {
-		return fmt.Errorf("resolving did %q: %w", work.Repo.DID, err)
+		return err
 	}
 
-	pdsHost := ""
-	for _, srv := range doc.Service {
-		if srv.Type != "AtprotoPersonalDataServer" {
-			continue
-		}
-		pdsHost = srv.ServiceEndpoint
-	}
-	if pdsHost == "" {
-		return fmt.Errorf("did not find any PDS in DID Document")
-	}
-	u, err := url.Parse(pdsHost)
+	remote, err := pds.EnsureExists(ctx, p.db, u.String())
 	if err != nil {
-		return fmt.Errorf("PDS endpoint (%q) is an invalid URL: %w", pdsHost, err)
+		return fmt.Errorf("failed to get PDS records for %q: %w", u, err)
 	}
-	if u.Host == "" {
-		return fmt.Errorf("PDS endpoint (%q) doesn't have a host part", pdsHost)
+	if work.Repo.PDS != remote.ID {
+		if err := p.db.Model(&work.Repo).Where(&repo.Repo{ID: work.Repo.ID}).Updates(&repo.Repo{PDS: remote.ID}).Error; err != nil {
+			return fmt.Errorf("failed to update repo's PDS to %q: %w", u, err)
+		}
+		work.Repo.PDS = remote.ID
 	}
 
 	client := xrpcauth.NewAnonymousClient(ctx)

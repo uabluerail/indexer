@@ -28,6 +28,7 @@ import (
 	"github.com/uabluerail/indexer/models"
 	"github.com/uabluerail/indexer/pds"
 	"github.com/uabluerail/indexer/repo"
+	"github.com/uabluerail/indexer/util/resolver"
 )
 
 type BadRecord struct {
@@ -245,10 +246,32 @@ func (c *Consumer) processMessage(ctx context.Context, typ string, r io.Reader, 
 		if err != nil {
 			return fmt.Errorf("repo.EnsureExists(%q): %w", payload.Repo, err)
 		}
-		if repoInfo.PDS != models.ID(c.remote.ID) {
-			log.Error().Str("did", payload.Repo).Str("rev", payload.Rev).
-				Msgf("Commit from an incorrect PDS, skipping")
-			return nil
+		if repoInfo.PDS != c.remote.ID {
+			u, err := resolver.GetPDSEndpoint(ctx, payload.Repo)
+			if err == nil {
+				cur, err := pds.EnsureExists(ctx, c.db, u.String())
+				if err == nil {
+					if repoInfo.PDS != cur.ID {
+						// Repo was migrated, lets update our record.
+						err := c.db.Model(repoInfo).Where(&repo.Repo{ID: repoInfo.ID}).Updates(&repo.Repo{PDS: cur.ID}).Error
+						if err != nil {
+							log.Error().Err(err).Msgf("Repo %q was migrated to %q, but updating the repo has failed: %s", payload.Repo, cur.Host, err)
+						}
+					}
+					repoInfo.PDS = cur.ID
+				} else {
+					log.Error().Err(err).Msgf("Failed to get PDS record for %q: %s", u, err)
+				}
+			} else {
+				log.Error().Err(err).Msgf("Failed to get PDS endpoint for repo %q: %s", payload.Repo, err)
+			}
+
+			if repoInfo.PDS != c.remote.ID {
+				// We checked a recent version of DID doc and this is still not a correct PDS.
+				log.Error().Str("did", payload.Repo).Str("rev", payload.Rev).
+					Msgf("Commit from an incorrect PDS, skipping")
+				return nil
+			}
 		}
 		if created {
 			reposDiscovered.WithLabelValues(c.remote.Host).Inc()
@@ -443,8 +466,25 @@ func (c *Consumer) processMessage(ctx context.Context, typ string, r io.Reader, 
 		default:
 			log.Error().Msgf("Unknown #info message %q: %+v", payload.Name, payload)
 		}
+	case "#identity":
+		payload := &comatproto.SyncSubscribeRepos_Identity{}
+		if err := payload.UnmarshalCBOR(r); err != nil {
+			return fmt.Errorf("failed to unmarshal commit: %w", err)
+		}
+
+		exportEventTimestamp(ctx, c.remote.Host, payload.Time)
+		log.Trace().Str("did", payload.Did).Str("type", typ).Int64("seq", payload.Seq).
+			Msgf("#identity message: %s seq=%d time=%q", payload.Did, payload.Seq, payload.Time)
+
+		resolver.Resolver.FlushCacheFor(payload.Did)
+
+		// TODO: fetch DID doc and update PDS field?
 	default:
-		log.Warn().Msgf("Unknown message type received: %s", typ)
+		b, err := io.ReadAll(r)
+		if err != nil {
+			log.Error().Err(err).Msgf("Failed to read message payload: %s", err)
+		}
+		log.Warn().Msgf("Unknown message type received: %s payload=%q", typ, string(b))
 	}
 	return nil
 }

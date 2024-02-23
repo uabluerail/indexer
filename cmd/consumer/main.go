@@ -79,6 +79,9 @@ func runMain(ctx context.Context) error {
 	}
 	// TODO: check for changes and start/stop consumers as needed
 	for _, remote := range remotes {
+		if remote.Disabled {
+			continue
+		}
 		c, err := NewConsumer(ctx, &remote, db)
 		if err != nil {
 			return fmt.Errorf("failed to create a consumer for %q: %w", remote.Host, err)

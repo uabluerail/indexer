@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"slices"
 	"time"
 
 	"github.com/rs/zerolog"
@@ -101,7 +102,11 @@ func (s *Scheduler) fillQueue(ctx context.Context) error {
 	if err := s.db.Find(&remotes).Error; err != nil {
 		return fmt.Errorf("failed to get the list of PDSs: %w", err)
 	}
-	perPDSLimit := 0
+
+	remotes = slices.DeleteFunc(remotes, func(pds pds.PDS) bool {
+		return pds.Disabled
+	})
+	perPDSLimit := maxQueueLen
 	if len(remotes) > 0 {
 		perPDSLimit = maxQueueLen * 2 / len(remotes)
 	}

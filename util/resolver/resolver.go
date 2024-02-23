@@ -3,6 +3,8 @@ package resolver
 import (
 	"context"
 	"errors"
+	"fmt"
+	"net/url"
 	"os"
 
 	"github.com/bluesky-social/indigo/api"
@@ -55,4 +57,30 @@ func (r *fallbackResolver) FlushCacheFor(did string) {
 	for _, res := range r.resolvers {
 		res.FlushCacheFor(did)
 	}
+}
+
+func GetPDSEndpoint(ctx context.Context, did string) (*url.URL, error) {
+	doc, err := GetDocument(ctx, did)
+	if err != nil {
+		return nil, fmt.Errorf("resolving did %q: %w", did, err)
+	}
+
+	pdsHost := ""
+	for _, srv := range doc.Service {
+		if srv.Type != "AtprotoPersonalDataServer" {
+			continue
+		}
+		pdsHost = srv.ServiceEndpoint
+	}
+	if pdsHost == "" {
+		return nil, fmt.Errorf("did not find any PDS in DID Document")
+	}
+	u, err := url.Parse(pdsHost)
+	if err != nil {
+		return nil, fmt.Errorf("PDS endpoint (%q) is an invalid URL: %w", pdsHost, err)
+	}
+	if u.Host == "" {
+		return nil, fmt.Errorf("PDS endpoint (%q) doesn't have a host part", pdsHost)
+	}
+	return u, nil
 }
