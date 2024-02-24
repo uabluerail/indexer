@@ -251,7 +251,7 @@
                         "uid": "${DS_PROMETHEUS}"
                     },
                     "editorMode": "code",
-                    "expr": "5000000+repos_fully_indexed{job=\"db\"}",
+                    "expr": "repos_seen{job=\"db\"}",
                     "instant": false,
                     "legendFormat": "__auto",
                     "range": true,
@@ -318,7 +318,7 @@
                         "uid": "${DS_PROMETHEUS}"
                     },
                     "editorMode": "code",
-                    "expr": "5000000/(rate(repos_fully_indexed{job=\"db\"}[$rate_interval])*60*60)*5",
+                    "expr": "10000000/(rate(repos_fully_indexed{job=\"db\"}[$rate_interval])*60*60)",
                     "instant": false,
                     "legendFormat": "__auto",
                     "range": true,
@@ -447,7 +447,7 @@
                     },
                     "disableTextWrap": false,
                     "editorMode": "builder",
-                    "expr": "sum by(lang) (rate(indexer_posts_by_language_count{lang=~\"bg|cs|da|el|et|fi|ga|hr|hu|lt|lv|nl|ro|sk|sl|sv|uk|uk-UA|pl|de|it\"}[$rate_interval])) * 60 * 60",
+                    "expr": "sum by(lang) (rate(indexer_posts_by_language_count{lang=~\"bg|cs|da|el|et|fi|ga|hr|hu|lt|lv|nl|ro|sk|sl|sv|uk|uk-UA|pl|de|it|DE|English|Fr|mt|nl-NL|pt|sv-FI|sv-SE\"}[$rate_interval])) * 60 * 60",
                     "fullMetaSearch": false,
                     "hide": false,
                     "includeNullMetadata": true,
@@ -458,7 +458,7 @@
                     "useBackend": false
                 }
             ],
-            "title": "Posts by non-colonial language (Europe only)",
+            "title": "Posts by language (Europe only -en)",
             "type": "timeseries"
         },
         {
@@ -580,7 +580,7 @@
                     },
                     "disableTextWrap": false,
                     "editorMode": "builder",
-                    "expr": "sum by(lang) (rate(indexer_posts_by_language_count{lang!~\"en|fr|es|pt|tr|ru|en-GB|de-DE|en-NZ|en-US|es-AR|es-ES|English|fr-CA|fr-FR|ja-JP|pt-BR|zh|Fr|hi|bn|ar\"}[$rate_interval])) * 60 * 60",
+                    "expr": "sum by(lang) (rate(indexer_posts_by_language_count{lang!~\"en|ja\"}[$rate_interval])) * 60 * 60",
                     "fullMetaSearch": false,
                     "hide": false,
                     "includeNullMetadata": true,
@@ -591,7 +591,7 @@
                     "useBackend": false
                 }
             ],
-            "title": "Posts by non-colonial language (Worldwide)",
+            "title": "Posts by language (-en -ja)",
             "type": "timeseries"
         },
         {
@@ -1015,8 +1015,8 @@
                 "auto_min": "10s",
                 "current": {
                     "selected": false,
-                    "text": "1h",
-                    "value": "1h"
+                    "text": "1d",
+                    "value": "1d"
                 },
                 "hide": 0,
                 "label": "Rate interval",
@@ -1043,7 +1043,7 @@
                         "value": "30m"
                     },
                     {
-                        "selected": true,
+                        "selected": false,
                         "text": "1h",
                         "value": "1h"
                     },
@@ -1058,7 +1058,7 @@
                         "value": "12h"
                     },
                     {
-                        "selected": false,
+                        "selected": true,
                         "text": "1d",
                         "value": "1d"
                     }
@@ -1072,13 +1072,13 @@
         ]
     },
     "time": {
-        "from": "now-3h",
+        "from": "now-24h",
         "to": "now"
     },
     "timepicker": {},
     "timezone": "",
     "title": "Bsky Stats",
     "uid": "aXw6dQhSa",
-    "version": 8,
+    "version": 11,
     "weekStart": ""
 }
