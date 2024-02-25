@@ -808,7 +808,8 @@
                         "mode": "absolute",
                         "steps": [
                             {
-                                "color": "green"
+                                "color": "green",
+                                "value": null
                             },
                             {
                                 "color": "red",
@@ -909,7 +910,8 @@
                         "mode": "absolute",
                         "steps": [
                             {
-                                "color": "green"
+                                "color": "green",
+                                "value": null
                             },
                             {
                                 "color": "red",
@@ -1022,9 +1024,29 @@
                         "selected": true,
                         "text": "1d",
                         "value": "1d"
+                    },
+                    {
+                        "selected": false,
+                        "text": "2d",
+                        "value": "2d"
+                    },
+                    {
+                        "selected": false,
+                        "text": "7d",
+                        "value": "7d"
+                    },
+                    {
+                        "selected": false,
+                        "text": "14d",
+                        "value": "14d"
+                    },
+                    {
+                        "selected": false,
+                        "text": "30d",
+                        "value": "30d"
                     }
                 ],
-                "query": "1m,5m,10m,30m,1h,6h,12h,1d",
+                "query": "1m,5m,10m,30m,1h,6h,12h,1d,2d,7d,14d,30d",
                 "queryValue": "",
                 "refresh": 2,
                 "skipUrlSync": false,
@@ -1040,6 +1062,6 @@
     "timezone": "",
     "title": "Bsky Statistics",
     "uid": "aXw6dQhSas",
-    "version": 2,
+    "version": 3,
     "weekStart": ""
 }

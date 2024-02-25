@@ -88,3 +88,17 @@ To allow viewing it on local network:
 `cd exporters`
 
 `sudo ufw allow 9560`
+
+# Install smartmon
+
+`sudo apt install prometheus-node-exporter-collectors smartmontools`
+
+Check if your SSD is compatible (your device name may differ, mine is /dev/sda)
+`sudo smartctl -i /dev/sda`
+
+Enable SMART on your SSD
+`sudo smartctl -s on /dev/sda`
+
+`sudo systemctl restart node_exporter`
+
+`systemctl start  prometheus-node-exporter-smartmon.service`
