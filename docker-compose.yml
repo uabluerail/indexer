@@ -13,7 +13,12 @@ services:
     environment:
       POSTGRES_DB: bluesky
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?specify password in .env file}"
-    command: ["-c", "max_connections=1000"]
+    command: [
+      "-c", "max_connections=1000",
+      "-c", "shared_buffers=8GB",
+      "-c", "work_mem=2GB"
+      ]
+    shm_size: '16gb'
   lister:
     build:
       context: .
