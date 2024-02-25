@@ -1,41 +1,4 @@
 {
-    "__inputs": [
-        {
-            "name": "DS_PROMETHEUS",
-            "label": "Prometheus",
-            "description": "",
-            "type": "datasource",
-            "pluginId": "prometheus",
-            "pluginName": "Prometheus"
-        }
-    ],
-    "__elements": {},
-    "__requires": [
-        {
-            "type": "grafana",
-            "id": "grafana",
-            "name": "Grafana",
-            "version": "10.3.3"
-        },
-        {
-            "type": "datasource",
-            "id": "prometheus",
-            "name": "Prometheus",
-            "version": "1.0.0"
-        },
-        {
-            "type": "panel",
-            "id": "stat",
-            "name": "Stat",
-            "version": ""
-        },
-        {
-            "type": "panel",
-            "id": "timeseries",
-            "name": "Time series",
-            "version": ""
-        }
-    ],
     "annotations": {
         "list": [
             {
@@ -61,14 +24,14 @@
     "editable": true,
     "fiscalYearStartMonth": 0,
     "graphTooltip": 0,
-    "id": null,
+    "id": 6,
     "links": [],
     "liveNow": false,
     "panels": [
         {
             "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "PBFA97CFB590B2093"
             },
             "fieldConfig": {
                 "defaults": {
@@ -180,7 +143,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "${DS_PROMETHEUS}"
+                        "uid": "PBFA97CFB590B2093"
                     },
                     "disableTextWrap": false,
                     "editorMode": "code",
@@ -201,7 +164,7 @@
         {
             "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "PBFA97CFB590B2093"
             },
             "fieldConfig": {
                 "defaults": {
@@ -248,7 +211,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "${DS_PROMETHEUS}"
+                        "uid": "PBFA97CFB590B2093"
                     },
                     "editorMode": "code",
                     "expr": "repos_seen{job=\"db\"}",
@@ -264,7 +227,7 @@
         {
             "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "PBFA97CFB590B2093"
             },
             "fieldConfig": {
                 "defaults": {
@@ -315,7 +278,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "${DS_PROMETHEUS}"
+                        "uid": "PBFA97CFB590B2093"
                     },
                     "editorMode": "code",
                     "expr": "10000000/(rate(repos_fully_indexed{job=\"db\"}[$rate_interval])*60*60)",
@@ -331,7 +294,7 @@
         {
             "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "PBFA97CFB590B2093"
             },
             "fieldConfig": {
                 "defaults": {
@@ -443,7 +406,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "${DS_PROMETHEUS}"
+                        "uid": "PBFA97CFB590B2093"
                     },
                     "disableTextWrap": false,
                     "editorMode": "builder",
@@ -464,7 +427,7 @@
         {
             "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "PBFA97CFB590B2093"
             },
             "fieldConfig": {
                 "defaults": {
@@ -576,7 +539,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "${DS_PROMETHEUS}"
+                        "uid": "PBFA97CFB590B2093"
                     },
                     "disableTextWrap": false,
                     "editorMode": "builder",
@@ -597,7 +560,7 @@
         {
             "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "PBFA97CFB590B2093"
             },
             "fieldConfig": {
                 "defaults": {
@@ -678,7 +641,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "${DS_PROMETHEUS}"
+                        "uid": "PBFA97CFB590B2093"
                     },
                     "disableTextWrap": false,
                     "editorMode": "code",
@@ -699,7 +662,7 @@
         {
             "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "PBFA97CFB590B2093"
             },
             "fieldConfig": {
                 "defaults": {
@@ -780,7 +743,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "${DS_PROMETHEUS}"
+                        "uid": "PBFA97CFB590B2093"
                     },
                     "disableTextWrap": false,
                     "editorMode": "code",
@@ -801,7 +764,7 @@
         {
             "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "PBFA97CFB590B2093"
             },
             "fieldConfig": {
                 "defaults": {
@@ -845,8 +808,7 @@
                         "mode": "absolute",
                         "steps": [
                             {
-                                "color": "green",
-                                "value": null
+                                "color": "green"
                             },
                             {
                                 "color": "red",
@@ -882,7 +844,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "${DS_PROMETHEUS}"
+                        "uid": "PBFA97CFB590B2093"
                     },
                     "disableTextWrap": false,
                     "editorMode": "code",
@@ -903,7 +865,7 @@
         {
             "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "PBFA97CFB590B2093"
             },
             "fieldConfig": {
                 "defaults": {
@@ -947,8 +909,7 @@
                         "mode": "absolute",
                         "steps": [
                             {
-                                "color": "green",
-                                "value": null
+                                "color": "green"
                             },
                             {
                                 "color": "red",
@@ -984,7 +945,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "${DS_PROMETHEUS}"
+                        "uid": "PBFA97CFB590B2093"
                     },
                     "disableTextWrap": false,
                     "editorMode": "code",
@@ -1077,8 +1038,8 @@
     },
     "timepicker": {},
     "timezone": "",
-    "title": "Bsky Stats",
-    "uid": "aXw6dQhSa",
-    "version": 11,
+    "title": "Bsky Statistics",
+    "uid": "aXw6dQhSas",
+    "version": 2,
     "weekStart": ""
 }
