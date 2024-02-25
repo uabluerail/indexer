@@ -38,7 +38,7 @@ type Record struct {
 	Rkey       string          `gorm:"index:idx_repo_record_key,unique,priority:3"`
 	AtRev      string          `gorm:"index:idx_repo_rev"`
 	Content    json.RawMessage `gorm:"type:JSONB"`
-	Deleted    bool
+	Deleted    bool            `gorm:"default:false"`
 }
 
 func AutoMigrate(db *gorm.DB) error {
