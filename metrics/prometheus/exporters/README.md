@@ -56,7 +56,7 @@ After=network-online.target
 User=node_exporter
 Group=node_exporter
 Type=simple
-ExecStart=/usr/local/bin/node_exporter
+ExecStart=/usr/local/bin/node_exporter --collector.textfile.directory=/var/lib/prometheus/node-exporter/
 Restart=always
 RestartSec=3
 
@@ -99,6 +99,38 @@ Check if your SSD is compatible (your device name may differ, mine is /dev/sda)
 Enable SMART on your SSD
 `sudo smartctl -s on /dev/sda`
 
+Check smartmon is configured correctly
+`sudo nano /lib/systemd/system/prometheus-node-exporter-smartmon.service`
+
+It should be like this:
+```
+[Unit]
+Description=Collect SMART metrics for prometheus-node-exporter
+
+[Service]
+Type=oneshot
+Environment=TMPDIR=/var/lib/prometheus/node-exporter
+ExecStart=/bin/bash -c "/usr/share/prometheus-node-exporter-collectors/smartmon.sh | sponge /var/lib/prometheus/node-exporter/smartmon.prom"
+```
+
+Start the service
+`systemctl start prometheus-node-exporter-smartmon.service`
+
+Open node exporter
+`sudo nano /etc/systemd/system/node_exporter.service`
+
+Check it contains the `--collector.textfile.directory` parameter
+```
+ExecStart=/usr/local/bin/node_exporter --collector.textfile.directory=/var/lib/prometheus/node-exporter/
+```
+
+Start the smartmon service
+`systemctl start prometheus-node-exporter-smartmon.service`
+
+Check the file contains correct metrics
+`nano /var/lib/prometheus/node-exporter/smartmon.prom`
+
+Restart the node exporter
 `sudo systemctl restart node_exporter`
 
-`systemctl start  prometheus-node-exporter-smartmon.service`
+Metrics should display on `http://localhost:9100/metrics`

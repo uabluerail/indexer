@@ -633,49 +633,53 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
           "mappings": [],
-          "max": 100,
-          "min": 0,
           "thresholds": {
             "mode": "percentage",
             "steps": [
               {
-                "color": "red",
+                "color": "green",
                 "value": null
               },
               {
-                "color": "#EAB839",
+                "color": "blue",
                 "value": 25
               },
               {
-                "color": "blue",
+                "color": "purple",
                 "value": 50
               },
               {
-                "color": "green",
-                "value": 75
+                "color": "yellow",
+                "value": 70
+              },
+              {
+                "color": "orange",
+                "value": 80
+              },
+              {
+                "color": "red",
+                "value": 90
               }
             ]
           },
-          "unit": "GB/h",
+          "unit": "repo/h",
           "unitScale": true
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 4,
+        "h": 5,
         "w": 3,
         "x": 9,
         "y": 0
       },
-      "id": 25,
-      "links": [],
+      "id": 16,
       "options": {
         "minVizHeight": 75,
         "minVizWidth": 75,
@@ -699,15 +703,141 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "-deriv(node_filesystem_free_bytes{mountpoint='/4t'}[$rate_interval])*60*60/(1024*1024*1024)",
+          "expr": "rate(repos_fully_indexed{job=\"db\"}[$rate_interval])*60*60",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Write speed",
+      "title": "Indexing speed",
       "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "purple",
+                "value": null
+              }
+            ]
+          },
+          "unit": "s",
+          "unitScale": true
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 2,
+        "x": 12,
+        "y": 0
+      },
+      "id": 34,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": true,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "10.3.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(5000000-repos_fully_indexed{job=\"db\"})/rate(repos_fully_indexed{job=\"db\"}[$rate_interval])",
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Time to 5mil",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "unit": "s",
+          "unitScale": true
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 2,
+        "x": 14,
+        "y": 0
+      },
+      "id": 24,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": true,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "10.3.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "-1*1024*1024*1024*1024/deriv(node_filesystem_free_bytes{mountpoint='/4t'}[$rate_interval])",
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Time to 1TB",
+      "type": "stat"
     },
     {
       "datasource": {
@@ -733,9 +863,9 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 4,
-        "w": 3,
-        "x": 12,
+        "h": 5,
+        "w": 2,
+        "x": 16,
         "y": 0
       },
       "id": 7,
@@ -779,12 +909,15 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
           "mappings": [],
+          "max": 100,
+          "min": 0,
           "thresholds": {
             "mode": "percentage",
             "steps": [
@@ -793,27 +926,36 @@
                 "value": null
               },
               {
-                "color": "#EAB839",
-                "value": 30
+                "color": "blue",
+                "value": 25
+              },
+              {
+                "color": "yellow",
+                "value": 50
+              },
+              {
+                "color": "orange",
+                "value": 75
               },
               {
                 "color": "red",
-                "value": 60
+                "value": 90
               }
             ]
           },
-          "unit": "percent",
+          "unit": "GB/h",
           "unitScale": true
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 4,
-        "w": 3,
-        "x": 15,
+        "h": 5,
+        "w": 2,
+        "x": 18,
         "y": 0
       },
-      "id": 28,
+      "id": 25,
+      "links": [],
       "options": {
         "minVizHeight": 75,
         "minVizWidth": 75,
@@ -837,14 +979,14 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "(sum by(instance) (rate(node_cpu_seconds_total{instance=\"host.docker.internal:9100\",job=\"node\", mode=\"iowait\"}[$rate_interval])) / on(instance) group_left sum by (instance)((rate(node_cpu_seconds_total{instance=\"host.docker.internal:9100\",job=\"node\"}[$rate_interval]))))*100",
+          "expr": "-deriv(node_filesystem_free_bytes{mountpoint='/4t'}[$rate_interval])*60*60/(1024*1024*1024)",
           "instant": false,
-          "legendFormat": "Busy Iowait",
+          "legendFormat": "__auto",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Busy Iowait",
+      "title": "Write speed",
       "type": "gauge"
     },
     {
@@ -852,98 +994,95 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
+      "description": "Operating temperature: 0 to 70C\n\nWarranty: 3 years",
       "fieldConfig": {
         "defaults": {
-          "mappings": [],
-          "thresholds": {
-            "mode": "percentage",
-            "steps": [
-              {
-                "color": "blue",
-                "value": null
-              }
-            ]
+          "color": {
+            "mode": "continuous-GrYlRd"
           },
-          "unit": "s",
-          "unitScale": true
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 2,
-        "x": 18,
-        "y": 0
-      },
-      "id": 24,
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": true,
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "10.3.3",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "editorMode": "code",
-          "expr": "-0.6*1024*1024*1024*1024/deriv(node_filesystem_free_bytes{mountpoint='/4t'}[$rate_interval])",
-          "instant": false,
-          "legendFormat": "__auto",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Time to 600GB",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "fieldConfig": {
-        "defaults": {
+          "fieldMinMax": false,
           "mappings": [],
+          "max": 69,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "purple",
+                "color": "green",
                 "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
               }
             ]
           },
-          "unit": "s",
+          "unit": "celsius",
           "unitScale": true
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "B"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "min",
+                "value": 0
+              },
+              {
+                "id": "max",
+                "value": 10
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "continuous-GrYlRd"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "C"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "h"
+              },
+              {
+                "id": "min",
+                "value": 0
+              },
+              {
+                "id": "max",
+                "value": 26280
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
-        "h": 4,
-        "w": 2,
+        "h": 5,
+        "w": 4,
         "x": 20,
         "y": 0
       },
-      "id": 26,
+      "id": 32,
       "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
+        "displayMode": "lcd",
+        "maxVizHeight": 300,
+        "minVizHeight": 16,
+        "minVizWidth": 8,
+        "namePlacement": "auto",
+        "orientation": "horizontal",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -951,9 +1090,9 @@
           "fields": "",
           "values": false
         },
-        "showPercentChange": true,
-        "textMode": "auto",
-        "wideLayout": true
+        "showUnfilled": true,
+        "sizing": "auto",
+        "valueMode": "color"
       },
       "pluginVersion": "10.3.3",
       "targets": [
@@ -962,79 +1101,54 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "editorMode": "code",
-          "expr": "-4*1024*1024*1024*1024/deriv(node_filesystem_free_bytes{mountpoint='/4t'}[$rate_interval])",
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "expr": "smartmon_power_on_hours_raw_value{disk=\"/dev/sda\"}",
+          "fullMetaSearch": false,
+          "hide": false,
+          "includeNullMetadata": true,
           "instant": false,
-          "legendFormat": "__auto",
+          "legendFormat": "power on",
           "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Time to 4TB",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              }
-            ]
-          },
-          "unit": "s",
-          "unitScale": true
+          "refId": "C",
+          "useBackend": false
         },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 2,
-        "x": 22,
-        "y": 0
-      },
-      "id": 27,
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": true,
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "10.3.3",
-      "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "editorMode": "code",
-          "expr": "smartmon_total_lbas_written_raw_value{instance=\"host.docker.internal:9100\",disk=\"/dev/sdb\"} * 512 / (1440 * 1024 * 1024 * 1024 * 1024)",
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "expr": "smartmon_airflow_temperature_cel_raw_value{disk=\"/dev/sda\"}",
+          "fullMetaSearch": false,
+          "includeNullMetadata": true,
           "instant": false,
-          "legendFormat": "__auto",
+          "legendFormat": "disk temperature",
           "range": true,
-          "refId": "A"
+          "refId": "A",
+          "useBackend": false
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "expr": "smartmon_erase_fail_count_total_raw_value{disk=\"/dev/sda\"}",
+          "fullMetaSearch": false,
+          "hide": false,
+          "includeNullMetadata": true,
+          "instant": false,
+          "legendFormat": "bad sectors",
+          "range": true,
+          "refId": "B",
+          "useBackend": false
         }
       ],
-      "title": "Time to Death",
-      "type": "stat"
+      "title": "Disk health",
+      "type": "bargauge"
     },
     {
       "datasource": {
@@ -1117,83 +1231,6 @@
       },
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "percentage",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "#EAB839",
-                "value": 25
-              },
-              {
-                "color": "blue",
-                "value": 50
-              },
-              {
-                "color": "green",
-                "value": 75
-              }
-            ]
-          },
-          "unit": "repo/h",
-          "unitScale": true
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 5,
-        "w": 3,
-        "x": 9,
-        "y": 4
-      },
-      "id": 16,
-      "options": {
-        "minVizHeight": 75,
-        "minVizWidth": 75,
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showThresholdLabels": false,
-        "showThresholdMarkers": true,
-        "sizing": "auto"
-      },
-      "pluginVersion": "10.3.3",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "editorMode": "code",
-          "expr": "rate(repos_fully_indexed{job=\"db\"}[$rate_interval])*60*60",
-          "instant": false,
-          "legendFormat": "__auto",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Indexing speed",
-      "type": "gauge"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "fieldConfig": {
-        "defaults": {
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -1210,10 +1247,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 5,
+        "h": 4,
         "w": 3,
-        "x": 12,
-        "y": 4
+        "x": 9,
+        "y": 5
       },
       "id": 23,
       "options": {
@@ -1270,16 +1307,16 @@
               }
             ]
           },
-          "unit": "none",
+          "unit": "short",
           "unitScale": true
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 5,
-        "w": 3,
-        "x": 15,
-        "y": 4
+        "h": 4,
+        "w": 2,
+        "x": 12,
+        "y": 5
       },
       "id": 12,
       "options": {
@@ -1324,22 +1361,90 @@
       "fieldConfig": {
         "defaults": {
           "mappings": [],
-          "max": 100,
-          "min": 0,
           "thresholds": {
             "mode": "percentage",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              }
+            ]
+          },
+          "unit": "s",
+          "unitScale": true
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 2,
+        "x": 14,
+        "y": 5
+      },
+      "id": 35,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": true,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "10.3.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "-4*1024*1024*1024*1024/deriv(node_filesystem_free_bytes{mountpoint='/4t'}[$rate_interval])",
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Time to 4TB",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
             "steps": [
               {
                 "color": "green",
                 "value": null
               },
               {
-                "color": "orange",
-                "value": 70
+                "color": "blue",
+                "value": 15
+              },
+              {
+                "color": "#EAB839",
+                "value": 30
               },
               {
                 "color": "red",
-                "value": 85
+                "value": 60
               }
             ]
           },
@@ -1349,12 +1454,88 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 5,
+        "h": 4,
+        "w": 2,
+        "x": 16,
+        "y": 5
+      },
+      "id": 28,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
+      },
+      "pluginVersion": "10.3.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(sum by(instance) (rate(node_cpu_seconds_total{instance=\"host.docker.internal:9100\",job=\"node\", mode=\"iowait\"}[$rate_interval])) / on(instance) group_left sum by (instance)((rate(node_cpu_seconds_total{instance=\"host.docker.internal:9100\",job=\"node\"}[$rate_interval]))))*100",
+          "instant": false,
+          "legendFormat": "Busy Iowait",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Busy Iowait",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "description": "Warranty: 1440 TBW total",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "max": 1.315068,
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "blue",
+                "value": 50
+              },
+              {
+                "color": "orange",
+                "value": 75
+              },
+              {
+                "color": "red",
+                "value": 90
+              }
+            ]
+          },
+          "unit": "TBW/d",
+          "unitScale": true
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
         "w": 2,
         "x": 18,
-        "y": 4
+        "y": 5
       },
-      "id": 11,
+      "id": 33,
       "options": {
         "minVizHeight": 75,
         "minVizWidth": 75,
@@ -1378,14 +1559,14 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "(repos_fully_indexed)/(repos_seen)*100",
+          "expr": "(rate(smartmon_total_lbas_written_raw_value{instance=\"host.docker.internal:9100\", disk=\"/dev/sda\"}[1h]) * 512 * 60 * 60 * 24)/(1024*1024*1024*1024)",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Indexed/seen",
+      "title": "Disk Wear",
       "type": "gauge"
     },
     {
@@ -1393,44 +1574,74 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
+      "description": "Warranty: 1440 TBW or 3 years",
       "fieldConfig": {
         "defaults": {
+          "color": {
+            "mode": "continuous-RdYlGr"
+          },
+          "fieldMinMax": false,
           "mappings": [],
-          "max": 100,
-          "min": 0,
+          "max": 26280,
           "thresholds": {
-            "mode": "percentage",
+            "mode": "absolute",
             "steps": [
               {
                 "color": "green",
                 "value": null
               },
               {
-                "color": "orange",
-                "value": 70
-              },
-              {
                 "color": "red",
-                "value": 85
+                "value": 80
               }
             ]
           },
-          "unit": "percent",
+          "unit": "h",
           "unitScale": true
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "B"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "TBW"
+              },
+              {
+                "id": "min",
+                "value": 0
+              },
+              {
+                "id": "max",
+                "value": 1440
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "continuous-GrYlRd"
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
-        "h": 5,
-        "w": 2,
+        "h": 4,
+        "w": 4,
         "x": 20,
-        "y": 4
+        "y": 5
       },
-      "id": 29,
+      "id": 27,
       "options": {
-        "minVizHeight": 75,
-        "minVizWidth": 75,
-        "orientation": "auto",
+        "displayMode": "lcd",
+        "maxVizHeight": 300,
+        "minVizHeight": 16,
+        "minVizWidth": 8,
+        "namePlacement": "auto",
+        "orientation": "horizontal",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -1438,9 +1649,9 @@
           "fields": "",
           "values": false
         },
-        "showThresholdLabels": false,
-        "showThresholdMarkers": true,
-        "sizing": "auto"
+        "showUnfilled": true,
+        "sizing": "auto",
+        "valueMode": "color"
       },
       "pluginVersion": "10.3.3",
       "targets": [
@@ -1449,88 +1660,33 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
+          "disableTextWrap": false,
           "editorMode": "code",
-          "expr": "(repos_fully_indexed)/(5000000)*100",
+          "expr": "1440 / ((rate(smartmon_total_lbas_written_raw_value{instance=\"host.docker.internal:9100\", disk=\"/dev/sda\"}[1h]) * 512 * 60 * 60)/(1024*1024*1024*1024))",
+          "fullMetaSearch": false,
+          "includeNullMetadata": true,
           "instant": false,
-          "legendFormat": "__auto",
+          "legendFormat": "time left (at current rate)",
           "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Indexed/5mil",
-      "type": "gauge"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "mappings": [],
-          "max": 100,
-          "min": 0,
-          "thresholds": {
-            "mode": "percentage",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "orange",
-                "value": 70
-              },
-              {
-                "color": "red",
-                "value": 85
-              }
-            ]
-          },
-          "unit": "percent",
-          "unitScale": true
+          "refId": "A",
+          "useBackend": false
         },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 5,
-        "w": 2,
-        "x": 22,
-        "y": 4
-      },
-      "id": 30,
-      "options": {
-        "minVizHeight": 75,
-        "minVizWidth": 75,
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showThresholdLabels": false,
-        "showThresholdMarkers": true,
-        "sizing": "auto"
-      },
-      "pluginVersion": "10.3.3",
-      "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "(repos_fully_indexed)/(10000000)*100",
+          "expr": "smartmon_total_lbas_written_raw_value{instance=\"host.docker.internal:9100\", disk=\"/dev/sda\"} * 512 / (1024 * 1024 * 1024 * 1024)",
+          "hide": false,
           "instant": false,
-          "legendFormat": "__auto",
+          "legendFormat": "data written (out of 1440 TBW)",
           "range": true,
-          "refId": "A"
+          "refId": "B"
         }
       ],
-      "title": "Indexed/10mil",
-      "type": "gauge"
+      "title": "Time to Death",
+      "type": "bargauge"
     },
     {
       "datasource": {
@@ -1624,6 +1780,8 @@
             "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "left",
+            "axisSoftMax": 80,
+            "axisSoftMin": 0,
             "barAlignment": 0,
             "drawStyle": "line",
             "fillOpacity": 43,
@@ -1713,120 +1871,22 @@
           "range": true,
           "refId": "B",
           "useBackend": false
-        }
-      ],
-      "title": "Firehose us-east (old)",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic",
-            "seriesBy": "max"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "left",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 43,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineStyle": {
-              "fill": "solid"
-            },
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "linearThreshold": 4,
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "normal"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "fieldMinMax": false,
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          },
-          "unit": "commits/s",
-          "unitScale": true
         },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 12,
-        "y": 9
-      },
-      "id": 17,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "right",
-          "showLegend": true,
-          "width": 0
-        },
-        "timezone": [
-          ""
-        ],
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "disableTextWrap": false,
-          "editorMode": "builder",
-          "exemplar": false,
+          "editorMode": "code",
           "expr": "label_replace(sum by(remote) (rate(repo_commits_received_counter{remote=~\"https://agaric.us-west.host.bsky.network|https://blewit.us-west.host.bsky.network|https://boletus.us-west.host.bsky.network|https://chaga.us-west.host.bsky.network|https://conocybe.us-west.host.bsky.network|https://hydnum.us-west.host.bsky.network|https://lepista.us-west.host.bsky.network|https://maitake.us-west.host.bsky.network|https://russula.us-west.host.bsky.network|https://verpa.us-west.host.bsky.network\"}[$rate_interval])), \"remote\", \"$1\", \"remote\", \"https://(.*).us-(west|east).host.bsky.network\")",
-          "format": "time_series",
-          "fullMetaSearch": false,
           "hide": false,
-          "includeNullMetadata": true,
           "instant": false,
-          "interval": "",
-          "legendFormat": "{{remote}}",
+          "legendFormat": "__auto",
           "range": true,
-          "refId": "B",
-          "useBackend": false
+          "refId": "A"
         }
       ],
-      "title": "Firehose us-west (new)",
+      "title": "Firehose",
       "type": "timeseries"
     },
     {
@@ -1845,6 +1905,8 @@
             "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "left",
+            "axisSoftMax": 30,
+            "axisSoftMin": 0,
             "barAlignment": 0,
             "drawStyle": "line",
             "fillOpacity": 0,
@@ -1898,16 +1960,24 @@
               {
                 "id": "unit",
                 "value": "s/s"
+              },
+              {
+                "id": "custom.axisSoftMin",
+                "value": -2
+              },
+              {
+                "id": "custom.axisSoftMax",
+                "value": 2
               }
             ]
           }
         ]
       },
       "gridPos": {
-        "h": 8,
+        "h": 9,
         "w": 12,
-        "x": 0,
-        "y": 18
+        "x": 12,
+        "y": 9
       },
       "id": 13,
       "options": {
@@ -1962,104 +2032,6 @@
         }
       ],
       "title": "Delay-Catchup",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "axisSoftMin": 0,
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "records/s",
-          "unitScale": true
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 18
-      },
-      "id": 4,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "editorMode": "code",
-          "expr": "sum(rate(indexer_records_fetched_count[$rate_interval]))",
-          "instant": false,
-          "legendFormat": "__auto",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Record indexing",
       "type": "timeseries"
     },
     {
@@ -2189,7 +2161,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 26
+        "y": 18
       },
       "id": 2,
       "options": {
@@ -2268,6 +2240,178 @@
             "axisPlacement": "auto",
             "barAlignment": 0,
             "drawStyle": "line",
+            "fillOpacity": 28,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "repos/h",
+          "unitScale": true
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "C"
+            },
+            "properties": [
+              {
+                "id": "custom.lineWidth",
+                "value": 4
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-red",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.stacking",
+                "value": {
+                  "group": "A",
+                  "mode": "none"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 18
+      },
+      "id": 6,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "disableTextWrap": false,
+          "editorMode": "code",
+          "expr": "label_replace(sum by(remote, success) (rate(indexer_repos_fetched_count{success=\"true\", remote=~\"https://amanita.us-east.host.bsky.network|https://enoki.us-east.host.bsky.network|https://inkcap.us-east.host.bsky.network|https://lionsmane.us-east.host.bsky.network|https://oyster.us-east.host.bsky.network|https://morel.us-east.host.bsky.network|https://porcini.us-east.host.bsky.network|https://puffball.us-east.host.bsky.network|https://shiitake.us-east.host.bsky.network\"}[$rate_interval])), \"remote\", \"$1\", \"remote\", \"https://(.*).us-(west|east).host.bsky.network\") * 60 * 60",
+          "fullMetaSearch": false,
+          "includeNullMetadata": true,
+          "instant": false,
+          "legendFormat": "{{remote}}",
+          "range": true,
+          "refId": "A",
+          "useBackend": false
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "disableTextWrap": false,
+          "editorMode": "code",
+          "expr": "label_replace(sum by(remote, success) (rate(indexer_repos_fetched_count{success=~\"true\", remote!~\"https://amanita.us-east.host.bsky.network|https://enoki.us-east.host.bsky.network|https://inkcap.us-east.host.bsky.network|https://lionsmane.us-east.host.bsky.network|https://oyster.us-east.host.bsky.network|https://morel.us-east.host.bsky.network|https://porcini.us-east.host.bsky.network|https://puffball.us-east.host.bsky.network|https://shiitake.us-east.host.bsky.network\"}[$rate_interval])), \"remote\", \"$1\", \"remote\", \"https://(.*).us-(west|east).host.bsky.network\") * 60 * 60",
+          "fullMetaSearch": false,
+          "hide": false,
+          "includeNullMetadata": true,
+          "instant": false,
+          "legendFormat": "{{remote}}",
+          "range": true,
+          "refId": "B",
+          "useBackend": false
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(indexer_repos_fetched_count{success=\"false\"}[$rate_interval]))",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "failures",
+          "range": true,
+          "refId": "C"
+        }
+      ],
+      "title": "Repo fetch rate",
+      "transformations": [
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "true https://([^.]*).*",
+            "renamePattern": "$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "false https://([^.]*).*",
+            "renamePattern": "$1:fail"
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "green",
+            "mode": "fixed"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "axisSoftMin": 0,
+            "barAlignment": 0,
+            "drawStyle": "line",
             "fillOpacity": 0,
             "gradientMode": "none",
             "hideFrom": {
@@ -2297,31 +2441,27 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "purple",
                 "value": null
               }
             ]
           },
-          "unit": "repos/min",
+          "unit": "records/s",
           "unitScale": true
         },
         "overrides": [
           {
             "matcher": {
               "id": "byFrameRefID",
-              "options": "A"
+              "options": "B"
             },
             "properties": [
               {
-                "id": "custom.stacking",
+                "id": "color",
                 "value": {
-                  "group": "A",
-                  "mode": "normal"
+                  "fixedColor": "purple",
+                  "mode": "fixed"
                 }
-              },
-              {
-                "id": "custom.fillOpacity",
-                "value": 28
               }
             ]
           }
@@ -2330,10 +2470,10 @@
       "gridPos": {
         "h": 8,
         "w": 12,
-        "x": 12,
+        "x": 0,
         "y": 26
       },
-      "id": 6,
+      "id": 4,
       "options": {
         "legend": {
           "calcs": [],
@@ -2343,7 +2483,7 @@
         },
         "tooltip": {
           "mode": "multi",
-          "sort": "desc"
+          "sort": "none"
         }
       },
       "targets": [
@@ -2352,16 +2492,13 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "disableTextWrap": false,
           "editorMode": "code",
-          "expr": "label_replace(sum by(remote, success) (rate(indexer_repos_fetched_count{success=\"true\"}[$rate_interval])), \"remote\", \"$1\", \"remote\", \"https://(.*).us-(west|east).host.bsky.network\")*60",
-          "fullMetaSearch": false,
-          "includeNullMetadata": true,
+          "expr": "sum(rate(indexer_records_inserted_count[$rate_interval]))",
+          "hide": false,
           "instant": false,
-          "legendFormat": "{{remote}}",
+          "legendFormat": "Inserted",
           "range": true,
-          "refId": "A",
-          "useBackend": false
+          "refId": "A"
         },
         {
           "datasource": {
@@ -2369,31 +2506,15 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "sum(rate(indexer_repos_fetched_count{success=\"false\"}[$rate_interval]))",
+          "expr": "sum(rate(indexer_records_fetched_count[$rate_interval]))",
           "hide": false,
           "instant": false,
-          "legendFormat": "{{remote}}",
+          "legendFormat": "Fetched",
           "range": true,
           "refId": "B"
         }
       ],
-      "title": "Repo fetch rate",
-      "transformations": [
-        {
-          "id": "renameByRegex",
-          "options": {
-            "regex": "true https://([^.]*).*",
-            "renamePattern": "$1"
-          }
-        },
-        {
-          "id": "renameByRegex",
-          "options": {
-            "regex": "false https://([^.]*).*",
-            "renamePattern": "$1:fail"
-          }
-        }
-      ],
+      "title": "Record indexing",
       "type": "timeseries"
     },
     {
@@ -2490,9 +2611,9 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 24,
-        "x": 0,
-        "y": 34
+        "w": 12,
+        "x": 12,
+        "y": 26
       },
       "id": 18,
       "options": {
@@ -2636,13 +2757,13 @@
     ]
   },
   "time": {
-    "from": "now-3h",
+    "from": "now-6h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Bsky indexer",
   "uid": "aXw6dQhSzs",
-  "version": 8,
+  "version": 38,
   "weekStart": ""
 }
