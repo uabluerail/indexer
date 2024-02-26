@@ -72,7 +72,7 @@ func EnsureExists(ctx context.Context, db *gorm.DB, did string) (*Repo, bool, er
 
 	remote, err := pds.EnsureExists(ctx, db, u.String())
 	if err != nil {
-		return nil, false, fmt.Errorf("failed to get PDS record from DB: %w", err)
+		return nil, false, fmt.Errorf("failed to get PDS record from DB for %q: %w", u.String(), err)
 	}
 	r = Repo{DID: did, PDS: models.ID(remote.ID)}
 	created := false
