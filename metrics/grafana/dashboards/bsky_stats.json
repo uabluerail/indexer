@@ -168,32 +168,54 @@
             },
             "fieldConfig": {
                 "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
                     "mappings": [],
                     "thresholds": {
-                        "mode": "absolute",
+                        "mode": "percentage",
                         "steps": [
                             {
-                                "color": "blue",
+                                "color": "green",
                                 "value": null
+                            },
+                            {
+                                "color": "blue",
+                                "value": 25
+                            },
+                            {
+                                "color": "purple",
+                                "value": 50
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 70
+                            },
+                            {
+                                "color": "orange",
+                                "value": 80
+                            },
+                            {
+                                "color": "red",
+                                "value": 90
                             }
                         ]
                     },
-                    "unit": "short",
+                    "unit": "repo/h",
                     "unitScale": true
                 },
                 "overrides": []
             },
             "gridPos": {
-                "h": 10,
-                "w": 5,
+                "h": 5,
+                "w": 4,
                 "x": 12,
                 "y": 0
             },
-            "id": 23,
+            "id": 28,
             "options": {
-                "colorMode": "value",
-                "graphMode": "area",
-                "justifyMode": "auto",
+                "minVizHeight": 75,
+                "minVizWidth": 75,
                 "orientation": "auto",
                 "reduceOptions": {
                     "calcs": [
@@ -202,9 +224,9 @@
                     "fields": "",
                     "values": false
                 },
-                "showPercentChange": false,
-                "textMode": "auto",
-                "wideLayout": true
+                "showThresholdLabels": false,
+                "showThresholdMarkers": true,
+                "sizing": "auto"
             },
             "pluginVersion": "10.3.3",
             "targets": [
@@ -214,15 +236,15 @@
                         "uid": "PBFA97CFB590B2093"
                     },
                     "editorMode": "code",
-                    "expr": "repos_fully_indexed{job=\"db\"}",
+                    "expr": "rate(repos_fully_indexed{job=\"db\"}[$rate_interval])*60*60",
                     "instant": false,
                     "legendFormat": "__auto",
                     "range": true,
                     "refId": "A"
                 }
             ],
-            "title": "Total Users",
-            "type": "stat"
+            "title": "Registrations rate",
+            "type": "gauge"
         },
         {
             "datasource": {
@@ -248,8 +270,8 @@
             },
             "gridPos": {
                 "h": 10,
-                "w": 3,
-                "x": 17,
+                "w": 4,
+                "x": 16,
                 "y": 0
             },
             "id": 27,
@@ -348,6 +370,69 @@
                 }
             ],
             "title": "Time to 10 milion users",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "PBFA97CFB590B2093"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "blue",
+                                "value": null
+                            }
+                        ]
+                    },
+                    "unit": "short",
+                    "unitScale": true
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 5,
+                "w": 4,
+                "x": 12,
+                "y": 5
+            },
+            "id": 23,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+            },
+            "pluginVersion": "10.3.3",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "PBFA97CFB590B2093"
+                    },
+                    "editorMode": "code",
+                    "expr": "repos_fully_indexed{job=\"db\"}",
+                    "instant": false,
+                    "legendFormat": "__auto",
+                    "range": true,
+                    "refId": "A"
+                }
+            ],
+            "title": "Total Users",
             "type": "stat"
         },
         {
@@ -632,6 +717,8 @@
                         "axisColorMode": "text",
                         "axisLabel": "",
                         "axisPlacement": "auto",
+                        "axisSoftMax": 1000,
+                        "axisSoftMin": 0,
                         "barAlignment": 0,
                         "drawStyle": "line",
                         "fillOpacity": 14,
@@ -734,6 +821,8 @@
                         "axisColorMode": "text",
                         "axisLabel": "",
                         "axisPlacement": "auto",
+                        "axisSoftMax": 200,
+                        "axisSoftMin": 0,
                         "barAlignment": 0,
                         "drawStyle": "line",
                         "fillOpacity": 14,
@@ -836,6 +925,8 @@
                         "axisColorMode": "text",
                         "axisLabel": "",
                         "axisPlacement": "auto",
+                        "axisSoftMax": 1000,
+                        "axisSoftMin": 0,
                         "barAlignment": 0,
                         "drawStyle": "line",
                         "fillOpacity": 14,
@@ -938,6 +1029,8 @@
                         "axisColorMode": "text",
                         "axisLabel": "",
                         "axisPlacement": "auto",
+                        "axisSoftMax": 200,
+                        "axisSoftMin": 0,
                         "barAlignment": 0,
                         "drawStyle": "line",
                         "fillOpacity": 14,
@@ -1025,7 +1118,7 @@
             "type": "timeseries"
         }
     ],
-    "refresh": "5s",
+    "refresh": "1h",
     "revision": 1,
     "schemaVersion": 39,
     "tags": [],
@@ -1037,8 +1130,8 @@
                 "auto_min": "10s",
                 "current": {
                     "selected": false,
-                    "text": "1d",
-                    "value": "1d"
+                    "text": "1h",
+                    "value": "1h"
                 },
                 "hide": 0,
                 "label": "Rate interval",
@@ -1065,7 +1158,7 @@
                         "value": "30m"
                     },
                     {
-                        "selected": false,
+                        "selected": true,
                         "text": "1h",
                         "value": "1h"
                     },
@@ -1080,7 +1173,7 @@
                         "value": "12h"
                     },
                     {
-                        "selected": true,
+                        "selected": false,
                         "text": "1d",
                         "value": "1d"
                     },
@@ -1121,6 +1214,6 @@
     "timezone": "",
     "title": "Bsky Statistics",
     "uid": "aXw6dQhSas",
-    "version": 6,
+    "version": 9,
     "weekStart": ""
 }

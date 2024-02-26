@@ -610,19 +610,6 @@
           "range": true,
           "refId": "B",
           "useBackend": false
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "editorMode": "code",
-          "expr": "sum by(instance) (node_network_receive_bytes_total{instance=\"host.docker.internal:9100\", job=\"node\"})",
-          "hide": false,
-          "instant": false,
-          "legendFormat": "Total traffic",
-          "range": true,
-          "refId": "C"
         }
       ],
       "title": "Network Traffic",
@@ -766,14 +753,14 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "(5000000-repos_fully_indexed{job=\"db\"})/rate(repos_fully_indexed{job=\"db\"}[$rate_interval])",
+          "expr": "(6000000-repos_fully_indexed{job=\"db\"})/rate(repos_fully_indexed{job=\"db\"}[1d])",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Time to 5mil",
+      "title": "Time to 6mil",
       "type": "stat"
     },
     {
@@ -829,7 +816,7 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "-1*1024*1024*1024*1024/deriv(node_filesystem_free_bytes{mountpoint='/4t'}[$rate_interval])",
+          "expr": "-1*1024*1024*1024*1024/deriv(node_filesystem_free_bytes{mountpoint='/4t'}[1d])",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
@@ -1406,7 +1393,7 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "-4*1024*1024*1024*1024/deriv(node_filesystem_free_bytes{mountpoint='/4t'}[$rate_interval])",
+          "expr": "-4*1024*1024*1024*1024/deriv(node_filesystem_free_bytes{mountpoint='/4t'}[1d])",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
@@ -1671,7 +1658,7 @@
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
-          "legendFormat": "time left (at current rate)",
+          "legendFormat": "time left (at current wear rate)",
           "range": true,
           "refId": "A",
           "useBackend": false
@@ -2055,10 +2042,11 @@
             "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
+            "axisSoftMax": 50000,
             "axisSoftMin": 0,
             "barAlignment": 0,
             "drawStyle": "line",
-            "fillOpacity": 0,
+            "fillOpacity": 14,
             "gradientMode": "none",
             "hideFrom": {
               "legend": false,
@@ -2068,7 +2056,7 @@
             "insertNulls": false,
             "lineInterpolation": "linear",
             "lineWidth": 1,
-            "pointSize": 5,
+            "pointSize": 4,
             "scaleDistribution": {
               "type": "linear"
             },
@@ -2076,7 +2064,7 @@
             "spanNulls": false,
             "stacking": {
               "group": "A",
-              "mode": "none"
+              "mode": "normal"
             },
             "thresholdsStyle": {
               "mode": "off"
@@ -2089,35 +2077,17 @@
               {
                 "color": "green",
                 "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
               }
             ]
           },
+          "unit": "posts/h",
           "unitScale": true
         },
         "overrides": [
-          {
-            "matcher": {
-              "id": "byFrameRefID",
-              "options": "A"
-            },
-            "properties": [
-              {
-                "id": "custom.axisPlacement",
-                "value": "right"
-              },
-              {
-                "id": "custom.stacking",
-                "value": {
-                  "group": "A",
-                  "mode": "normal"
-                }
-              },
-              {
-                "id": "custom.fillOpacity",
-                "value": 33
-              }
-            ]
-          },
           {
             "matcher": {
               "id": "byFrameRefID",
@@ -2125,37 +2095,25 @@
             },
             "properties": [
               {
-                "id": "unit",
-                "value": "repos/s"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Fail rate"
-            },
-            "properties": [
+                "id": "custom.axisPlacement",
+                "value": "right"
+              },
               {
-                "id": "color",
-                "value": {
-                  "fixedColor": "red",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Success rate"
-            },
-            "properties": [
+                "id": "custom.fillOpacity",
+                "value": 0
+              },
               {
-                "id": "color",
+                "id": "custom.lineWidth",
+                "value": 4
+              },
+              {
+                "id": "custom.lineStyle",
                 "value": {
-                  "fixedColor": "green",
-                  "mode": "fixed"
+                  "dash": [
+                    0,
+                    10
+                  ],
+                  "fill": "dot"
                 }
               }
             ]
@@ -2168,7 +2126,7 @@
         "x": 0,
         "y": 18
       },
-      "id": 2,
+      "id": 18,
       "options": {
         "legend": {
           "calcs": [],
@@ -2178,7 +2136,7 @@
         },
         "tooltip": {
           "mode": "multi",
-          "sort": "none"
+          "sort": "desc"
         }
       },
       "targets": [
@@ -2187,44 +2145,37 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
+          "disableTextWrap": false,
           "editorMode": "code",
-          "expr": "sum by(state) (indexer_queue_length)",
+          "expr": "sum by(lang) (rate(indexer_posts_by_language_count[$rate_interval])*60*60)",
+          "fullMetaSearch": false,
+          "hide": false,
+          "includeNullMetadata": true,
           "instant": false,
-          "legendFormat": "{{state}}",
+          "legendFormat": "{{lang}}",
           "range": true,
-          "refId": "A"
+          "refId": "A",
+          "useBackend": false
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "editorMode": "code",
-          "expr": "sum by(success) (rate(indexer_repos_indexed_count[$rate_interval]))",
-          "hide": false,
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "expr": "label_replace(sum by(remote) (rate(indexer_posts_by_language_count{lang=\"uk\"}[$rate_interval])), \"\", \"$1\", \"\", \"(.*)\")",
+          "fullMetaSearch": false,
+          "hide": true,
+          "includeNullMetadata": true,
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
-          "refId": "B"
+          "refId": "B",
+          "useBackend": false
         }
       ],
-      "title": "Indexing queue",
-      "transformations": [
-        {
-          "id": "renameByRegex",
-          "options": {
-            "regex": "false",
-            "renamePattern": "Fail rate"
-          }
-        },
-        {
-          "id": "renameByRegex",
-          "options": {
-            "regex": "true",
-            "renamePattern": "Success rate"
-          }
-        }
-      ],
+      "title": "Posts by language",
       "type": "timeseries"
     },
     {
@@ -2243,6 +2194,8 @@
             "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
+            "axisSoftMax": 1000,
+            "axisSoftMin": 0,
             "barAlignment": 0,
             "drawStyle": "line",
             "fillOpacity": 28,
@@ -2405,6 +2358,195 @@
       "fieldConfig": {
         "defaults": {
           "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "axisSoftMax": 1,
+            "axisSoftMin": 0,
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unitScale": true
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "A"
+            },
+            "properties": [
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              },
+              {
+                "id": "custom.stacking",
+                "value": {
+                  "group": "A",
+                  "mode": "normal"
+                }
+              },
+              {
+                "id": "custom.fillOpacity",
+                "value": 33
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "B"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "repos/s"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Fail rate"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Success rate"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 26
+      },
+      "id": 2,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "sum by(state) (indexer_queue_length)",
+          "instant": false,
+          "legendFormat": "{{state}}",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "sum by(success) (rate(indexer_repos_indexed_count[$rate_interval]))",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Indexing queue",
+      "transformations": [
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "false",
+            "renamePattern": "Fail rate"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "true",
+            "renamePattern": "Success rate"
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
             "fixedColor": "green",
             "mode": "fixed"
           },
@@ -2414,6 +2556,7 @@
             "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
+            "axisSoftMax": 1,
             "axisSoftMin": 0,
             "barAlignment": 0,
             "drawStyle": "line",
@@ -2475,7 +2618,7 @@
       "gridPos": {
         "h": 8,
         "w": 12,
-        "x": 0,
+        "x": 12,
         "y": 26
       },
       "id": 4,
@@ -2521,156 +2664,6 @@
       ],
       "title": "Record indexing",
       "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 14,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 4,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "normal"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "posts/h",
-          "unitScale": true
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byFrameRefID",
-              "options": "B"
-            },
-            "properties": [
-              {
-                "id": "custom.axisPlacement",
-                "value": "right"
-              },
-              {
-                "id": "custom.fillOpacity",
-                "value": 0
-              },
-              {
-                "id": "custom.lineWidth",
-                "value": 4
-              },
-              {
-                "id": "custom.lineStyle",
-                "value": {
-                  "dash": [
-                    0,
-                    10
-                  ],
-                  "fill": "dot"
-                }
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 26
-      },
-      "id": 18,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "right",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "disableTextWrap": false,
-          "editorMode": "code",
-          "expr": "sum by(lang) (rate(indexer_posts_by_language_count[$rate_interval])*60*60)",
-          "fullMetaSearch": false,
-          "hide": false,
-          "includeNullMetadata": true,
-          "instant": false,
-          "legendFormat": "{{lang}}",
-          "range": true,
-          "refId": "A",
-          "useBackend": false
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "disableTextWrap": false,
-          "editorMode": "builder",
-          "expr": "label_replace(sum by(remote) (rate(indexer_posts_by_language_count{lang=\"uk\"}[$rate_interval])), \"\", \"$1\", \"\", \"(.*)\")",
-          "fullMetaSearch": false,
-          "hide": true,
-          "includeNullMetadata": true,
-          "instant": false,
-          "legendFormat": "__auto",
-          "range": true,
-          "refId": "B",
-          "useBackend": false
-        }
-      ],
-      "title": "Posts by language",
-      "type": "timeseries"
     }
   ],
   "refresh": "5s",
@@ -2685,8 +2678,8 @@
         "auto_min": "10s",
         "current": {
           "selected": false,
-          "text": "5m",
-          "value": "5m"
+          "text": "30m",
+          "value": "30m"
         },
         "hide": 0,
         "label": "Rate interval",
@@ -2698,7 +2691,7 @@
             "value": "1m"
           },
           {
-            "selected": true,
+            "selected": false,
             "text": "5m",
             "value": "5m"
           },
@@ -2708,7 +2701,7 @@
             "value": "10m"
           },
           {
-            "selected": false,
+            "selected": true,
             "text": "30m",
             "value": "30m"
           },
@@ -2769,6 +2762,6 @@
   "timezone": "",
   "title": "Bsky indexer",
   "uid": "aXw6dQhSzs",
-  "version": 39,
+  "version": 46,
   "weekStart": ""
 }
