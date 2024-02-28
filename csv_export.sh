@@ -45,5 +45,5 @@ EOF
 
 # ------------------------------ Dump handles from plc-mirror ----------------------------------
 
-docker exec -it plc-postgres-1 psql -U postgres -d plc \
+docker exec -t plc-postgres-1 psql -U postgres -d plc \
   -c 'copy (select handle, did as "did:ID" from actors) to stdout with (format csv , header, force_quote ("handle"));' | sed -E -e 's/([^\\])\\",/\1\\\\",/g' > handles.csv

@@ -57,6 +57,7 @@ sqldu:
 
 # ---------------------------- CSV Export ----------------------------
 
+# NOT RECOMMENDED TO RUN for the firts time on hot live db, will chomp all available IO. stop services first
 csv-export:
 	@nohup ./csv_export.sh > csv_export.out &
 

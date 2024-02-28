@@ -201,7 +201,7 @@
                             }
                         ]
                     },
-                    "unit": "repo/h",
+                    "unit": "users/h",
                     "unitScale": true
                 },
                 "overrides": []
@@ -243,7 +243,7 @@
                     "refId": "A"
                 }
             ],
-            "title": "Registrations rate",
+            "title": "Registration rate",
             "type": "gauge"
         },
         {
@@ -1207,13 +1207,13 @@
         ]
     },
     "time": {
-        "from": "now-24h",
+        "from": "now-2d",
         "to": "now"
     },
     "timepicker": {},
     "timezone": "",
     "title": "Bsky Statistics",
     "uid": "aXw6dQhSas",
-    "version": 9,
+    "version": 10,
     "weekStart": ""
 }
