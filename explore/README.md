@@ -90,3 +90,6 @@ select * from records where collection not in (
     ) limit 20;
 
 ```
+
+count listitems
+`select count(*) from listitems where list='at://did:plc:2yqylcqgxier4l5uplp6w6jh/app.bsky.graph.list/3kkud7l6s4v2m';`
