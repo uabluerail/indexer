@@ -110,7 +110,7 @@ func (l *Lister) run(ctx context.Context) {
 					reposDiscovered.WithLabelValues(remote.Host).Inc()
 				}
 
-				if record.FirstRevSinceReset == "" {
+				if err == nil && record.FirstRevSinceReset == "" {
 					// Populate this field in case it's empty, so we don't have to wait for the first firehose event
 					// to trigger a resync.
 					err := l.db.Transaction(func(tx *gorm.DB) error {
