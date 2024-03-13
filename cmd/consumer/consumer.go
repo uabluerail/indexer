@@ -356,6 +356,14 @@ func (c *Consumer) processMessage(ctx context.Context, typ string, r io.Reader, 
 			}
 		}
 
+		err = c.db.Model(&repo.Repo{}).Where(&repo.Repo{ID: repoInfo.ID}).
+			Updates(&repo.Repo{
+				LastFirehoseRev: payload.Rev,
+			}).Error
+		if err != nil {
+			log.Error().Err(err).Msgf("Failed to update last_firehose_rev for %q: %s", repoInfo.DID, err)
+		}
+
 		if payload.TooBig {
 			// Just trigger a re-index by resetting rev.
 			err := c.db.Model(&repo.Repo{}).Where(&repo.Repo{ID: repoInfo.ID}).

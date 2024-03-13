@@ -22,6 +22,7 @@ type Repo struct {
 	DID                   string    `gorm:"uniqueIndex;column:did"`
 	LastIndexedRev        string    `gorm:"index:rev_state_index,expression:(last_indexed_rev < first_rev_since_reset),priority:1;index:was_indexed,expression:(last_indexed_rev is null OR last_indexed_rev = ''),priority:1"`
 	FirstRevSinceReset    string
+	LastFirehoseRev       string
 	FirstCursorSinceReset int64
 	TombstonedAt          time.Time
 	LastIndexAttempt      time.Time
