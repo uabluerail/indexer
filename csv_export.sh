@@ -17,6 +17,8 @@ refresh materialized view export_follows;
 refresh materialized view export_likes;
 \echo Refreshing reply counts...
 refresh materialized view export_replies;
+\echo Refreshing block list...
+refresh materialized view export_blocks;
 \echo Refreshing DID list...
 refresh materialized view export_dids;
 EOF
@@ -31,6 +33,8 @@ docker compose exec -it postgres psql -U postgres -d bluesky \
 docker compose exec -it postgres psql -U postgres -d bluesky \
   -c "copy (select * from export_replies) to stdout with csv header;" > post_counts.csv
 docker compose exec -it postgres psql -U postgres -d bluesky \
+  -c "copy (select * from export_blocks) to stdout with csv header;" > blocks.csv
+docker compose exec -it postgres psql -U postgres -d bluesky \
   -c "copy (select * from export_dids) to stdout with csv header;" > dids.csv
 
 # ------------------------------ Free up space used by materialized views ----------------------------------
@@ -40,6 +44,7 @@ docker compose exec -iT postgres psql -U postgres -d bluesky <<- EOF
 refresh materialized view export_follows with no data;
 refresh materialized view export_likes with no data;
 refresh materialized view export_replies with no data;
+refresh materialized view export_blocks with no data;
 refresh materialized view export_dids with no data;
 EOF
 

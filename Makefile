@@ -59,12 +59,19 @@ sqldu:
 
 # NOT RECOMMENDED TO RUN for the firts time on hot live db, will chomp all available IO. stop services first
 csv-export:
+	@docker compose up -d postgres
+	@sleep 10
 	@nohup ./csv_export.sh > csv_export.out &
+
+csv-iexport:
+	@docker compose up -d postgres
+	@sleep 10
+	@nohup ./csv_iexport.sh > csv_iexport.out &
 
 kill-csv-export:
 	@kill -9 `pgrep csv_export.sh`
 
-csv-compress:
-	@tar cvzf csv_export.tgz dids.csv handles.csv post_counts.csv follows.csv like_counts.csv
+kill-csv-iexport:
+	@kill -9 `pgrep csv_iexport.sh`
 
 # ---------------------------- CSV Export ----------------------------
