@@ -358,7 +358,7 @@ func (c *Consumer) processMessage(ctx context.Context, typ string, r io.Reader, 
 
 		if payload.TooBig {
 			// Just trigger a re-index by resetting rev.
-			err := c.db.Model(r).Where(&repo.Repo{ID: repoInfo.ID}).
+			err := c.db.Model(&repo.Repo{}).Where(&repo.Repo{ID: repoInfo.ID}).
 				Updates(&repo.Repo{
 					FirstCursorSinceReset: c.remote.FirstCursorSinceReset,
 					FirstRevSinceReset:    payload.Rev,
@@ -369,7 +369,7 @@ func (c *Consumer) processMessage(ctx context.Context, typ string, r io.Reader, 
 		}
 
 		if repoInfo.FirstCursorSinceReset != c.remote.FirstCursorSinceReset {
-			err := c.db.Model(r).Where(&repo.Repo{ID: repoInfo.ID}).
+			err := c.db.Model(&repo.Repo{}).Debug().Where(&repo.Repo{ID: repoInfo.ID}).
 				Updates(&repo.Repo{
 					FirstCursorSinceReset: c.remote.FirstCursorSinceReset,
 					FirstRevSinceReset:    payload.Rev,
