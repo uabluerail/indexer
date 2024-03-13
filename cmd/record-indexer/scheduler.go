@@ -119,7 +119,16 @@ func (s *Scheduler) fillQueue(ctx context.Context) error {
 
 		err := s.db.Raw(`SELECT * FROM "repos" WHERE pds = ? AND (last_indexed_rev is null OR last_indexed_rev = '') AND failed_attempts < ?
 UNION
-SELECT * FROM "repos" WHERE pds = ? AND (first_rev_since_reset is not null AND first_rev_since_reset <> '' AND last_indexed_rev < first_rev_since_reset) AND failed_attempts < ? LIMIT ?`,
+SELECT "repos".* FROM "repos" left join "pds" on repos.pds = pds.id WHERE pds = ?
+	AND
+		(
+			(first_rev_since_reset is not null AND first_rev_since_reset <> ''
+				AND last_indexed_rev < first_rev_since_reset)
+			OR
+			("repos".first_cursor_since_reset is not null AND "repos".first_cursor_since_reset <> 0
+				AND "repos".first_cursor_since_reset < "pds".first_cursor_since_reset)
+		)
+	AND failed_attempts < ? LIMIT ?`,
 			remote.ID, maxAttempts, remote.ID, maxAttempts, perPDSLimit).
 			Scan(&repos).Error
 

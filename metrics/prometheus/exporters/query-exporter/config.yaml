@@ -23,7 +23,15 @@ queries:
     interval: 30
     databases: [db1]
     metrics: [repos_fully_indexed]
-    sql: select count(*) as repos_fully_indexed from repos where failed_attempts < 3 and last_indexed_rev <> '' and (last_indexed_rev >= first_rev_since_reset or first_rev_since_reset is null or first_rev_since_reset = '');
+    sql: >
+      select count(*) as repos_fully_indexed
+        from repos left join pds on repos.pds = pds.id
+        where failed_attempts < 3
+          and last_indexed_rev <> ''
+          and (last_indexed_rev >= first_rev_since_reset
+                or first_rev_since_reset is null or first_rev_since_reset = '')
+          and (repos.first_cursor_since_reset >= pds.first_cursor_since_reset
+                or repos.first_cursor_since_reset is null or repos.first_cursor_since_reset = 0);
   query2:
     interval: 30
     databases: [db1]
