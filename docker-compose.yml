@@ -18,6 +18,7 @@ services:
       "-c", "shared_buffers=8GB",
       "-c", "work_mem=2GB",
       "-c", "max_parallel_workers_per_gather=8",
+      "-c", "max_wal_size=8GB"
       ]
     shm_size: '16gb'
   lister:
