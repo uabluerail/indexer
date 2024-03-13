@@ -21,6 +21,7 @@ services:
       "-c", "max_wal_size=8GB"
       ]
     shm_size: '16gb'
+    stop_grace_period: 24h
   lister:
     build:
       context: .
