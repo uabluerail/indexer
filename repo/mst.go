@@ -250,6 +250,8 @@ func parseMap(node datamodel.Node) (map[string]datamodel.Node, error) {
 	return m, nil
 }
 
+var ErrZeroBlocks = fmt.Errorf("zero blocks found")
+
 func GetRev(ctx context.Context, b io.Reader) (string, error) {
 	r, err := car.NewCarReader(b)
 	if err != nil {
@@ -276,6 +278,10 @@ func GetRev(ctx context.Context, b io.Reader) (string, error) {
 		if c.Equals(block.Cid()) {
 			blocks[block.Cid()] = block.RawData()
 		}
+	}
+
+	if len(blocks) == 0 {
+		return "", ErrZeroBlocks
 	}
 
 	builder := basicnode.Prototype.Any.NewBuilder()

@@ -173,7 +173,8 @@ retry:
 	}
 
 	// TODO: add a configuration knob for switching between full and partial fetch.
-	b, err := comatproto.SyncGetRepo(ctx, client, work.Repo.DID, work.Repo.LastIndexedRev)
+	sinceRev := work.Repo.LastIndexedRev
+	b, err := comatproto.SyncGetRepo(ctx, client, work.Repo.DID, sinceRev)
 	if err != nil {
 		if err, ok := errors.As[*xrpc.Error](err); ok {
 			if err.IsThrottled() && err.Ratelimit != nil {
@@ -204,7 +205,10 @@ retry:
 	}
 
 	newRev, err := repo.GetRev(ctx, bytes.NewReader(b))
-	if err != nil {
+	if sinceRev != "" && errors.Is(err, repo.ErrZeroBlocks) {
+		// No new records since the rev we requested above.
+		return nil
+	} else if err != nil {
 		l := 25
 		if len(b) < l {
 			l = len(b)
