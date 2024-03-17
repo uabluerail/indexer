@@ -172,7 +172,8 @@ retry:
 		}
 	}
 
-	b, err := comatproto.SyncGetRepo(ctx, client, work.Repo.DID, "")
+	// TODO: add a configuration knob for switching between full and partial fetch.
+	b, err := comatproto.SyncGetRepo(ctx, client, work.Repo.DID, work.Repo.LastIndexedRev)
 	if err != nil {
 		if err, ok := errors.As[*xrpc.Error](err); ok {
 			if err.IsThrottled() && err.Ratelimit != nil {
