@@ -1,5 +1,21 @@
 # Data consistency model
 
+## Indicators received from upstream
+
+### `rev`
+
+String value, sequencing each commit within a given repo. Each next commit must have a `rev` value strictly greater than the previous commit.
+
+### Cursor
+
+Integer number, sent with each message in firehose. Must be strictly increasing. Messages also contain `rev` value for the corresponding repo event, and we assume that within each repo all commits with smaller `rev` values also were sent with smaller cursor values. That is, cursor sequences all events recorded by the PDS and we assume that events of each given repo are sent in proper order.
+
+#### Cursor reset
+
+"Cursor reset" is a situation where upon reconnecting to a PDS we find out that the PDS is unable to send us all events that happened since the cursor value we have recorded. It is **Very Bad**™, because we have no idea what events did we miss between our recorded cursor and the new cursor that PDS has sent us.
+
+This gap in data from a PDS must be addressed somehow, and most of this document revolves around detecting when a given repo is affected by a cursor reset and how to recover missing data with minimal effort.
+
 ## Available operations
 
 ### Repo fetch
