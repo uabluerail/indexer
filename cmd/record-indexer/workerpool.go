@@ -232,13 +232,17 @@ retry:
 		for _, batch := range splitInBatshes(recs, 500) {
 			result := p.db.Model(&repo.Record{}).
 				Clauses(clause.OnConflict{
-					Where: clause.Where{Exprs: []clause.Expression{clause.Or(
-						clause.Eq{Column: clause.Column{Name: "at_rev", Table: "records"}, Value: nil},
-						clause.Eq{Column: clause.Column{Name: "at_rev", Table: "records"}, Value: ""},
-						clause.Lt{
-							Column: clause.Column{Name: "at_rev", Table: "records"},
-							Value:  clause.Column{Name: "at_rev", Table: "excluded"}},
-					)}},
+					Where: clause.Where{Exprs: []clause.Expression{
+						clause.Neq{
+							Column: clause.Column{Name: "content", Table: "records"},
+							Value:  clause.Column{Name: "content", Table: "excluded"}},
+						clause.Or(
+							clause.Eq{Column: clause.Column{Name: "at_rev", Table: "records"}, Value: nil},
+							clause.Eq{Column: clause.Column{Name: "at_rev", Table: "records"}, Value: ""},
+							clause.Lt{
+								Column: clause.Column{Name: "at_rev", Table: "records"},
+								Value:  clause.Column{Name: "at_rev", Table: "excluded"}},
+						)}},
 					DoUpdates: clause.AssignmentColumns([]string{"content", "at_rev"}),
 					Columns:   []clause.Column{{Name: "repo"}, {Name: "collection"}, {Name: "rkey"}}}).
 				Create(batch)
