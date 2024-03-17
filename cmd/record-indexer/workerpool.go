@@ -186,6 +186,10 @@ retry:
 		reposFetched.WithLabelValues(u.String(), "false").Inc()
 		return fmt.Errorf("failed to fetch repo: %w", err)
 	}
+	if len(b) == 0 {
+		reposFetched.WithLabelValues(u.String(), "false").Inc()
+		return fmt.Errorf("PDS returned zero bytes")
+	}
 	reposFetched.WithLabelValues(u.String(), "true").Inc()
 
 	if work.Repo.PDS == pds.Unknown {
@@ -201,6 +205,11 @@ retry:
 
 	newRev, err := repo.GetRev(ctx, bytes.NewReader(b))
 	if err != nil {
+		l := 25
+		if len(b) < l {
+			l = len(b)
+		}
+		log.Debug().Err(err).Msgf("Total bytes fetched: %d. First few bytes: %q", len(b), string(b[:l]))
 		return fmt.Errorf("failed to read 'rev' from the fetched repo: %w", err)
 	}
 
