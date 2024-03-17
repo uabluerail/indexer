@@ -165,6 +165,8 @@ func (p *WorkerPool) doWork(ctx context.Context, work WorkItem) error {
 	client.Client = util.RobustHTTPClient()
 	client.Client.Timeout = 30 * time.Minute
 
+	knownCursorBeforeFetch := remote.FirstCursorSinceReset
+
 retry:
 	if p.limiter != nil {
 		if err := p.limiter.Wait(ctx, u.String()); err != nil {
@@ -274,6 +276,24 @@ retry:
 		return fmt.Errorf("updating repo rev: %w", err)
 	}
 
+	if work.Repo.FirstCursorSinceReset < knownCursorBeforeFetch {
+		err := p.db.Transaction(func(tx *gorm.DB) error {
+			var currentCursor int64
+			err := tx.Model(&repo.Repo{}).Where(&repo.Repo{ID: work.Repo.ID}).
+				Select("first_cursor_since_reset").First(&currentCursor).Error
+			if err != nil {
+				return fmt.Errorf("failed to get current cursor value: %w", err)
+			}
+			if currentCursor < knownCursorBeforeFetch {
+				return tx.Model(&repo.Repo{}).Where(&repo.Repo{ID: work.Repo.ID}).
+					Updates(&repo.Repo{FirstCursorSinceReset: knownCursorBeforeFetch}).Error
+			}
+			return nil
+		})
+		if err != nil {
+			return fmt.Errorf("updating first_cursor_since_reset: %w", err)
+		}
+	}
 	// TODO: check for records that are missing in the repo download
 	// and mark them as deleted.
 

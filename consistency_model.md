@@ -54,9 +54,13 @@ repo-specific `rev` which is the same with a full repo fetch.
 
 ### Indexing a repo
 
+* Resolve the current PDS hosting the repo and store its `FirstCursorSinceReset` in a variable
+  * If the PDS is different from the one we have on record (i.e., the repo migrated) - update accordingly
 * Fetch the repo
 * Upsert all fetched records
 * Set `LastIndexedRev` to `rev` of the fetched repo
+* In a transaction check if `Repo`.`FirstCursorSinceReset` >= the value stored in the first step, and set it to that value if it isn't.
+  * Assumption here is that a PDS returns strongly consistent responses for a single repo, and fetching the repo will include all records corresponding to a cursor value generated before that.
 
 ### Connecting to firehose
 
@@ -112,5 +116,3 @@ Currently we're simply resetting `FirstRevSinceReset`.
   * `LastIndexedRev` is not set
   * `LastIndexedRev` < `FirstCursorSinceReset`
   * `Repo`.`FirstCursorSinceReset` < `PDS`.`FirstCursorSinceReset`
-    * TODO: avoid reindexing the repo forever if there are no new firehose
-      events for it.
