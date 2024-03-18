@@ -16,6 +16,7 @@ const Unknown models.ID = 0
 var whitelist []string = []string{
 	"https://bsky.social",
 	"https://*.bsky.network",
+	"https://*",
 }
 
 type PDS struct {
