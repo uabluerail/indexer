@@ -665,7 +665,7 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "-1*1024*1024*1024*1024/deriv(node_filesystem_free_bytes{mountpoint='/4t'}[1d])",
+          "expr": "-1*1024*1024*1024*1024/deriv(node_filesystem_free_bytes{mountpoint='/4t', device!=\"/dev/sda\"}[7d])",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
@@ -727,7 +727,7 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "-4*1024*1024*1024*1024/deriv(node_filesystem_free_bytes{mountpoint='/4t'}[1d])",
+          "expr": "-4*1024*1024*1024*1024/deriv(node_filesystem_free_bytes{mountpoint='/4t', device!=\"/dev/sda\"}[7d])",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
@@ -915,7 +915,7 @@
             "uid": "PBFA97CFB590B2093"
           },
           "disableTextWrap": false,
-          "editorMode": "builder",
+          "editorMode": "code",
           "exemplar": false,
           "expr": "rate(node_disk_written_bytes_total{device=\"sda\"}[$rate_interval])",
           "fullMetaSearch": false,
@@ -935,7 +935,7 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "description": "Warranty: 1440 TBW or 3 years",
+      "description": "Warranty: 2400 TBW or 3 years",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -976,7 +976,7 @@
               },
               {
                 "id": "max",
-                "value": 1440
+                "value": 2400
               },
               {
                 "id": "color",
@@ -1022,7 +1022,7 @@
           },
           "disableTextWrap": false,
           "editorMode": "code",
-          "expr": "1440 / ((rate(smartmon_total_lbas_written_raw_value{instance=\"host.docker.internal:9100\", disk=\"/dev/sda\"}[7d]) * 512 * 60 * 60)/(1024*1024*1024*1024))",
+          "expr": "2400 / ((rate(smartmon_total_lbas_written_raw_value{instance=\"host.docker.internal:9100\", disk=\"/dev/sda\"}[7d]) * 512 * 60 * 60)/(1024*1024*1024*1024))",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
@@ -1040,7 +1040,7 @@
           "expr": "smartmon_total_lbas_written_raw_value{instance=\"host.docker.internal:9100\", disk=\"/dev/sda\"} * 512 / (1024 * 1024 * 1024 * 1024)",
           "hide": false,
           "instant": false,
-          "legendFormat": "data written (out of 1440 TBW)",
+          "legendFormat": "data written (out of 2400 TBW)",
           "range": true,
           "refId": "B"
         }
@@ -1207,7 +1207,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "blue",
                 "value": null
               }
             ]
@@ -1346,11 +1346,11 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "description": "1.315068 TBW/d is max for an SSD to survive 3 years.",
+      "description": "2.191781 TBW/d is max for an SSD to survive 3 years.",
       "fieldConfig": {
         "defaults": {
           "mappings": [],
-          "max": 1.315068,
+          "max": 2.191781,
           "min": 0,
           "thresholds": {
             "mode": "percentage",
@@ -1791,6 +1791,10 @@
               },
               {
                 "color": "blue",
+                "value": 300
+              },
+              {
+                "color": "#EAB839",
                 "value": 3600
               },
               {
@@ -2741,7 +2745,7 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "(6000000-repos_fully_indexed{job=\"db\"})/deriv(repos_fully_indexed{job=\"db\"}[1d])",
+          "expr": "(6000000-repos_fully_indexed{job=\"db\"})/deriv(repos_fully_indexed{job=\"db\"}[7d])",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
@@ -2848,6 +2852,6 @@
   "timezone": "",
   "title": "Bsky indexer",
   "uid": "aXw6dQhSzs",
-  "version": 16,
+  "version": 2,
   "weekStart": ""
 }

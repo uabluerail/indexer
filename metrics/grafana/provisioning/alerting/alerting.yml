@@ -1,0 +1,14 @@
+apiVersion: 1
+contactPoints:
+    - orgId: 1
+      name: Uabluerail Discord
+      receivers:
+        - uid: edg8hyxtl9s74f
+          type: discord
+          settings:
+            avatar_url: https://cdn.bsky.app/img/avatar/plain/did:plc:ohvstchboonnmbplvwkl33ko/bafkreibyw6gw5ix6p7uerwurrmimrc3nfxwdba3ainto36kjv3ywhdkjdq@jpeg
+            # message: message template
+            # title: title template
+            url: https://discord.com/api/webhooks/1203054943578226709/lt1thL_pKzfG9fgA7reslqV1iaq9L2uYFxRIBJzxot8GAF1NicvWYHEOeMGKeQQOeOB9
+            use_discord_username: false
+          disableResolveMessage: false
