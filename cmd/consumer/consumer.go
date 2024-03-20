@@ -338,7 +338,7 @@ func (c *Consumer) processMessage(ctx context.Context, typ string, r io.Reader, 
 		if len(recs) == 0 && expectRecords {
 			log.Debug().Int64("seq", payload.Seq).Str("pds", c.remote.Host).Msgf("len(recs) == 0")
 		}
-		if len(recs) > 0 || expectRecords {
+		if len(recs) > 0 {
 			err = c.db.Model(&repo.Record{}).
 				Clauses(clause.OnConflict{
 					Where: clause.Where{Exprs: []clause.Expression{clause.Or(
