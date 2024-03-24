@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"net/url"
 	"path"
-	"regexp"
 	"strings"
 	"time"
 
@@ -28,6 +27,7 @@ import (
 	"github.com/uabluerail/indexer/models"
 	"github.com/uabluerail/indexer/pds"
 	"github.com/uabluerail/indexer/repo"
+	"github.com/uabluerail/indexer/util/fix"
 	"github.com/uabluerail/indexer/util/resolver"
 )
 
@@ -211,12 +211,6 @@ func (c *Consumer) updateCursor(ctx context.Context, seq int64) error {
 
 }
 
-var postgresFixRegexp = regexp.MustCompile(`[^\\](\\\\)*(\\u0000)`)
-
-func escapeNullCharForPostgres(b []byte) []byte {
-	return postgresFixRegexp.ReplaceAll(b, []byte(`$1<0x00>`))
-}
-
 func (c *Consumer) processMessage(ctx context.Context, typ string, r io.Reader, first bool) error {
 	log := zerolog.Ctx(ctx)
 
@@ -331,7 +325,7 @@ func (c *Consumer) processMessage(ctx context.Context, typ string, r io.Reader, 
 				// XXX: proper replacement of \u0000 would require full parsing of JSON
 				// and recursive iteration over all string values, but this
 				// should work well enough for now.
-				Content: escapeNullCharForPostgres(v),
+				Content: fix.EscapeNullCharForPostgres(v),
 				AtRev:   payload.Rev,
 			})
 		}

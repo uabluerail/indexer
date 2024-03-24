@@ -21,6 +21,7 @@ import (
 	"github.com/uabluerail/indexer/models"
 	"github.com/uabluerail/indexer/pds"
 	"github.com/uabluerail/indexer/repo"
+	"github.com/uabluerail/indexer/util/fix"
 	"github.com/uabluerail/indexer/util/resolver"
 )
 
@@ -132,14 +133,6 @@ func (p *WorkerPool) worker(ctx context.Context, signal chan struct{}) {
 	}
 }
 
-var postgresFixRegexp = regexp.MustCompile(`([^\\](\\\\)*)(\\u0000)+`)
-
-func escapeNullCharForPostgres(b []byte) []byte {
-	return postgresFixRegexp.ReplaceAllFunc(b, func(b []byte) []byte {
-		return bytes.ReplaceAll(b, []byte(`\u0000`), []byte(`<0x00>`))
-	})
-}
-
 func (p *WorkerPool) doWork(ctx context.Context, work WorkItem) error {
 	log := zerolog.Ctx(ctx)
 	defer close(work.signal)
@@ -244,7 +237,7 @@ retry:
 			// XXX: proper replacement of \u0000 would require full parsing of JSON
 			// and recursive iteration over all string values, but this
 			// should work well enough for now.
-			Content: escapeNullCharForPostgres(v),
+			Content: fix.EscapeNullCharForPostgres(v),
 			AtRev:   newRev,
 		})
 	}

@@ -1,4 +1,4 @@
-package main
+package fix
 
 import (
 	"testing"
@@ -18,7 +18,7 @@ func TestPostgresFix(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		got := escapeNullCharForPostgres([]byte(tc.input))
+		got := EscapeNullCharForPostgres([]byte(tc.input))
 		if string(got) != tc.want {
 			t.Errorf("escapeNullCharForPostgres(%s) = %s, want %s", tc.input, string(got), tc.want)
 		}
