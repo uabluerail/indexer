@@ -66,7 +66,7 @@ csv-export:
 csv-iexport:
 	@docker compose up -d postgres
 	@sleep 10
-	@nohup ./csv_iexport.sh > csv_iexport.out &
+	@sudo nohup ./csv_iexport.sh > csv_iexport.out &
 
 kill-csv-export:
 	@kill -9 `pgrep csv_export.sh`
