@@ -54,23 +54,8 @@ func runMain(ctx context.Context) error {
 	}
 	log.Debug().Msgf("DB connection established")
 
-	remotes := []pds.PDS{}
-	if err := db.Find(&remotes).Error; err != nil {
-		return fmt.Errorf("listing known PDSs: %w", err)
-	}
-	// TODO: check for changes and start/stop consumers as needed
-	for _, remote := range remotes {
-		if remote.Disabled {
-			continue
-		}
-		c, err := NewConsumer(ctx, &remote, db)
-		if err != nil {
-			return fmt.Errorf("failed to create a consumer for %q: %w", remote.Host, err)
-		}
-		if err := c.Start(ctx); err != nil {
-			return fmt.Errorf("failed ot start a consumer for %q: %w", remote.Host, err)
-		}
-	}
+	consumersCh := make(chan struct{})
+	go runConsumers(ctx, db, consumersCh)
 
 	log.Info().Msgf("Starting HTTP listener on %q...", config.MetricsPort)
 	http.Handle("/metrics", promhttp.Handler())
@@ -85,7 +70,90 @@ func runMain(ctx context.Context) error {
 			return fmt.Errorf("HTTP server shutdown failed: %w", err)
 		}
 	}
+	log.Info().Msgf("Waiting for consumers to stop...")
+	<-consumersCh
 	return <-errCh
+}
+
+func runConsumers(ctx context.Context, db *gorm.DB, doneCh chan struct{}) {
+	log := zerolog.Ctx(ctx)
+	defer close(doneCh)
+
+	type consumerHandle struct {
+		cancel   context.CancelFunc
+		consumer *Consumer
+	}
+
+	running := map[string]consumerHandle{}
+
+	ticker := time.NewTicker(time.Minute)
+	defer ticker.Stop()
+	t := make(chan time.Time, 1)
+	t <- time.Now()
+
+	for {
+		select {
+		case <-t:
+			remotes := []pds.PDS{}
+			if err := db.Find(&remotes).Error; err != nil {
+				log.Error().Err(err).Msgf("Failed to get a list of known PDSs: %s", err)
+				break
+			}
+
+			shouldBeRunning := map[string]pds.PDS{}
+			for _, remote := range remotes {
+				if remote.Disabled {
+					continue
+				}
+				shouldBeRunning[remote.Host] = remote
+			}
+
+			for host, handle := range running {
+				if _, found := shouldBeRunning[host]; found {
+					continue
+				}
+				handle.cancel()
+				_ = handle.consumer.Wait(ctx)
+				delete(running, host)
+			}
+
+			for host, remote := range shouldBeRunning {
+				if _, found := running[host]; found {
+					continue
+				}
+				subCtx, cancel := context.WithCancel(ctx)
+
+				c, err := NewConsumer(subCtx, &remote, db)
+				if err != nil {
+					log.Error().Err(err).Msgf("Failed to create a consumer for %q: %s", remote.Host, err)
+					continue
+				}
+				if err := c.Start(ctx); err != nil {
+					log.Error().Err(err).Msgf("Failed ot start a consumer for %q: %s", remote.Host, err)
+					continue
+				}
+
+				running[host] = consumerHandle{
+					cancel:   cancel,
+					consumer: c,
+				}
+			}
+
+		case <-ctx.Done():
+			for host, handle := range running {
+				handle.cancel()
+				_ = handle.consumer.Wait(ctx)
+				delete(running, host)
+			}
+
+		case v := <-ticker.C:
+			// Non-blocking send.
+			select {
+			case t <- v:
+			default:
+			}
+		}
+	}
 }
 
 func main() {

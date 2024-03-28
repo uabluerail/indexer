@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -41,8 +42,9 @@ type BadRecord struct {
 }
 
 type Consumer struct {
-	db     *gorm.DB
-	remote pds.PDS
+	db      *gorm.DB
+	remote  pds.PDS
+	running chan struct{}
 
 	lastCursorPersist time.Time
 }
@@ -53,8 +55,9 @@ func NewConsumer(ctx context.Context, remote *pds.PDS, db *gorm.DB) (*Consumer, 
 	}
 
 	return &Consumer{
-		db:     db,
-		remote: *remote,
+		db:      db,
+		remote:  *remote,
+		running: make(chan struct{}),
 	}, nil
 }
 
@@ -63,15 +66,40 @@ func (c *Consumer) Start(ctx context.Context) error {
 	return nil
 }
 
+func (c *Consumer) Wait(ctx context.Context) error {
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-c.running:
+		// Channel got closed
+		return nil
+	}
+}
+
 func (c *Consumer) run(ctx context.Context) {
 	log := zerolog.Ctx(ctx).With().Str("pds", c.remote.Host).Logger()
 	ctx = log.WithContext(ctx)
 
+	defer close(c.running)
+
 	for {
-		if err := c.runOnce(ctx); err != nil {
-			log.Error().Err(err).Msgf("Consumer of %q failed (will be restarted): %s", c.remote.Host, err)
+		select {
+		case <-c.running:
+			log.Error().Msgf("Attempt to start previously stopped consumer")
+			return
+		case <-ctx.Done():
+			log.Info().Msgf("Consumer stopped")
+			lastEventTimestamp.DeletePartialMatch(prometheus.Labels{"remote": c.remote.Host})
+			eventCounter.DeletePartialMatch(prometheus.Labels{"remote": c.remote.Host})
+			reposDiscovered.DeletePartialMatch(prometheus.Labels{"remote": c.remote.Host})
+			postsByLanguageIndexed.DeletePartialMatch(prometheus.Labels{"remote": c.remote.Host})
+			return
+		default:
+			if err := c.runOnce(ctx); err != nil {
+				log.Error().Err(err).Msgf("Consumer of %q failed (will be restarted): %s", c.remote.Host, err)
+			}
+			time.Sleep(time.Second)
 		}
-		time.Sleep(time.Second)
 	}
 }
 
@@ -120,59 +148,64 @@ func (c *Consumer) runOnce(ctx context.Context) error {
 
 	first := true
 	for {
-		_, b, err := conn.ReadMessage()
-		if err != nil {
-			return fmt.Errorf("websocket.ReadMessage: %w", err)
-		}
-
-		r := bytes.NewReader(b)
-		proto := basicnode.Prototype.Any
-		headerNode := proto.NewBuilder()
-		if err := (&dagcbor.DecodeOptions{DontParseBeyondEnd: true}).Decode(headerNode, r); err != nil {
-			return fmt.Errorf("unmarshaling message header: %w", err)
-		}
-		header, err := parseHeader(headerNode.Build())
-		if err != nil {
-			return fmt.Errorf("parsing message header: %w", err)
-		}
-		switch header.Op {
-		case 1:
-			if err := c.processMessage(ctx, header.Type, r, first); err != nil {
-				const maxBadRecords = 500
-				var count int64
-				if err2 := c.db.Model(&BadRecord{}).Where(&BadRecord{PDS: c.remote.ID}).Count(&count).Error; err2 != nil {
-					return err
-				}
-
-				if count >= maxBadRecords {
-					return err
-				}
-
-				log.Error().Err(err).Str("pds", c.remote.Host).Msgf("Failed to process message at cursor %d: %s", c.remote.Cursor, err)
-				err := c.db.Create(&BadRecord{
-					PDS:     c.remote.ID,
-					Cursor:  c.remote.Cursor,
-					Error:   err.Error(),
-					Content: b,
-				}).Error
-				if err != nil {
-					return fmt.Errorf("failed to store bad message: %s", err)
-				}
-			}
-		case -1:
-			bodyNode := proto.NewBuilder()
-			if err := (&dagcbor.DecodeOptions{DontParseBeyondEnd: true, AllowLinks: true}).Decode(bodyNode, r); err != nil {
-				return fmt.Errorf("unmarshaling message body: %w", err)
-			}
-			body, err := parseError(bodyNode.Build())
-			if err != nil {
-				return fmt.Errorf("parsing error payload: %w", err)
-			}
-			return &body
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
 		default:
-			log.Warn().Msgf("Unknown 'op' value received: %d", header.Op)
+			_, b, err := conn.ReadMessage()
+			if err != nil {
+				return fmt.Errorf("websocket.ReadMessage: %w", err)
+			}
+
+			r := bytes.NewReader(b)
+			proto := basicnode.Prototype.Any
+			headerNode := proto.NewBuilder()
+			if err := (&dagcbor.DecodeOptions{DontParseBeyondEnd: true}).Decode(headerNode, r); err != nil {
+				return fmt.Errorf("unmarshaling message header: %w", err)
+			}
+			header, err := parseHeader(headerNode.Build())
+			if err != nil {
+				return fmt.Errorf("parsing message header: %w", err)
+			}
+			switch header.Op {
+			case 1:
+				if err := c.processMessage(ctx, header.Type, r, first); err != nil {
+					const maxBadRecords = 500
+					var count int64
+					if err2 := c.db.Model(&BadRecord{}).Where(&BadRecord{PDS: c.remote.ID}).Count(&count).Error; err2 != nil {
+						return err
+					}
+
+					if count >= maxBadRecords {
+						return err
+					}
+
+					log.Error().Err(err).Str("pds", c.remote.Host).Msgf("Failed to process message at cursor %d: %s", c.remote.Cursor, err)
+					err := c.db.Create(&BadRecord{
+						PDS:     c.remote.ID,
+						Cursor:  c.remote.Cursor,
+						Error:   err.Error(),
+						Content: b,
+					}).Error
+					if err != nil {
+						return fmt.Errorf("failed to store bad message: %s", err)
+					}
+				}
+			case -1:
+				bodyNode := proto.NewBuilder()
+				if err := (&dagcbor.DecodeOptions{DontParseBeyondEnd: true, AllowLinks: true}).Decode(bodyNode, r); err != nil {
+					return fmt.Errorf("unmarshaling message body: %w", err)
+				}
+				body, err := parseError(bodyNode.Build())
+				if err != nil {
+					return fmt.Errorf("parsing error payload: %w", err)
+				}
+				return &body
+			default:
+				log.Warn().Msgf("Unknown 'op' value received: %d", header.Op)
+			}
+			first = false
 		}
-		first = false
 	}
 }
 
