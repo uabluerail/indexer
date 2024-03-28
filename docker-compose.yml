@@ -73,6 +73,7 @@ services:
     environment:
       CONSUMER_METRICS_PORT: '8080'
       CONSUMER_POSTGRES_URL: "postgres://postgres:${POSTGRES_PASSWORD}@db/bluesky?sslmode=disable"
+      # CONSUMER_RELAYS: "https://bsky.network"  # Effectively doubles inbound network traffic. Set this in docker-compose.override.yml if needed.
       ATP_PLC_ADDR: "${PLC_ADDRESS:-https://plc.directory}"
     ports:
       - "0.0.0.0:11002:8080"
