@@ -7,6 +7,7 @@ services:
     volumes:
       - "./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml"
       - "${PROMETHEUS_DATA_DIR:?specify data dir in .env file}:/prometheus"
+    restart: always
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
@@ -15,6 +16,7 @@ services:
     build:
       context: ./grafana
     user: root
+    restart: always
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
