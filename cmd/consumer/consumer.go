@@ -78,6 +78,11 @@ func (c *Consumer) run(ctx context.Context) {
 func (c *Consumer) runOnce(ctx context.Context) error {
 	log := zerolog.Ctx(ctx)
 
+	log.Info().
+		Int64("cursor", c.remote.Cursor).
+		Int64("first_cursor_since_reset", c.remote.FirstCursorSinceReset).
+		Msgf("Connecting to firehose of %s...", c.remote.Host)
+
 	addr, err := url.Parse(c.remote.Host)
 	if err != nil {
 		return fmt.Errorf("parsing URL %q: %s", c.remote.Host, err)
@@ -174,6 +179,11 @@ func (c *Consumer) runOnce(ctx context.Context) error {
 func (c *Consumer) checkForCursorReset(ctx context.Context, seq int64) error {
 	// hack to detect cursor resets upon connection for implementations
 	// that don't emit an explicit #info when connecting with an outdated cursor.
+
+	zerolog.Ctx(ctx).Info().
+		Int64("cursor", c.remote.Cursor).
+		Int64("remote_cursor", seq).
+		Msgf("Checking for possible cursor reset")
 
 	if seq == c.remote.Cursor+1 {
 		// No reset.
