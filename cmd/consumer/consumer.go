@@ -100,6 +100,7 @@ func (c *Consumer) runOnce(ctx context.Context) error {
 	defer close(ch)
 	go func() {
 		t := time.NewTicker(time.Minute)
+		defer t.Stop()
 		for {
 			select {
 			case <-ch:
