@@ -6,6 +6,13 @@ services:
     volumes:
       - "${DATA_DIR:?specify data dir in .env file}/postgres:/var/lib/postgresql/data:rw"
     restart: always
+    healthcheck:
+      test: pg_isready -h localhost -U postgres
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 1h
+      start_interval: 3s
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
@@ -36,6 +43,9 @@ services:
           memory: 1G
     links:
       - postgres:db
+    depends_on:
+      postgres:
+        condition: service_healthy
     environment:
       LISTER_METRICS_PORT: '8080'
       LISTER_POSTGRES_URL: "postgres://postgres:${POSTGRES_PASSWORD}@db/bluesky?sslmode=disable"
@@ -57,6 +67,9 @@ services:
           memory: 1G
     links:
       - postgres:db
+    depends_on:
+      postgres:
+        condition: service_healthy
     environment:
       CONSUMER_METRICS_PORT: '8080'
       CONSUMER_POSTGRES_URL: "postgres://postgres:${POSTGRES_PASSWORD}@db/bluesky?sslmode=disable"
@@ -79,6 +92,9 @@ services:
           memory: 4G
     links:
       - postgres:db
+    depends_on:
+      postgres:
+        condition: service_healthy
     dns:
       - 1.1.1.1
       - 8.8.8.8
@@ -103,3 +119,6 @@ services:
       - "0.0.0.0:9560:9560"
     links:
       - postgres:postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
