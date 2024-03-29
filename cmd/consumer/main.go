@@ -137,10 +137,12 @@ func runConsumers(ctx context.Context, db *gorm.DB, doneCh chan struct{}) {
 				c, err := NewConsumer(subCtx, &remote, db)
 				if err != nil {
 					log.Error().Err(err).Msgf("Failed to create a consumer for %q: %s", remote.Host, err)
+					cancel()
 					continue
 				}
-				if err := c.Start(ctx); err != nil {
+				if err := c.Start(subCtx); err != nil {
 					log.Error().Err(err).Msgf("Failed ot start a consumer for %q: %s", remote.Host, err)
+					cancel()
 					continue
 				}
 
