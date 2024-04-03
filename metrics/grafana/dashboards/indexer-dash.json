@@ -939,35 +939,54 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "mode": "continuous-GrYlRd"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "gradientMode": "scheme",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 3,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "mappings": [],
           "thresholds": {
-            "mode": "percentage",
+            "mode": "absolute",
             "steps": [
               {
                 "color": "green",
                 "value": null
               },
               {
-                "color": "blue",
-                "value": 25
-              },
-              {
-                "color": "yellow",
-                "value": 50
-              },
-              {
-                "color": "orange",
-                "value": 75
-              },
-              {
                 "color": "red",
-                "value": 90
+                "value": 80
               }
             ]
-          },
-          "unit": "percent"
+          }
         },
         "overrides": []
       },
@@ -979,19 +998,16 @@
       },
       "id": 39,
       "options": {
-        "minVizHeight": 75,
-        "minVizWidth": 75,
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
+        "legend": {
+          "calcs": [],
+          "displayMode": "hidden",
+          "placement": "right",
+          "showLegend": false
         },
-        "showThresholdLabels": false,
-        "showThresholdMarkers": true,
-        "sizing": "auto"
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       },
       "pluginVersion": "10.4.1",
       "targets": [
@@ -1014,7 +1030,7 @@
         }
       ],
       "title": "IO time",
-      "type": "gauge"
+      "type": "timeseries"
     },
     {
       "datasource": {
@@ -2938,6 +2954,6 @@
   "timezone": "",
   "title": "Bsky indexer",
   "uid": "aXw6dQhSzs",
-  "version": 4,
+  "version": 5,
   "weekStart": ""
 }
