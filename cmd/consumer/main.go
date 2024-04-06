@@ -14,6 +14,7 @@ import (
 	"runtime"
 	"runtime/debug"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -153,11 +154,17 @@ func runConsumers(ctx context.Context, db *gorm.DB, doneCh chan struct{}) {
 			}
 
 		case <-ctx.Done():
+			var wg sync.WaitGroup
 			for host, handle := range running {
-				handle.cancel()
-				_ = handle.consumer.Wait(ctx)
+				wg.Add(1)
+				go func(handle consumerHandle) {
+					handle.cancel()
+					_ = handle.consumer.Wait(ctx)
+					wg.Done()
+				}(handle)
 				delete(running, host)
 			}
+			wg.Wait()
 
 		case v := <-ticker.C:
 			// Non-blocking send.
