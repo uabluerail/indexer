@@ -171,6 +171,11 @@ func (c *Consumer) runOnce(ctx context.Context) error {
 			switch header.Op {
 			case 1:
 				if err := c.processMessage(ctx, header.Type, r, first); err != nil {
+					if ctx.Err() != nil {
+						// We're shutting down, so the error is most likely due to that.
+						return err
+					}
+
 					const maxBadRecords = 500
 					var count int64
 					if err2 := c.db.Model(&BadRecord{}).Where(&BadRecord{PDS: c.remote.ID}).Count(&count).Error; err2 != nil {
