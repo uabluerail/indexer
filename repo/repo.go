@@ -28,6 +28,7 @@ type Repo struct {
 	LastIndexAttempt      time.Time
 	LastError             string
 	FailedAttempts        int `gorm:"default:0"`
+	LastKnownKey          string
 }
 
 type Record struct {
@@ -66,7 +67,7 @@ func EnsureExists(ctx context.Context, db *gorm.DB, did string) (*Repo, bool, er
 	//     if we do - compare PDS IDs
 	//        if they don't match - also reset FirstRevSinceReset
 
-	u, err := resolver.GetPDSEndpoint(ctx, did)
+	u, pubKey, err := resolver.GetPDSEndpointAndPublicKey(ctx, did)
 	if err != nil {
 		return nil, false, fmt.Errorf("fetching DID Document: %w", err)
 	}
@@ -75,7 +76,11 @@ func EnsureExists(ctx context.Context, db *gorm.DB, did string) (*Repo, bool, er
 	if err != nil {
 		return nil, false, fmt.Errorf("failed to get PDS record from DB for %q: %w", u.String(), err)
 	}
-	r = Repo{DID: did, PDS: models.ID(remote.ID)}
+	r = Repo{
+		DID:          did,
+		PDS:          models.ID(remote.ID),
+		LastKnownKey: pubKey,
+	}
 	created := false
 	err = db.Transaction(func(tx *gorm.DB) error {
 		result := tx.Model(&r).Where(&Repo{DID: r.DID}).FirstOrCreate(&r)

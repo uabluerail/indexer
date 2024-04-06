@@ -9,6 +9,8 @@ import (
 	"io"
 	"time"
 
+	"github.com/rs/zerolog"
+
 	"github.com/ipfs/go-cid"
 	"github.com/ipld/go-car"
 	"github.com/ipld/go-ipld-prime/codec/dagcbor"
@@ -17,7 +19,11 @@ import (
 	"github.com/ipld/go-ipld-prime/node/basicnode"
 )
 
-func ExtractRecords(ctx context.Context, b io.Reader) (map[string]json.RawMessage, error) {
+var ErrInvalidSignature = fmt.Errorf("commit signature is not valid")
+
+func ExtractRecords(ctx context.Context, b io.Reader, signingKey string) (map[string]json.RawMessage, error) {
+	log := zerolog.Ctx(ctx)
+
 	r, err := car.NewCarReader(b)
 	if err != nil {
 		return nil, fmt.Errorf("failed to construct CAR reader: %w", err)
@@ -38,20 +44,39 @@ func ExtractRecords(ctx context.Context, b io.Reader) (map[string]json.RawMessag
 		}
 		if c.Equals(block.Cid()) {
 			blocks[block.Cid()] = block.RawData()
+		} else {
+			log.Debug().Str("cid", block.Cid().String()).
+				Msgf("CID doesn't match block content: %s != %s", block.Cid().String(), c.String())
 		}
 	}
 
 	records := map[string]cid.Cid{}
-	for _, root := range r.Header.Roots {
-		// TODO: verify that a root is a commit record and validate signature
+	if len(r.Header.Roots) == 0 {
+		return nil, fmt.Errorf("CAR has zero roots specified")
+	}
 
-		cids, err := findRecords(blocks, root, nil, nil, 0)
-		if err != nil {
-			return nil, err
-		}
-		for k, v := range cids {
-			records[k] = v
-		}
+	// https://atproto.com/specs/repository specifies that the first root
+	// must be a commit object. Meaning of subsequent roots is not yet defined.
+	root := r.Header.Roots[0]
+
+	// TODO: verify that a root is a commit record and validate signature
+	if _, found := blocks[root]; !found {
+		return nil, fmt.Errorf("root block is missing")
+	}
+	valid, err := verifyCommitSignature(ctx, blocks[root], signingKey)
+	if err != nil {
+		return nil, fmt.Errorf("commit signature verification failed: %w", err)
+	}
+	if !valid {
+		return nil, ErrInvalidSignature
+	}
+
+	cids, err := findRecords(blocks, root, nil, nil, 0)
+	if err != nil {
+		return nil, err
+	}
+	for k, v := range cids {
+		records[k] = v
 	}
 
 	res := map[string]json.RawMessage{}

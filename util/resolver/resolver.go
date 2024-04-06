@@ -59,10 +59,10 @@ func (r *fallbackResolver) FlushCacheFor(did string) {
 	}
 }
 
-func GetPDSEndpoint(ctx context.Context, did string) (*url.URL, error) {
+func GetPDSEndpointAndPublicKey(ctx context.Context, did string) (*url.URL, string, error) {
 	doc, err := GetDocument(ctx, did)
 	if err != nil {
-		return nil, fmt.Errorf("resolving did %q: %w", did, err)
+		return nil, "", fmt.Errorf("resolving did %q: %w", did, err)
 	}
 
 	pdsHost := ""
@@ -73,14 +73,28 @@ func GetPDSEndpoint(ctx context.Context, did string) (*url.URL, error) {
 		pdsHost = srv.ServiceEndpoint
 	}
 	if pdsHost == "" {
-		return nil, fmt.Errorf("did not find any PDS in DID Document")
+		return nil, "", fmt.Errorf("did not find any PDS in DID Document")
 	}
 	u, err := url.Parse(pdsHost)
 	if err != nil {
-		return nil, fmt.Errorf("PDS endpoint (%q) is an invalid URL: %w", pdsHost, err)
+		return nil, "", fmt.Errorf("PDS endpoint (%q) is an invalid URL: %w", pdsHost, err)
 	}
 	if u.Host == "" {
-		return nil, fmt.Errorf("PDS endpoint (%q) doesn't have a host part", pdsHost)
+		return nil, "", fmt.Errorf("PDS endpoint (%q) doesn't have a host part", pdsHost)
 	}
-	return u, nil
+
+	key := ""
+	for _, m := range doc.VerificationMethod {
+		if m.ID != fmt.Sprintf("%s#atproto", did) {
+			continue
+		}
+		if m.PublicKeyMultibase == nil {
+			continue
+		}
+		key = *m.PublicKeyMultibase
+	}
+	if key == "" {
+		return nil, "", fmt.Errorf("didn't find public key")
+	}
+	return u, key, nil
 }

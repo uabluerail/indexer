@@ -137,7 +137,7 @@ func (p *WorkerPool) doWork(ctx context.Context, work WorkItem) error {
 	log := zerolog.Ctx(ctx)
 	defer close(work.signal)
 
-	u, err := resolver.GetPDSEndpoint(ctx, work.Repo.DID)
+	u, pubKey, err := resolver.GetPDSEndpointAndPublicKey(ctx, work.Repo.DID)
 	if err != nil {
 		return err
 	}
@@ -217,7 +217,7 @@ retry:
 		return fmt.Errorf("failed to read 'rev' from the fetched repo: %w", err)
 	}
 
-	newRecs, err := repo.ExtractRecords(ctx, bytes.NewReader(b))
+	newRecs, err := repo.ExtractRecords(ctx, bytes.NewReader(b), pubKey)
 	if err != nil {
 		return fmt.Errorf("failed to extract records: %w", err)
 	}

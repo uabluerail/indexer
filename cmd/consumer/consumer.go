@@ -284,8 +284,21 @@ func (c *Consumer) processMessage(ctx context.Context, typ string, r io.Reader, 
 		if err != nil {
 			return fmt.Errorf("repo.EnsureExists(%q): %w", payload.Repo, err)
 		}
+
+		if repoInfo.LastKnownKey == "" {
+			_, pubKey, err := resolver.GetPDSEndpointAndPublicKey(ctx, payload.Repo)
+			if err != nil {
+				return fmt.Errorf("failed to get DID doc for %q: %w", payload.Repo, err)
+			}
+			repoInfo.LastKnownKey = pubKey
+			err = c.db.Model(repoInfo).Where(&repo.Repo{ID: repoInfo.ID}).Updates(&repo.Repo{LastKnownKey: pubKey}).Error
+			if err != nil {
+				return fmt.Errorf("failed to update the key for %q: %w", payload.Repo, err)
+			}
+		}
+
 		if repoInfo.PDS != c.remote.ID {
-			u, err := resolver.GetPDSEndpoint(ctx, payload.Repo)
+			u, _, err := resolver.GetPDSEndpointAndPublicKey(ctx, payload.Repo)
 			if err == nil {
 				cur, err := pds.EnsureExists(ctx, c.db, u.String())
 				if err == nil {
@@ -315,8 +328,6 @@ func (c *Consumer) processMessage(ctx context.Context, typ string, r io.Reader, 
 			reposDiscovered.WithLabelValues(c.remote.Host).Inc()
 		}
 
-		// TODO: verify signature
-
 		expectRecords := false
 		deletions := []string{}
 		for _, op := range payload.Ops {
@@ -345,10 +356,29 @@ func (c *Consumer) processMessage(ctx context.Context, typ string, r io.Reader, 
 			}
 		}
 
-		newRecs, err := repo.ExtractRecords(ctx, bytes.NewReader(payload.Blocks))
+		newRecs, err := repo.ExtractRecords(ctx, bytes.NewReader(payload.Blocks), repoInfo.LastKnownKey)
+		if errors.Is(err, repo.ErrInvalidSignature) {
+			// Key might have been updated recently.
+			_, pubKey, err2 := resolver.GetPDSEndpointAndPublicKey(ctx, payload.Repo)
+			if err2 != nil {
+				return fmt.Errorf("failed to get DID doc for %q: %w", payload.Repo, err2)
+			}
+			if repoInfo.LastKnownKey != pubKey {
+				repoInfo.LastKnownKey = pubKey
+				err2 = c.db.Model(repoInfo).Where(&repo.Repo{ID: repoInfo.ID}).Updates(&repo.Repo{LastKnownKey: pubKey}).Error
+				if err2 != nil {
+					return fmt.Errorf("failed to update the key for %q: %w", payload.Repo, err2)
+				}
+
+				// Retry with the new key.
+				newRecs, err = repo.ExtractRecords(ctx, bytes.NewReader(payload.Blocks), pubKey)
+			}
+		}
+
 		if err != nil {
 			return fmt.Errorf("failed to extract records: %w", err)
 		}
+
 		recs := []repo.Record{}
 		for k, v := range newRecs {
 			parts := strings.SplitN(k, "/", 2)

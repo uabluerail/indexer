@@ -169,7 +169,7 @@ func (c *RelayConsumer) processMessage(ctx context.Context, typ string, r io.Rea
 		return nil
 	}
 
-	u, err := resolver.GetPDSEndpoint(ctx, did)
+	u, _, err := resolver.GetPDSEndpointAndPublicKey(ctx, did)
 	if err != nil {
 		return err
 	}
