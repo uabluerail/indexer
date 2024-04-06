@@ -97,6 +97,7 @@ func (c *Consumer) run(ctx context.Context) {
 		default:
 			if err := c.runOnce(ctx); err != nil {
 				log.Error().Err(err).Msgf("Consumer of %q failed (will be restarted): %s", c.remote.Host, err)
+				connectionFailures.WithLabelValues(c.remote.Host).Inc()
 			}
 			time.Sleep(time.Second)
 		}
