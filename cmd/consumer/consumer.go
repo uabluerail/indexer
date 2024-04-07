@@ -32,6 +32,8 @@ import (
 	"github.com/uabluerail/indexer/util/resolver"
 )
 
+const lastRevUpdateInterval = 24 * time.Hour
+
 type BadRecord struct {
 	ID        models.ID `gorm:"primarykey"`
 	CreatedAt time.Time
@@ -430,12 +432,20 @@ func (c *Consumer) processMessage(ctx context.Context, typ string, r io.Reader, 
 			}
 		}
 
-		err = c.db.Model(&repo.Repo{}).Where(&repo.Repo{ID: repoInfo.ID}).
-			Updates(&repo.Repo{
-				LastFirehoseRev: payload.Rev,
-			}).Error
-		if err != nil {
-			log.Error().Err(err).Msgf("Failed to update last_firehose_rev for %q: %s", repoInfo.DID, err)
+		if repoInfo.FirstCursorSinceReset > 0 && repoInfo.FirstRevSinceReset != "" &&
+			repoInfo.LastIndexedRev != "" &&
+			c.remote.FirstCursorSinceReset > 0 &&
+			repoInfo.FirstCursorSinceReset >= c.remote.FirstCursorSinceReset &&
+			repoInfo.FirstRevSinceReset <= repoInfo.LastIndexedRev &&
+			time.Since(repoInfo.UpdatedAt) > lastRevUpdateInterval {
+
+			err = c.db.Model(&repo.Repo{}).Where(&repo.Repo{ID: repoInfo.ID}).
+				Updates(&repo.Repo{
+					LastFirehoseRev: payload.Rev,
+				}).Error
+			if err != nil {
+				log.Error().Err(err).Msgf("Failed to update last_firehose_rev for %q: %s", repoInfo.DID, err)
+			}
 		}
 
 		if payload.TooBig {
