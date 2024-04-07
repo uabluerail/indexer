@@ -18,7 +18,6 @@ require (
 	github.com/rs/zerolog v1.32.0
 	github.com/uabluerail/bsky-tools v0.0.0-20240210190127-668df5f36070
 	gitlab.com/yawning/secp256k1-voi v0.0.0-20230925100816-f2616030848b
-	golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa
 	golang.org/x/time v0.5.0
 	gorm.io/driver/postgres v1.5.6
 	gorm.io/gorm v1.25.7
