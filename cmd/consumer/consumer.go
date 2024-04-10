@@ -217,23 +217,6 @@ func (c *Consumer) runOnce(ctx context.Context) error {
 	}
 }
 
-func (c *Consumer) checkForCursorReset(ctx context.Context, seq int64) error {
-	// hack to detect cursor resets upon connection for implementations
-	// that don't emit an explicit #info when connecting with an outdated cursor.
-
-	zerolog.Ctx(ctx).Info().
-		Int64("cursor", c.remote.Cursor).
-		Int64("remote_cursor", seq).
-		Msgf("Checking for possible cursor reset")
-
-	if seq == c.remote.Cursor+1 {
-		// No reset.
-		return nil
-	}
-
-	return c.resetCursor(ctx, seq)
-}
-
 func (c *Consumer) resetCursor(ctx context.Context, seq int64) error {
 	zerolog.Ctx(ctx).Warn().Str("pds", c.remote.Host).Msgf("Cursor reset: %d -> %d", c.remote.Cursor, seq)
 	err := c.db.Model(&c.remote).
@@ -280,11 +263,6 @@ func (c *Consumer) processMessage(ctx context.Context, typ string, r io.Reader, 
 		if c.remote.FirstCursorSinceReset == 0 {
 			if err := c.resetCursor(ctx, payload.Seq); err != nil {
 				return fmt.Errorf("handling cursor reset: %w", err)
-			}
-		}
-		if first {
-			if err := c.checkForCursorReset(ctx, payload.Seq); err != nil {
-				return err
 			}
 		}
 
@@ -487,11 +465,6 @@ func (c *Consumer) processMessage(ctx context.Context, typ string, r io.Reader, 
 				return fmt.Errorf("handling cursor reset: %w", err)
 			}
 		}
-		if first {
-			if err := c.checkForCursorReset(ctx, payload.Seq); err != nil {
-				return err
-			}
-		}
 		// No-op, we don't store handles.
 		if err := c.updateCursor(ctx, payload.Seq); err != nil {
 			return err
@@ -507,11 +480,6 @@ func (c *Consumer) processMessage(ctx context.Context, typ string, r io.Reader, 
 		if c.remote.FirstCursorSinceReset == 0 {
 			if err := c.resetCursor(ctx, payload.Seq); err != nil {
 				return fmt.Errorf("handling cursor reset: %w", err)
-			}
-		}
-		if first {
-			if err := c.checkForCursorReset(ctx, payload.Seq); err != nil {
-				return err
 			}
 		}
 
@@ -531,11 +499,6 @@ func (c *Consumer) processMessage(ctx context.Context, typ string, r io.Reader, 
 		if c.remote.FirstCursorSinceReset == 0 {
 			if err := c.resetCursor(ctx, payload.Seq); err != nil {
 				return fmt.Errorf("handling cursor reset: %w", err)
-			}
-		}
-		if first {
-			if err := c.checkForCursorReset(ctx, payload.Seq); err != nil {
-				return err
 			}
 		}
 		// TODO
