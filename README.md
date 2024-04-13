@@ -63,6 +63,9 @@ hitting rate limits.
 * `make wait-for-plc`
     * This will wait until PLC mirror has fully replicated the operations log.
       That's gonna take a few hours.
+    * Technically you can start everything before it is caught up: it will
+      return errors and other components will fallback to querying
+      https://plc.directory. But you will be rate-limited quite hard.
 * `make init-db`
     * This will add the initial set of PDS hosts into the database.
     * You can skip this if you're specifying `CONSUMER_RELAYS` in
