@@ -21,7 +21,7 @@ update: up
 down:
 	@docker compose down
 
-start-db:
+start-db: .env
 	@docker compose up -d postgres
 
 status:
@@ -39,7 +39,7 @@ logs:
 psql:
 	@docker compose exec -it postgres psql -U postgres -d bluesky
 
-init-db:
+init-db: .env
 	@docker compose up -d --build lister
 	@sleep 10
 	@docker compose stop lister
