@@ -1,4 +1,4 @@
-.PHONY: all build up update down start-db status logs psql init-db
+.PHONY: all build up update down start-db status logs psql init-db start-plc wait-for-plc
 
 # ---------------------------- Docker ----------------------------
 
@@ -34,7 +34,7 @@ start-plc: .env
 	@docker compose up -d --build postgres plc
 
 wait-for-plc:
-	@. ./.env && while ! curl -sf http://$${METRICS_ADDR:-localhost}:11004/ready; do sleep 10; done
+	@. ./.env && while ! curl -s --fail-with-body http://$${METRICS_ADDR:-localhost}:11004/ready; do sleep 10; done
 
 # ---------------------------- Docker ----------------------------
 
