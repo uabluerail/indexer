@@ -1,8 +1,7 @@
-alter table records alter content set compression lz4;
 alter table records rename to records_like;
 
 create table records
-(like records_like including defaults including compression)
+(like records_like including defaults)
 partition by list (collection);
 
 drop index idx_repo_record_key;
