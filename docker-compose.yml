@@ -29,6 +29,31 @@ services:
       ]
     shm_size: '16gb'
     stop_grace_period: 24h
+
+  plc:
+    build:
+      context: .
+      dockerfile: cmd/plc-mirror/Dockerfile
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: always
+    image: uabluerail/plc-mirror
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    links:
+      - postgres:db
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PLC_METRICS_PORT: '8080'
+      PLC_POSTGRES_URL: "postgres://postgres:${POSTGRES_PASSWORD}@db/bluesky?sslmode=disable"
+    ports:
+      - "0.0.0.0:11004:8080"
+    command: [ "--log-level=0" ]
+
   lister:
     build:
       context: .
@@ -43,13 +68,14 @@ services:
           memory: 1G
     links:
       - postgres:db
+      - plc:plc
     depends_on:
       postgres:
         condition: service_healthy
     environment:
       LISTER_METRICS_PORT: '8080'
       LISTER_POSTGRES_URL: "postgres://postgres:${POSTGRES_PASSWORD}@db/bluesky?sslmode=disable"
-      ATP_PLC_ADDR: "${PLC_ADDRESS:-https://plc.directory}"
+      ATP_PLC_ADDR: "http://plc:8080"
     ports:
       - "0.0.0.0:11001:8080"
     command: [ "--log-level=0" ]
@@ -67,6 +93,7 @@ services:
           memory: 1G
     links:
       - postgres:db
+      - plc:plc
     depends_on:
       postgres:
         condition: service_healthy
@@ -74,7 +101,7 @@ services:
       CONSUMER_METRICS_PORT: '8080'
       CONSUMER_POSTGRES_URL: "postgres://postgres:${POSTGRES_PASSWORD}@db/bluesky?sslmode=disable"
       # CONSUMER_RELAYS: "https://bsky.network"  # Effectively doubles inbound network traffic. Set this in docker-compose.override.yml if needed.
-      ATP_PLC_ADDR: "${PLC_ADDRESS:-https://plc.directory}"
+      ATP_PLC_ADDR: "http://plc:8080"
     ports:
       - "0.0.0.0:11002:8080"
     command: [ "--log-level=0" ]
@@ -93,6 +120,7 @@ services:
           memory: 4G
     links:
       - postgres:db
+      - plc:plc
     depends_on:
       postgres:
         condition: service_healthy
@@ -103,7 +131,7 @@ services:
       INDEXER_METRICS_PORT: '8080'
       INDEXER_POSTGRES_URL: "postgres://postgres:${POSTGRES_PASSWORD}@db/bluesky?sslmode=disable"
       INDEXER_WORKERS: 50
-      ATP_PLC_ADDR: "${PLC_ADDRESS:-https://plc.directory}"
+      ATP_PLC_ADDR: "http://plc:8080"
     ports:
       - "0.0.0.0:11003:8080"
     command: [ "--log-level=0" ]
@@ -123,3 +151,4 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+
