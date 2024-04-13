@@ -45,6 +45,24 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	s.handler(w, req)
 }
 
+func (s *Server) Ready(w http.ResponseWriter, req *http.Request) {
+	convreq.Wrap(func(ctx context.Context) convreq.HttpResponse {
+		ts, err := s.mirror.LastRecordTimestamp(ctx)
+		if err != nil {
+			return respond.InternalServerError(err.Error())
+		}
+		t, err := time.Parse(time.RFC3339, ts)
+		if err != nil {
+			return respond.InternalServerError(err.Error())
+		}
+		delay := time.Since(t)
+		if delay > s.MaxDelay {
+			return respond.ServiceUnavailable(fmt.Sprintf("still %s behind", delay))
+		}
+		return respond.String("OK")
+	})(w, req)
+}
+
 func (s *Server) serve(ctx context.Context, req *http.Request) convreq.HttpResponse {
 	delay := time.Since(s.mirror.LastSuccess())
 	if delay > s.MaxDelay {

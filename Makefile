@@ -28,7 +28,13 @@ status:
 	@docker compose stats
 
 logs:
-	@docker compose logs -f -n 50 lister consumer record-indexer
+	@docker compose logs -f -n 50
+
+start-plc: .env
+	@docker compose up -d --build postgres plc
+
+wait-for-plc:
+	@. ./.env && while ! curl -sf http://$${METRICS_ADDR:-localhost}:11004/ready; do sleep 10; done
 
 # ---------------------------- Docker ----------------------------
 

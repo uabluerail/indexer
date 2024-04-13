@@ -72,6 +72,7 @@ func runMain(ctx context.Context) error {
 		return fmt.Errorf("failed to create server: %w", err)
 	}
 	http.Handle("/", server)
+	http.HandleFunc("/ready", server.Ready)
 
 	log.Info().Msgf("Starting HTTP listener on %q...", config.MetricsPort)
 	http.Handle("/metrics", promhttp.Handler())

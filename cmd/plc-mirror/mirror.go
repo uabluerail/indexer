@@ -89,6 +89,12 @@ func (m *Mirror) LastSuccess() time.Time {
 	return m.lastSuccessTimestamp
 }
 
+func (m *Mirror) LastRecordTimestamp(ctx context.Context) (string, error) {
+	ts := ""
+	err := m.db.WithContext(ctx).Model(&PLCLogEntry{}).Select("plc_timestamp").Order("plc_timestamp desc").Limit(1).Take(&ts).Error
+	return ts, err
+}
+
 func (m *Mirror) runOnce(ctx context.Context) error {
 	log := zerolog.Ctx(ctx)
 
