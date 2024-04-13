@@ -34,7 +34,7 @@ missing to the database.
 Connects to firehose of each PDS and stores all received records in the
 database.
 
-If `CONSUMER_RELAYS` is specified, it will also any new PDSs to the database
+If `CONSUMER_RELAYS` is specified, it will also add any new PDSs to the database
 that have records sent through a relay.
 
 ### Record indexer
