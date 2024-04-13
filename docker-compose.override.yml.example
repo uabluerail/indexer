@@ -2,9 +2,17 @@
 # exactly these overrides get applied to the main file.
 # tl;dr: strings and numbers get overwritten, lists get concatenated
 services:
+  # Expose PostgreSQL TCP port
+  postgres:
+    ports:
+      - "0.0.0.0:15432:5432"
+
+  # Change the default number of indexer threads
   record-indexer:
     environment:
       INDEXER_WORKERS: 15
+
+  # Enable PDS discovery via a relay
   consumer:
     environment:
       CONSUMER_RELAYS: "https://bsky.network"
