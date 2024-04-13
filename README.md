@@ -34,6 +34,9 @@ missing to the database.
 Connects to firehose of each PDS and stores all received records in the
 database.
 
+If `CONSUMER_RELAYS` is specified, it will also any new PDSs to the database
+that have records sent through a relay.
+
 ### Record indexer
 
 Goes over all repos that might have missing data, gets a full checkout from the
@@ -58,7 +61,8 @@ hitting rate limits.
 * `make start-plc`
     * This will start PostgreSQL and PLC mirror
 * `make wait-for-plc`
-    * This will wait until PLC mirror has fully replicated the operations log
+    * This will wait until PLC mirror has fully replicated the operations log.
+      That's gonna take a few hours.
 * `make init-db`
     * This will add the initial set of PDS hosts into the database.
     * You can skip this if you're specifying `CONSUMER_RELAYS` in
