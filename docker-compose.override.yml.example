@@ -1,0 +1,11 @@
+# See https://docs.docker.com/compose/multiple-compose-files/merge/ for how
+# exactly these overrides get applied to the main file.
+# tl;dr: strings and numbers get overwritten, lists get concatenated
+services:
+  record-indexer:
+    environment:
+      INDEXER_WORKERS: 15
+  consumer:
+    environment:
+      CONSUMER_RELAYS: "https://bsky.network"
+
