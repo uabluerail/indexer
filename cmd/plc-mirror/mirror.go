@@ -132,9 +132,10 @@ func (m *Mirror) runOnce(ctx context.Context) error {
 			return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 		}
 
-		newEntries := 0
+		newEntries := []PLCLogEntry{}
 		decoder := json.NewDecoder(resp.Body)
 		oldCursor := cursor
+
 		for {
 			var entry plc.OperationLogEntry
 			err := decoder.Decode(&entry)
@@ -145,25 +146,25 @@ func (m *Mirror) runOnce(ctx context.Context) error {
 				return fmt.Errorf("parsing log entry: %w", err)
 			}
 
-			err = m.db.Clauses(
-				clause.OnConflict{
-					Columns:   []clause.Column{{Name: "did"}, {Name: "cid"}},
-					DoNothing: true,
-				},
-			).Create(FromOperationLogEntry(entry)).Error
-			if err != nil {
-				return fmt.Errorf("inserting log entry into database: %w", err)
-			}
-
 			cursor = entry.CreatedAt
-			newEntries++
+			newEntries = append(newEntries, *FromOperationLogEntry(entry))
 		}
 
-		if newEntries == 0 || cursor == oldCursor {
+		if len(newEntries) == 0 || cursor == oldCursor {
 			break
 		}
 
-		log.Info().Msgf("Got %d log entries. New cursor: %q", newEntries, cursor)
+		err = m.db.Clauses(
+			clause.OnConflict{
+				Columns:   []clause.Column{{Name: "did"}, {Name: "cid"}},
+				DoNothing: true,
+			},
+		).Create(newEntries).Error
+		if err != nil {
+			return fmt.Errorf("inserting log entry into database: %w", err)
+		}
+
+		log.Info().Msgf("Got %d log entries. New cursor: %q", len(newEntries), cursor)
 	}
 	return nil
 }
