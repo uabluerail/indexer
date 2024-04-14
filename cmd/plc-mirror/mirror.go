@@ -51,7 +51,8 @@ func NewMirror(ctx context.Context, upstream string, db *gorm.DB) (*Mirror, erro
 	return &Mirror{
 		db:       db,
 		upstream: u,
-		limiter:  rate.NewLimiter(rate.Limit(2), 4),
+		// Current rate limit is `500 per five minutes`, lets stay a bit under it.
+		limiter: rate.NewLimiter(rate.Limit(450.0/300), 4),
 	}, nil
 }
 
