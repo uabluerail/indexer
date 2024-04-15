@@ -81,3 +81,10 @@ kill-csv-iexport:
 	@kill -9 `pgrep csv_iexport.sh`
 
 # ---------------------------- CSV Export ----------------------------
+
+
+dash-export:
+	@./dashboards/export.sh
+
+dash-import:
+	@./dashboards/update.sh
