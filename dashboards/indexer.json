@@ -571,8 +571,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -775,8 +774,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -1250,11 +1248,15 @@
             "type": "prometheus",
             "uid": "${DS1}"
           },
+          "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "sum by(remote, success) (rate(indexer_repos_fetched_count{success=\"true\"}[$rate_interval]))",
-          "legendFormat": "{{success}} {{remote}}",
+          "expr": "label_replace(sum by(remote) (rate(indexer_repos_fetched_count{success=\"true\"}[$rate_interval])), \"remote\", \"$1\", \"remote\", \"https://((?U).*)(\\\\.host\\\\.bsky\\\\.network)?\")",
+          "fullMetaSearch": false,
+          "includeNullMetadata": true,
+          "legendFormat": "{{remote}}",
           "range": true,
-          "refId": "A"
+          "refId": "A",
+          "useBackend": false
         },
         {
           "datasource": {
@@ -1270,22 +1272,7 @@
         }
       ],
       "title": "Repo fetch rate",
-      "transformations": [
-        {
-          "id": "renameByRegex",
-          "options": {
-            "regex": "true https://([^.]*).*",
-            "renamePattern": "$1"
-          }
-        },
-        {
-          "id": "renameByRegex",
-          "options": {
-            "regex": "false https://([^.]*).*",
-            "renamePattern": "$1:fail"
-          }
-        }
-      ],
+      "transformations": [],
       "type": "timeseries"
     },
     {
@@ -1613,7 +1600,7 @@
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "time() - label_replace(label_replace(repo_commit_received_timestamp{job=\"consumer\"}, \"remote\", \"$1\", \"remote\", \"https://(.*)\\\\.us-(east|west)\\\\.host\\\\.bsky\\\\.network\"), \"remote\", \"$1\", \"remote\", \"https://(.*)\")",
+          "expr": "time() - label_replace(repo_commit_received_timestamp{job=\"consumer\"}, \"remote\", \"$1\", \"remote\", \"https://((?U).*)(\\\\.host\\\\.bsky\\\\.network)?\")",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "legendFormat": "{{remote}}",
@@ -1732,7 +1719,7 @@
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "label_replace(label_replace(sum by(remote) (rate(repo_commits_received_counter[$rate_interval])), \"remote\", \"$1\", \"remote\", \"https://([^.]+)\\\\..*\\\\.bsky\\\\.network\"), \"remote\", \"$1\", \"remote\", \"https://(.*)\")",
+          "expr": "label_replace(sum by(remote) (rate(repo_commits_received_counter[$rate_interval])), \"remote\", \"$1\", \"remote\", \"https://((?U).*)(\\\\.host\\\\.bsky\\\\.network)?\")",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "legendFormat": "__auto",
@@ -1869,7 +1856,7 @@
             "uid": "${DS1}"
           },
           "editorMode": "code",
-          "expr": "label_replace(label_replace(deriv(repo_commit_received_timestamp{job=\"consumer\"}[$rate_interval]), \"remote\", \"$1\", \"remote\", \"https://(.*)\\\\.us-(east|west)\\\\.host\\\\.bsky\\\\.network\"),\"remote\", \"$1\", \"remote\", \"https://(.*)\")",
+          "expr": "label_replace(deriv(repo_commit_received_timestamp{job=\"consumer\"}[$rate_interval]), \"remote\", \"$1\", \"remote\", \"https://((?U).*)(\\\\\\\\.host\\\\\\\\.bsky\\\\\\\\.network)?\")",
           "hide": false,
           "legendFormat": "{{remote}}",
           "range": true,
@@ -2074,7 +2061,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -2113,7 +2101,7 @@
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "label_replace(sum by(pds) (consumer_bad_records), \"pds\", \"$1\", \"pds\", \"https://([^.]+)((\\\\..+)?\\\\.bsky\\\\.network)?\")",
+          "expr": "label_replace(sum by(pds) (consumer_bad_records), \"pds\", \"$1\", \"pds\", \"https://((?U).*)(\\\\.host\\\\.bsky\\\\.network)?\")",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
@@ -2149,7 +2137,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               }
             ]
           },
@@ -2314,7 +2303,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -2353,7 +2343,7 @@
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "label_replace(sum by(remote) (rate(consumer_connection_failures[$rate_interval])), \"remote\", \"$1\", \"remote\", \"https://(.*)(\\\\.host\\\\.bsky\\\\.network)?\")",
+          "expr": "label_replace(sum by(remote) (rate(consumer_connection_failures[$rate_interval])), \"remote\", \"$1\", \"remote\", \"https://((?U).*)(\\\\.host\\\\.bsky\\\\.network)?\")",
           "fullMetaSearch": false,
           "includeNullMetadata": false,
           "instant": false,
@@ -2428,7 +2418,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -2578,7 +2569,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               }
             ]
           },
@@ -2675,20 +2667,20 @@
         "auto_min": "10s",
         "current": {
           "selected": false,
-          "text": "1m",
-          "value": "1m"
+          "text": "5m",
+          "value": "5m"
         },
         "hide": 0,
         "label": "Rate interval",
         "name": "rate_interval",
         "options": [
           {
-            "selected": true,
+            "selected": false,
             "text": "1m",
             "value": "1m"
           },
           {
-            "selected": false,
+            "selected": true,
             "text": "5m",
             "value": "5m"
           },
@@ -2938,6 +2930,6 @@
   "timezone": "",
   "title": "Bluesky indexer",
   "uid": "bskyIndexer",
-  "version": 17,
+  "version": 18,
   "weekStart": ""
 }
