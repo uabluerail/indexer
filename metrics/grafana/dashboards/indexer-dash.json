@@ -2847,7 +2847,7 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "(6000000-repos_fully_indexed{job=\"db\"})/deriv(repos_fully_indexed{job=\"db\"}[7d])",
+          "expr": "(6000000-repos_fully_indexed{job=\"db\"})/deriv(repos_fully_indexed{job=\"db\"}[30d])",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
@@ -2954,6 +2954,6 @@
   "timezone": "",
   "title": "Bsky indexer",
   "uid": "aXw6dQhSzs",
-  "version": 7,
+  "version": 9,
   "weekStart": ""
 }
