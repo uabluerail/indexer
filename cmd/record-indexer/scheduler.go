@@ -110,6 +110,9 @@ func (s *Scheduler) fillQueue(ctx context.Context) error {
 	if len(remotes) > 0 {
 		perPDSLimit = maxQueueLen * 2 / len(remotes)
 	}
+	if perPDSLimit < maxQueueLen/10 {
+		perPDSLimit = maxQueueLen / 10
+	}
 
 	// Fake remote to account for repos we didn't have a PDS for yet.
 	remotes = append(remotes, pds.PDS{ID: pds.Unknown})

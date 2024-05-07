@@ -97,6 +97,10 @@ func (l *Lister) run(ctx context.Context) {
 
 			if err != nil {
 				log.Error().Err(err).Msgf("Failed to list repos from %q: %s", remote.Host, err)
+				// Update the timestamp so we don't get stuck on a single broken PDS
+				if err := db.Model(&remote).Updates(&pds.PDS{LastList: time.Now()}).Error; err != nil {
+					log.Error().Err(err).Msgf("Failed to update the timestamp of last list for %q: %s", remote.Host, err)
+				}
 				break
 			}
 			log.Info().Msgf("Received %d DIDs from %q", len(repos), remote.Host)
