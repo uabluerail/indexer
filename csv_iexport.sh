@@ -22,6 +22,8 @@ refresh materialized view export_replies;
 refresh materialized view export_blocks;
 \echo Refreshing DID list...
 refresh materialized view export_dids;
+\echo Refreshing optout list...
+refresh materialized view export_optouts;
 EOF
 
 # ------------------------------ Dump views into .csv ----------------------------------
@@ -48,7 +50,7 @@ docker compose exec -it postgres psql -U postgres -d bluesky \
 echo "Finishing blocks export..."
 block_finished=$(date -Iseconds --utc)
 docker compose exec -it postgres psql -U postgres -d bluesky \
-  -c "update incremental_export_log set finished='$block_finished' where started='$block_started' and to_tsmp='$to_timestamp' and collection = 'app.bsky.graph.follow'"
+  -c "update incremental_export_log set finished='$block_finished' where started='$block_started' and to_tsmp='$to_timestamp' and collection = 'app.bsky.graph.block'"
 
 
 echo "Starting likes export..."
@@ -83,6 +85,12 @@ echo "Finishing dids export..."
 dids_finished=$(date -Iseconds --utc)
 docker compose exec -it postgres psql -U postgres -d bluesky \
   -c "update incremental_export_log set finished='$dids_finished' where started='$dids_started' and to_tsmp='$to_timestamp' and collection = 'did'"
+
+echo "Starting optouts export..."
+docker compose exec -it postgres psql -U postgres -d bluesky \
+  -c "copy (select did from repos as r inner join records_block as rb on r.id=rb.repo where rb.content['subject']::text like '%did:
+plc:qevje4db3tazfbbialrlrkza%') to stdout with csv header;" > ${CSV_DIR}/optout.csv
+echo "Finishing optouts export..."
 
 
 # ------------------------------ DO NOT Free up space used by materialized views for incremental refresh ----------------------------------
