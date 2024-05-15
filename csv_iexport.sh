@@ -4,9 +4,17 @@ set -e
 
 # ------------------------------ Write data timestamp ----------------------------------
 
+date=$(date -Idate --utc)
+
+mkdir -p ${CSV_DIR}/full
+mkdir -p ${CSV_DIR}/full/${date}
+
+echo "Output directory: ${CSV_DIR}/full/${date}"
+
 to_timestamp=$(date -Iseconds --utc)
-echo "export_start" > ${CSV_DIR}/timestamp.csv
-echo "${to_timestamp}" >> ${CSV_DIR}/timestamp.csv
+
+echo "export_start" > ${CSV_DIR}/full/${date}/timestamp.csv
+echo "${to_timestamp}" >> ${CSV_DIR}/full/${date}/timestamp.csv
 
 # ------------------------------ Refresh views ----------------------------------
 
@@ -35,7 +43,7 @@ folows_started=$(date -Iseconds --utc)
 docker compose exec -it postgres psql -U postgres -d bluesky \
   -c "insert into incremental_export_log (started, to_tsmp, collection) values ('$folows_started', '$to_timestamp', 'app.bsky.graph.follow')"
 docker compose exec -it postgres psql -U postgres -d bluesky \
-  -c "copy (select * from export_follows) to stdout with csv header;" > ${CSV_DIR}/follows.csv
+  -c "copy (select * from export_follows) to stdout with csv header;" > ${CSV_DIR}/full/${date}/follows.csv
 echo "Finishing follows export..."
 folows_finished=$(date -Iseconds --utc)
 docker compose exec -it postgres psql -U postgres -d bluesky \
@@ -46,7 +54,7 @@ block_started=$(date -Iseconds --utc)
 docker compose exec -it postgres psql -U postgres -d bluesky \
   -c "insert into incremental_export_log (started, to_tsmp, collection) values ('$block_started', '$to_timestamp', 'app.bsky.graph.block')"
 docker compose exec -it postgres psql -U postgres -d bluesky \
-  -c "copy (select * from export_blocks) to stdout with csv header;" > ${CSV_DIR}/blocks.csv
+  -c "copy (select * from export_blocks) to stdout with csv header;" > ${CSV_DIR}/full/${date}/blocks.csv
 echo "Finishing blocks export..."
 block_finished=$(date -Iseconds --utc)
 docker compose exec -it postgres psql -U postgres -d bluesky \
@@ -58,7 +66,7 @@ likes_started=$(date -Iseconds --utc)
 docker compose exec -it postgres psql -U postgres -d bluesky \
   -c "insert into incremental_export_log (started, to_tsmp, collection) values ('$likes_started', '$to_timestamp', 'app.bsky.feed.like')"
 docker compose exec -it postgres psql -U postgres -d bluesky \
-  -c "copy (select * from export_likes) to stdout with csv header;" > ${CSV_DIR}/like_counts.csv
+  -c "copy (select * from export_likes) to stdout with csv header;" > ${CSV_DIR}/full/${date}/like_counts.csv
 echo "Finishing likes export..."
 likes_finished=$(date -Iseconds --utc)
 docker compose exec -it postgres psql -U postgres -d bluesky \
@@ -69,7 +77,7 @@ posts_started=$(date -Iseconds --utc)
 docker compose exec -it postgres psql -U postgres -d bluesky \
   -c "insert into incremental_export_log (started, to_tsmp, collection) values ('$posts_started', '$to_timestamp', 'app.bsky.feed.post')"
 docker compose exec -it postgres psql -U postgres -d bluesky \
-  -c "copy (select * from export_replies) to stdout with csv header;" > ${CSV_DIR}/post_counts.csv
+  -c "copy (select * from export_replies) to stdout with csv header;" > ${CSV_DIR}/full/${date}/post_counts.csv
 echo "Finishing posts export..."
 posts_finished=$(date -Iseconds --utc)
 docker compose exec -it postgres psql -U postgres -d bluesky \
@@ -80,7 +88,7 @@ dids_started=$(date -Iseconds --utc)
 docker compose exec -it postgres psql -U postgres -d bluesky \
   -c "insert into incremental_export_log (started, to_tsmp, collection) values ('$dids_started', '$to_timestamp', 'did')"
 docker compose exec -it postgres psql -U postgres -d bluesky \
-  -c "copy (select * from export_dids) to stdout with csv header;" > ${CSV_DIR}/dids.csv
+  -c "copy (select * from export_dids) to stdout with csv header;" > ${CSV_DIR}/full/${date}/dids.csv
 echo "Finishing dids export..."
 dids_finished=$(date -Iseconds --utc)
 docker compose exec -it postgres psql -U postgres -d bluesky \
@@ -89,7 +97,7 @@ docker compose exec -it postgres psql -U postgres -d bluesky \
 echo "Starting optouts export..."
 docker compose exec -it postgres psql -U postgres -d bluesky \
   -c "copy (select did from repos as r inner join records_block as rb on r.id=rb.repo where rb.content['subject']::text like '%did:
-plc:qevje4db3tazfbbialrlrkza%') to stdout with csv header;" > ${CSV_DIR}/optout.csv
+plc:qevje4db3tazfbbialrlrkza%') to stdout with csv header;" > ${CSV_DIR}/full/${date}/optout.csv
 echo "Finishing optouts export..."
 
 
@@ -102,8 +110,8 @@ handles_started=$(date -Iseconds --utc)
 docker compose exec -it postgres psql -U postgres -d bluesky \
   -c "insert into incremental_export_log (started, to_tsmp, collection) values ('$handles_started', '$to_timestamp', 'handle')"
 docker exec -t plc-postgres-1 psql -U postgres -d plc \
-  -c 'copy (select handle, did as "did:ID" from actors) to stdout with (format csv , header, force_quote ("handle"));' | sed -E -e 's/([^\\])\\",/\1\\\\",/g' > ${CSV_DIR}/handles.csv
-echo "Finishing dids export..."
+  -c 'copy (select handle, did as "did:ID" from actors) to stdout with (format csv , header, force_quote ("handle"));' | sed -E -e 's/([^\\])\\",/\1\\\\",/g' > ${CSV_DIR}/full/${date}/handles.csv
+echo "Finishing handles export..."
 handles_finished=$(date -Iseconds --utc)
 docker compose exec -it postgres psql -U postgres -d bluesky \
   -c "update incremental_export_log set finished='$handles_finished' where started='$handles_started' and to_tsmp='$to_timestamp' and collection = 'handle'"

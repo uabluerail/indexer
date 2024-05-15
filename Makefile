@@ -74,11 +74,19 @@ csv-iexport:
 	@sleep 10
 	@nohup ./csv_iexport.sh > csv_iexport.out &
 
+csv-iexport-month:
+	@docker compose up -d postgres
+	@sleep 10
+	@nohup ./csv_iexport_month.sh > csv_iexport_month.out &
+
 kill-csv-export:
 	@kill -9 `pgrep csv_export.sh`
 
 kill-csv-iexport:
 	@kill -9 `pgrep csv_iexport.sh`
+
+kill-csv-iexport-month:
+	@kill -9 `pgrep csv_iexport_month.sh`
 
 # ---------------------------- CSV Export ----------------------------
 
