@@ -97,7 +97,7 @@ docker compose exec -it postgres psql -U postgres -d bluesky \
 
 echo "Starting optouts export..."
 docker compose exec -it postgres psql -U postgres -d bluesky \
-  -c "copy (select did as "did:ID" from repos as r inner join records_block as rb on r.id=rb.repo where rb.content['subject']::text like '%did:plc:qevje4db3tazfbbialrlrkza%') to stdout with csv header;" > ${CSV_DIR}/full/${date}/optout.csv
+  -c "copy (select did from repos as r inner join records_block as rb on r.id=rb.repo where rb.content['subject']::text like '%did:plc:qevje4db3tazfbbialrlrkza%') to stdout with csv header;" > ${CSV_DIR}/full/${date}/optout.csv
 echo "Finishing optouts export..."
 
 
