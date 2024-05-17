@@ -1,13 +1,3 @@
-CREATE OR REPLACE FUNCTION ladderq(date TIMESTAMP) RETURNS integer AS $$
-SELECT
-CASE
-  WHEN date > CURRENT_DATE - INTERVAL '30' DAY THEN 10
-  WHEN date > CURRENT_DATE - INTERVAL '60' DAY THEN 5
-  WHEN date > CURRENT_DATE - INTERVAL '90' DAY THEN 3
-  ELSE 1
-END;
-$$ LANGUAGE sql STRICT IMMUTABLE;
-
 drop materialized view export_dids_ladder;
 drop materialized view export_replies_ladder;
 drop materialized view export_likes_ladder;
@@ -15,7 +5,10 @@ drop materialized view export_likes_ladder;
 create materialized view export_likes_ladder
 as select repos.did as ":START_ID",
     split_part(jsonb_extract_path_text(content, 'subject',  'uri'), '/', 3) as ":END_ID",
-    sum(ladderq(records.created_at::TIMESTAMP)) as "count:long"
+    count(*) FILTER (WHERE records.created_at > CURRENT_DATE - INTERVAL '30' DAY) * 10 +
+    count(*) FILTER (WHERE records.created_at > CURRENT_DATE - INTERVAL '60' DAY) * 5 +
+    count(*) FILTER (WHERE records.created_at > CURRENT_DATE - INTERVAL '90' DAY) * 3 +
+    count(*) FILTER (WHERE records.created_at > CURRENT_DATE - INTERVAL '360' DAY) * 1 as "count:long"
   from records join repos on records.repo = repos.id
   where records.collection = 'app.bsky.feed.like'
     and repos.did <> split_part(jsonb_extract_path_text(content, 'subject',  'uri'), '/', 3)
@@ -26,7 +19,10 @@ create index export_like_subject_ladder on export_likes_ladder (":END_ID");
 create materialized view export_replies_ladder
 as select repos.did as ":START_ID",
     split_part(jsonb_extract_path_text(content, 'reply', 'parent',  'uri'), '/', 3) as ":END_ID",
-    sum(ladderq(records.created_at::TIMESTAMP)) as "count:long"
+    count(*) FILTER (WHERE records.created_at > CURRENT_DATE - INTERVAL '30' DAY) * 10 +
+    count(*) FILTER (WHERE records.created_at > CURRENT_DATE - INTERVAL '60' DAY) * 5 +
+    count(*) FILTER (WHERE records.created_at > CURRENT_DATE - INTERVAL '90' DAY) * 3 +
+    count(*) FILTER (WHERE records.created_at > CURRENT_DATE - INTERVAL '360' DAY) * 1 as "count:long"
   from records join repos on records.repo = repos.id
   where records.collection = 'app.bsky.feed.post'
     and repos.did <> split_part(jsonb_extract_path_text(content, 'reply', 'parent',  'uri'), '/', 3)
@@ -48,5 +44,4 @@ as select distinct did as "did:ID" from (
   )
 with no data;
 
-create index idx_records_repo on records (repo);
 create index idx_records_created_at on records (created_at);
