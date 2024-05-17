@@ -115,3 +115,4 @@ handles_finished=$(date -Iseconds --utc)
 docker compose exec -it postgres psql -U postgres -d bluesky \
   -c "update incremental_export_log set finished='$handles_finished' where started='$handles_started' and to_tsmp='$to_timestamp' and collection = 'handle_month'"
 
+echo "Export finished."

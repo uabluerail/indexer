@@ -18,7 +18,6 @@ as select repos.did as ":START_ID",
     sum(ladderq(records.created_at::TIMESTAMP)) as "count:long"
   from records join repos on records.repo = repos.id
   where records.collection = 'app.bsky.feed.like'
-  and records.created_at > CURRENT_DATE - INTERVAL '180' DAY
     and repos.did <> split_part(jsonb_extract_path_text(content, 'subject',  'uri'), '/', 3)
   group by repos.did, split_part(jsonb_extract_path_text(content, 'subject',  'uri'), '/', 3)
 with no data;
@@ -30,7 +29,6 @@ as select repos.did as ":START_ID",
     sum(ladderq(records.created_at::TIMESTAMP)) as "count:long"
   from records join repos on records.repo = repos.id
   where records.collection = 'app.bsky.feed.post'
-  and records.created_at > CURRENT_DATE - INTERVAL '180' DAY
     and repos.did <> split_part(jsonb_extract_path_text(content, 'reply', 'parent',  'uri'), '/', 3)
   group by repos.did, split_part(jsonb_extract_path_text(content, 'reply', 'parent',  'uri'), '/', 3)
 with no data;
@@ -49,3 +47,6 @@ as select distinct did as "did:ID" from (
     select distinct ":END_ID" as did from export_blocks
   )
 with no data;
+
+create index idx_records_repo on records (repo);
+create index idx_records_created_at on records (created_at);
