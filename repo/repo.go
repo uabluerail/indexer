@@ -71,6 +71,11 @@ func EnsureExists(ctx context.Context, db *gorm.DB, did string) (*Repo, bool, er
 	if err != nil {
 		return nil, false, fmt.Errorf("fetching DID Document: %w", err)
 	}
+	if u.Path == "/" {
+		// Discard inginificant path to avoid string comparison mismatches,
+		// as well as glob pattern false negatives.
+		u.Path = ""
+	}
 
 	remote, err := pds.EnsureExists(ctx, db, u.String())
 	if err != nil {
