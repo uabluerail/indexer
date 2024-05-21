@@ -29,3 +29,8 @@ var connectionFailures = promauto.NewCounterVec(prometheus.CounterOpts{
 	Name: "consumer_connection_failures",
 	Help: "Counter of firehose connection failures",
 }, []string{"remote"})
+
+var pdsOnline = promauto.NewGaugeVec(prometheus.GaugeOpts{
+	Name: "consumer_connection_up",
+	Help: "Status of a connection. 1 - up and running.",
+}, []string{"remote"})

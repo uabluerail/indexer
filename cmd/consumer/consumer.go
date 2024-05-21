@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cenkalti/backoff/v4"
 	"github.com/gorilla/websocket"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog"
@@ -82,6 +83,13 @@ func (c *Consumer) run(ctx context.Context) {
 	log := zerolog.Ctx(ctx).With().Str("pds", c.remote.Host).Logger()
 	ctx = log.WithContext(ctx)
 
+	backoffTimer := backoff.NewExponentialBackOff(
+		backoff.WithMaxElapsedTime(0),
+		backoff.WithInitialInterval(time.Second),
+		backoff.WithMaxInterval(5*time.Minute),
+	)
+	pdsOnline.WithLabelValues(c.remote.Host).Set(0)
+
 	defer close(c.running)
 
 	for {
@@ -95,13 +103,20 @@ func (c *Consumer) run(ctx context.Context) {
 			eventCounter.DeletePartialMatch(prometheus.Labels{"remote": c.remote.Host})
 			reposDiscovered.DeletePartialMatch(prometheus.Labels{"remote": c.remote.Host})
 			postsByLanguageIndexed.DeletePartialMatch(prometheus.Labels{"remote": c.remote.Host})
+			pdsOnline.DeletePartialMatch(prometheus.Labels{"remote": c.remote.Host})
 			return
 		default:
+			start := time.Now()
 			if err := c.runOnce(ctx); err != nil {
 				log.Error().Err(err).Msgf("Consumer of %q failed (will be restarted): %s", c.remote.Host, err)
 				connectionFailures.WithLabelValues(c.remote.Host).Inc()
 			}
-			time.Sleep(time.Second)
+			if time.Since(start) > backoffTimer.MaxInterval*3 {
+				// XXX: assume that c.runOnce did some useful work in this case,
+				// even though it might have been stuck on some absurdly long timeouts.
+				backoffTimer.Reset()
+			}
+			time.Sleep(backoffTimer.NextBackOff())
 		}
 	}
 }
@@ -131,6 +146,9 @@ func (c *Consumer) runOnce(ctx context.Context) error {
 		return fmt.Errorf("establishing websocker connection: %w", err)
 	}
 	defer conn.Close()
+
+	pdsOnline.WithLabelValues(c.remote.Host).Set(1)
+	defer func() { pdsOnline.WithLabelValues(c.remote.Host).Set(0) }()
 
 	ch := make(chan bool)
 	defer close(ch)
