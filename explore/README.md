@@ -42,7 +42,9 @@ select count(*) from (select distinct repo from records where collection in ('ap
 ```
 
 partitioned (slow)
-`select count(*) from (select distinct repo from records_listblock where deleted=false and content['subject']::text like '"at://did:plc:bmjomljebcsuxolnygfgqtap/%');`
+`select count(*) from (select distinct repo from records_listblock where deleted=false and content['subject']::text like '"at:///%');`
+
+`select count(*) from (select distinct repo from records_listblock where deleted=false and (split_part(jsonb_extract_path_text(content, 'subject'), '/', 3))='did:plc:bmjomljebcsuxolnygfgqtap');`
 
 Count all records
 
