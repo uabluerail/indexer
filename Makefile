@@ -43,6 +43,7 @@ wait-for-plc:
 # ---------------------------- Database ----------------------------
 
 psql:
+	@docker compose up -d postgres
 	@docker compose exec -it postgres psql -U postgres -d bluesky
 
 init-db: .env

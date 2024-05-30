@@ -497,6 +497,7 @@
           "showLegend": false
         },
         "tooltip": {
+          "maxHeight": 600,
           "mode": "multi",
           "sort": "desc"
         }
@@ -595,7 +596,7 @@
         "showThresholdMarkers": true,
         "sizing": "auto"
       },
-      "pluginVersion": "10.4.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -657,7 +658,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.4.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -719,7 +720,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.4.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -822,6 +823,7 @@
           "showLegend": false
         },
         "tooltip": {
+          "maxHeight": 600,
           "mode": "single",
           "sort": "none"
         }
@@ -907,7 +909,7 @@
         "showThresholdMarkers": true,
         "sizing": "auto"
       },
-      "pluginVersion": "10.4.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -1005,6 +1007,7 @@
           "showLegend": false
         },
         "tooltip": {
+          "maxHeight": 600,
           "mode": "single",
           "sort": "none"
         }
@@ -1115,7 +1118,7 @@
         "sizing": "auto",
         "valueMode": "color"
       },
-      "pluginVersion": "10.4.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -1205,7 +1208,7 @@
         "showThresholdMarkers": true,
         "sizing": "auto"
       },
-      "pluginVersion": "10.4.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -1278,7 +1281,7 @@
         "showThresholdMarkers": true,
         "sizing": "auto"
       },
-      "pluginVersion": "10.4.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -1341,7 +1344,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.4.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -1425,7 +1428,7 @@
         "showThresholdMarkers": true,
         "sizing": "auto"
       },
-      "pluginVersion": "10.4.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -1505,7 +1508,7 @@
         "showThresholdMarkers": true,
         "sizing": "auto"
       },
-      "pluginVersion": "10.4.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -1627,7 +1630,7 @@
         "sizing": "auto",
         "valueMode": "color"
       },
-      "pluginVersion": "10.4.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -1730,7 +1733,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.4.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -1831,6 +1834,7 @@
           ""
         ],
         "tooltip": {
+          "maxHeight": 600,
           "mode": "multi",
           "sort": "desc"
         }
@@ -1936,7 +1940,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.4.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -1944,7 +1948,7 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "(max by(instance) (label_replace(time() - repo_commit_received_timestamp, \"remote\", \"delay-$1\", \"remote\", \"https://(.*).us-(west|east).host.bsky.network\")))",
+          "expr": "(max by(instance) (label_replace(time() - repo_commit_received_timestamp{remote=~\"https://amanita.us-east.host.bsky.network|https://agaric.us-west.host.bsky.network|https://blewit.us-west.host.bsky.network|https://boletus.us-west.host.bsky.network|https://chaga.us-west.host.bsky.network|https://conocybe.us-west.host.bsky.network|https://enoki.us-east.host.bsky.network|https://hydnum.us-west.host.bsky.network|https://inkcap.us-east.host.bsky.network|https://lepista.us-west.host.bsky.network|https://lionsmane.us-east.host.bsky.network|https://maitake.us-west.host.bsky.network|https://morel.us-east.host.bsky.network|https://oyster.us-east.host.bsky.network|https://porcini.us-east.host.bsky.network|https://puffball.us-east.host.bsky.network|https://russula.us-west.host.bsky.network|https://shiitake.us-east.host.bsky.network|https://shimeji.us-east.host.bsky.network|https://verpa.us-west.host.bsky.network\"}, \"remote\", \"delay-$1\", \"remote\", \"https://(.*).us-(west|east).host.bsky.network\")))",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
@@ -2055,6 +2059,7 @@
           ""
         ],
         "tooltip": {
+          "maxHeight": 600,
           "mode": "multi",
           "sort": "desc"
         }
@@ -2067,7 +2072,7 @@
           },
           "disableTextWrap": false,
           "editorMode": "code",
-          "expr": "label_replace(time() - repo_commit_received_timestamp, \"remote\", \"delay-$1\", \"remote\", \"https://(.*).us-(west|east).host.bsky.network\")",
+          "expr": "label_replace(time() - repo_commit_received_timestamp{remote=~\"https://amanita.us-east.host.bsky.network|https://agaric.us-west.host.bsky.network|https://blewit.us-west.host.bsky.network|https://boletus.us-west.host.bsky.network|https://chaga.us-west.host.bsky.network|https://conocybe.us-west.host.bsky.network|https://enoki.us-east.host.bsky.network|https://hydnum.us-west.host.bsky.network|https://inkcap.us-east.host.bsky.network|https://lepista.us-west.host.bsky.network|https://lionsmane.us-east.host.bsky.network|https://maitake.us-west.host.bsky.network|https://morel.us-east.host.bsky.network|https://oyster.us-east.host.bsky.network|https://porcini.us-east.host.bsky.network|https://puffball.us-east.host.bsky.network|https://russula.us-west.host.bsky.network|https://shiitake.us-east.host.bsky.network|https://shimeji.us-east.host.bsky.network|https://verpa.us-west.host.bsky.network\"}, \"remote\", \"delay-$1\", \"remote\", \"https://(.*).us-(west|east).host.bsky.network\")",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -2084,7 +2089,7 @@
           },
           "disableTextWrap": false,
           "editorMode": "code",
-          "expr": "label_replace(deriv(repo_commit_received_timestamp[$rate_interval]), \"remote\", \"catchup-$1\", \"remote\", \"https://(.*).us-(west|east).host.bsky.network\")",
+          "expr": "label_replace(deriv(repo_commit_received_timestamp{remote=~\"https://amanita.us-east.host.bsky.network|https://agaric.us-west.host.bsky.network|https://blewit.us-west.host.bsky.network|https://boletus.us-west.host.bsky.network|https://chaga.us-west.host.bsky.network|https://conocybe.us-west.host.bsky.network|https://enoki.us-east.host.bsky.network|https://hydnum.us-west.host.bsky.network|https://inkcap.us-east.host.bsky.network|https://lepista.us-west.host.bsky.network|https://lionsmane.us-east.host.bsky.network|https://maitake.us-west.host.bsky.network|https://morel.us-east.host.bsky.network|https://oyster.us-east.host.bsky.network|https://porcini.us-east.host.bsky.network|https://puffball.us-east.host.bsky.network|https://russula.us-west.host.bsky.network|https://shiitake.us-east.host.bsky.network|https://shimeji.us-east.host.bsky.network|https://verpa.us-west.host.bsky.network\"}[$rate_interval]), \"remote\", \"catchup-$1\", \"remote\", \"https://(.*).us-(west|east).host.bsky.network\")",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -2142,7 +2147,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.4.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -2219,7 +2224,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.4.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -2227,7 +2232,7 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "(sum by(instance) (label_replace(time() - repo_commit_received_timestamp, \"remote\", \"delay-$1\", \"remote\", \"https://(.*).us-(west|east).host.bsky.network\")))/(sum by(instance) (label_replace(deriv(repo_commit_received_timestamp[5m]), \"remote\", \"catchup-$1\", \"remote\", \"https://(.*).us-(west|east).host.bsky.network\")))",
+          "expr": "(sum by(instance) (label_replace(time() - repo_commit_received_timestamp{remote=~\"https://amanita.us-east.host.bsky.network|https://agaric.us-west.host.bsky.network|https://blewit.us-west.host.bsky.network|https://boletus.us-west.host.bsky.network|https://chaga.us-west.host.bsky.network|https://conocybe.us-west.host.bsky.network|https://enoki.us-east.host.bsky.network|https://hydnum.us-west.host.bsky.network|https://inkcap.us-east.host.bsky.network|https://lepista.us-west.host.bsky.network|https://lionsmane.us-east.host.bsky.network|https://maitake.us-west.host.bsky.network|https://morel.us-east.host.bsky.network|https://oyster.us-east.host.bsky.network|https://porcini.us-east.host.bsky.network|https://puffball.us-east.host.bsky.network|https://russula.us-west.host.bsky.network|https://shiitake.us-east.host.bsky.network|https://shimeji.us-east.host.bsky.network|https://verpa.us-west.host.bsky.network\"}, \"remote\", \"delay-$1\", \"remote\", \"https://(.*).us-(west|east).host.bsky.network\")))/(sum by(instance) (label_replace(deriv(repo_commit_received_timestamp[5m]), \"remote\", \"catchup-$1\", \"remote\", \"https://(.*).us-(west|east).host.bsky.network\")))",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
@@ -2293,7 +2298,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.4.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -2309,6 +2314,326 @@
         }
       ],
       "title": "Left to index",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic",
+            "seriesBy": "max"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "left",
+            "axisSoftMax": 0.5,
+            "axisSoftMin": 0,
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 43,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "linearThreshold": 4,
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "fieldMinMax": false,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "commits/s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 10,
+        "x": 2,
+        "y": 18
+      },
+      "id": 41,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "right",
+          "showLegend": true,
+          "width": 0
+        },
+        "timezone": [
+          ""
+        ],
+        "tooltip": {
+          "maxHeight": 600,
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "exemplar": false,
+          "expr": "sum by(remote) (rate(repo_commits_received_counter{remote!~\"https://amanita.us-east.host.bsky.network|https://enoki.us-east.host.bsky.network|https://inkcap.us-east.host.bsky.network|https://lionsmane.us-east.host.bsky.network|https://morel.us-east.host.bsky.network|https://oyster.us-east.host.bsky.network|https://porcini.us-east.host.bsky.network|https://puffball.us-east.host.bsky.network|https://shiitake.us-east.host.bsky.network|https://shimeji.us-east.host.bsky.network|https://agaric.us-west.host.bsky.network|https://blewit.us-west.host.bsky.network|https://boletus.us-west.host.bsky.network|https://chaga.us-west.host.bsky.network|https://conocybe.us-west.host.bsky.network|https://hydnum.us-west.host.bsky.network|https://lepista.us-west.host.bsky.network|https://maitake.us-west.host.bsky.network|https://russula.us-west.host.bsky.network|https://verpa.us-west.host.bsky.network\"}[$rate_interval]))",
+          "format": "time_series",
+          "fullMetaSearch": false,
+          "hide": false,
+          "includeNullMetadata": true,
+          "instant": false,
+          "interval": "",
+          "legendFormat": "{{remote}}",
+          "range": true,
+          "refId": "B",
+          "useBackend": false
+        }
+      ],
+      "title": "Firehose (3d party PDSs)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "left",
+            "axisSoftMax": 30,
+            "axisSoftMin": 0,
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 4,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "B"
+            },
+            "properties": [
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              },
+              {
+                "id": "unit",
+                "value": "s/s"
+              },
+              {
+                "id": "custom.axisSoftMin",
+                "value": -2
+              },
+              {
+                "id": "custom.axisSoftMax",
+                "value": 2
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 18
+      },
+      "id": 40,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "right",
+          "showLegend": true
+        },
+        "timezone": [
+          ""
+        ],
+        "tooltip": {
+          "maxHeight": 600,
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "disableTextWrap": false,
+          "editorMode": "code",
+          "expr": "label_replace(time() - repo_commit_received_timestamp{remote!~\"https://amanita.us-east.host.bsky.network|https://agaric.us-west.host.bsky.network|https://blewit.us-west.host.bsky.network|https://boletus.us-west.host.bsky.network|https://chaga.us-west.host.bsky.network|https://conocybe.us-west.host.bsky.network|https://enoki.us-east.host.bsky.network|https://hydnum.us-west.host.bsky.network|https://inkcap.us-east.host.bsky.network|https://lepista.us-west.host.bsky.network|https://lionsmane.us-east.host.bsky.network|https://maitake.us-west.host.bsky.network|https://morel.us-east.host.bsky.network|https://oyster.us-east.host.bsky.network|https://porcini.us-east.host.bsky.network|https://puffball.us-east.host.bsky.network|https://russula.us-west.host.bsky.network|https://shiitake.us-east.host.bsky.network|https://shimeji.us-east.host.bsky.network|https://verpa.us-west.host.bsky.network\"}, \"remote\", \"delay-$1\", \"remote\", \"https://(.*).us-(west|east).host.bsky.network\")",
+          "fullMetaSearch": false,
+          "hide": false,
+          "includeNullMetadata": true,
+          "instant": false,
+          "legendFormat": "{{remote}}",
+          "range": true,
+          "refId": "A",
+          "useBackend": false
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "disableTextWrap": false,
+          "editorMode": "code",
+          "expr": "label_replace(deriv(repo_commit_received_timestamp{remote!~\"https://amanita.us-east.host.bsky.network|https://agaric.us-west.host.bsky.network|https://blewit.us-west.host.bsky.network|https://boletus.us-west.host.bsky.network|https://chaga.us-west.host.bsky.network|https://conocybe.us-west.host.bsky.network|https://enoki.us-east.host.bsky.network|https://hydnum.us-west.host.bsky.network|https://inkcap.us-east.host.bsky.network|https://lepista.us-west.host.bsky.network|https://lionsmane.us-east.host.bsky.network|https://maitake.us-west.host.bsky.network|https://morel.us-east.host.bsky.network|https://oyster.us-east.host.bsky.network|https://porcini.us-east.host.bsky.network|https://puffball.us-east.host.bsky.network|https://russula.us-west.host.bsky.network|https://shiitake.us-east.host.bsky.network|https://shimeji.us-east.host.bsky.network|https://verpa.us-west.host.bsky.network\"}[$rate_interval]), \"remote\", \"catchup-$1\", \"remote\", \"https://(.*).us-(west|east).host.bsky.network\")",
+          "fullMetaSearch": false,
+          "hide": false,
+          "includeNullMetadata": true,
+          "instant": false,
+          "legendFormat": "{{remote}}",
+          "range": true,
+          "refId": "B",
+          "useBackend": false
+        }
+      ],
+      "title": "Delay-Catchup (3d party PDSs)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "purple",
+                "value": null
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 2,
+        "x": 0,
+        "y": 22
+      },
+      "id": 34,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": true,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(6000000-repos_fully_indexed{job=\"db\"})/deriv(repos_fully_indexed{job=\"db\"}[30d])",
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Time to 6mil",
       "type": "stat"
     },
     {
@@ -2436,9 +2761,9 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 10,
-        "x": 2,
-        "y": 18
+        "w": 7,
+        "x": 0,
+        "y": 26
       },
       "id": 2,
       "options": {
@@ -2449,6 +2774,7 @@
           "showLegend": true
         },
         "tooltip": {
+          "maxHeight": 600,
           "mode": "multi",
           "sort": "none"
         }
@@ -2586,9 +2912,9 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 6,
-        "x": 12,
-        "y": 18
+        "w": 9,
+        "x": 7,
+        "y": 26
       },
       "id": 6,
       "options": {
@@ -2599,6 +2925,7 @@
           "showLegend": true
         },
         "tooltip": {
+          "maxHeight": 600,
           "mode": "multi",
           "sort": "desc"
         }
@@ -2747,9 +3074,9 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 6,
-        "x": 18,
-        "y": 18
+        "w": 8,
+        "x": 16,
+        "y": 26
       },
       "id": 4,
       "options": {
@@ -2760,6 +3087,7 @@
           "showLegend": true
         },
         "tooltip": {
+          "maxHeight": 600,
           "mode": "multi",
           "sort": "none"
         }
@@ -2794,68 +3122,6 @@
       ],
       "title": "Record indexing",
       "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "mappings": [],
-          "thresholds": {
-            "mode": "percentage",
-            "steps": [
-              {
-                "color": "purple",
-                "value": null
-              }
-            ]
-          },
-          "unit": "s"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 2,
-        "x": 0,
-        "y": 22
-      },
-      "id": 34,
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": true,
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "10.4.2",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "editorMode": "code",
-          "expr": "(6000000-repos_fully_indexed{job=\"db\"})/deriv(repos_fully_indexed{job=\"db\"}[30d])",
-          "instant": false,
-          "legendFormat": "__auto",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Time to 6mil",
-      "type": "stat"
     }
   ],
   "refresh": "5s",
@@ -2950,10 +3216,11 @@
     "from": "now-12h",
     "to": "now"
   },
+  "timeRangeUpdatedDuringEditOrView": false,
   "timepicker": {},
   "timezone": "",
   "title": "Bsky indexer",
   "uid": "aXw6dQhSzs",
-  "version": 9,
+  "version": 16,
   "weekStart": ""
 }
