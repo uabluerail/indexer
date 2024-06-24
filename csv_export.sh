@@ -50,5 +50,13 @@ EOF
 
 # ------------------------------ Dump handles from plc-mirror ----------------------------------
 
-docker exec -t plc-postgres-1 psql -U postgres -d plc \
-  -c 'copy (select handle, did as "did:ID" from actors) to stdout with (format csv , header, force_quote ("handle"));' | sed -E -e 's/([^\\])\\",/\1\\\\",/g' > handles.csv
+docker compose exec -iT postgres psql -U postgres -d bluesky <<- EOF | sed -E -e 's/([^\\])\\",/\1\\\\",/g' > handles.csv
+\timing
+select did as "did:ID", replace(operation['alsoKnownAs'] ->> 0, 'at://', '') as handle
+from plc_log_entries
+where (did, plc_timestamp) in (
+  select did, max(plc_timestamp) as plc_timestamp from plc_log_entries
+  where not nullified
+  group by did
+)
+EOF
