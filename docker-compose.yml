@@ -2,7 +2,12 @@ version: '3.8'
 
 services:
   postgres:
-    image: "postgres:16"
+    # image: "postgres:16"
+    build:
+      context: ./docker
+      dockerfile_inline: |
+        FROM postgres:16
+        RUN apt update && apt install -y postgresql-16-partman
     volumes:
       - "${DATA_DIR:?specify data dir in .env file}/postgres:/var/lib/postgresql/data:rw"
     restart: always
@@ -23,8 +28,12 @@ services:
       "-c", "shared_buffers=8GB",
       "-c", "work_mem=2GB",
       "-c", "max_parallel_workers_per_gather=8",
-      "-c", "max_wal_size=8GB"
-      ]
+      "-c", "max_wal_size=8GB",
+      "-c", "shared_preload_libraries=pg_partman_bgw",
+      "-c", "pg_partman_bgw.interval=3600",
+      "-c", "pg_partman_bgw.role=postgres",
+      "-c", "pg_partman_bgw.dbname=bluesky",
+    ]
     shm_size: '16gb'
     stop_grace_period: 24h
 
