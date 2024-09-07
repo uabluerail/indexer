@@ -157,6 +157,9 @@ func (c *RelayConsumer) processMessage(ctx context.Context, typ string, r io.Rea
 
 		did = payload.Did
 
+	case "#account":
+		// Ignore for now.
+
 	default:
 		b, err := io.ReadAll(r)
 		if err != nil {
