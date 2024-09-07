@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"net/http"
 	_ "net/http/pprof"
 	"os"
 	"os/signal"
@@ -19,21 +18,21 @@ import (
 
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/kelseyhightower/envconfig"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 
+	"github.com/uabluerail/indexer/pds"
+	"github.com/uabluerail/indexer/repo"
 	"github.com/uabluerail/indexer/util/gormzerolog"
 )
 
 type Config struct {
-	LogFile     string
-	LogFormat   string `default:"text"`
-	LogLevel    int64  `default:"1"`
-	MetricsPort string `split_words:"true"`
-	DBUrl       string `envconfig:"POSTGRES_URL"`
+	LogFile   string
+	LogFormat string `default:"text"`
+	LogLevel  int64  `default:"1"`
+	DBUrl     string `envconfig:"POSTGRES_URL"`
 }
 
 var config Config
@@ -53,28 +52,16 @@ func runMain(ctx context.Context) error {
 	}
 	log.Debug().Msgf("DB connection established")
 
-	lister, err := NewLister(ctx, db)
-	if err != nil {
-		return fmt.Errorf("failed to create lister: %w", err)
-	}
-	if err := lister.Start(ctx); err != nil {
-		return fmt.Errorf("failed to start lister: %w", err)
-	}
-
-	log.Info().Msgf("Starting HTTP listener on %q...", config.MetricsPort)
-	http.Handle("/metrics", promhttp.Handler())
-	srv := &http.Server{Addr: fmt.Sprintf(":%s", config.MetricsPort)}
-	errCh := make(chan error)
-	go func() {
-		errCh <- srv.ListenAndServe()
-	}()
-	select {
-	case <-ctx.Done():
-		if err := srv.Shutdown(context.Background()); err != nil {
-			return fmt.Errorf("HTTP server shutdown failed: %w", err)
+	for _, f := range []func(*gorm.DB) error{
+		pds.AutoMigrate,
+		repo.AutoMigrate,
+	} {
+		if err := f(db); err != nil {
+			return fmt.Errorf("auto-migrating DB schema: %w", err)
 		}
 	}
-	return <-errCh
+	log.Debug().Msgf("DB schema updated")
+	return nil
 }
 
 func main() {
@@ -82,7 +69,7 @@ func main() {
 	flag.StringVar(&config.LogFormat, "log-format", "text", "Logging format. 'text' or 'json'")
 	flag.Int64Var(&config.LogLevel, "log-level", 1, "Log level. -1 - trace, 0 - debug, 1 - info, 5 - panic")
 
-	if err := envconfig.Process("lister", &config); err != nil {
+	if err := envconfig.Process("update-db-schema", &config); err != nil {
 		log.Fatalf("envconfig.Process: %s", err)
 	}
 

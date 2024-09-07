@@ -28,6 +28,23 @@ services:
     shm_size: '16gb'
     stop_grace_period: 24h
 
+  update-db-schema:
+    build:
+      context: .
+      dockerfile: cmd/update-db-schema/Dockerfile
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: on-failure
+    image: uabluerail/update-db-schema
+    links:
+      - postgres:db
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      UPDATE-DB-SCHEMA_POSTGRES_URL: "postgres://postgres:${POSTGRES_PASSWORD}@db/bluesky?sslmode=disable"
+    command: [ "--log-level=0" ]
+
   plc:
     build:
       context: .
@@ -45,6 +62,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      update-db-schema:
+        condition: service_completed_successfully
     environment:
       PLC_METRICS_PORT: '8080'
       PLC_POSTGRES_URL: "postgres://postgres:${POSTGRES_PASSWORD}@db/bluesky?sslmode=disable"
@@ -70,6 +89,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      update-db-schema:
+        condition: service_completed_successfully
     environment:
       LISTER_METRICS_PORT: '8080'
       LISTER_POSTGRES_URL: "postgres://postgres:${POSTGRES_PASSWORD}@db/bluesky?sslmode=disable"
@@ -95,6 +116,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      update-db-schema:
+        condition: service_completed_successfully
     environment:
       CONSUMER_METRICS_PORT: '8080'
       CONSUMER_POSTGRES_URL: "postgres://postgres:${POSTGRES_PASSWORD}@db/bluesky?sslmode=disable"
@@ -122,6 +145,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      update-db-schema:
+        condition: service_completed_successfully
     dns:
       - 1.1.1.1
       - 8.8.8.8
@@ -149,4 +174,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      update-db-schema:
+        # Not a strict dependency, but it's better to not have it running
+        # unnecessary queries during a costly migration.
+        condition: service_completed_successfully
 
