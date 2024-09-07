@@ -6,7 +6,7 @@ COPY . ./
 RUN go build -trimpath ./cmd/plc-mirror
 
 FROM alpine:latest as certs
-RUN apk --update add ca-certificates
+RUN apk --update add ca-certificates curl
 
 FROM debian:stable-slim
 COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
