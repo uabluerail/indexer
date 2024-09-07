@@ -4,3 +4,4 @@
 !go.sum
 !**/*.go
 cmd/**
+!cmd/consumer
