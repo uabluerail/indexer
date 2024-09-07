@@ -18,7 +18,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog"
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 
 	comatproto "github.com/bluesky-social/indigo/api/atproto"
 	"github.com/bluesky-social/indigo/xrpc"
@@ -411,17 +410,19 @@ func (c *Consumer) processMessage(ctx context.Context, typ string, r io.Reader, 
 			log.Debug().Int64("seq", payload.Seq).Str("pds", c.remote.Host).Msgf("len(recs) == 0")
 		}
 		if len(recs) > 0 {
+			// XXX: update this to work with the new partitioning scheme.
+			// (repo, collection, rkey) combination no longer has unique constraint.
 			err = c.db.Model(&repo.Record{}).
-				Clauses(clause.OnConflict{
-					Where: clause.Where{Exprs: []clause.Expression{clause.Or(
-						clause.Eq{Column: clause.Column{Name: "at_rev", Table: "records"}, Value: nil},
-						clause.Eq{Column: clause.Column{Name: "at_rev", Table: "records"}, Value: ""},
-						clause.Lt{
-							Column: clause.Column{Name: "at_rev", Table: "records"},
-							Value:  clause.Column{Name: "at_rev", Table: "excluded"}},
-					)}},
-					DoUpdates: clause.AssignmentColumns([]string{"content", "at_rev"}),
-					Columns:   []clause.Column{{Name: "repo"}, {Name: "collection"}, {Name: "rkey"}}}).
+				// Clauses(clause.OnConflict{
+				// 	Where: clause.Where{Exprs: []clause.Expression{clause.Or(
+				// 		clause.Eq{Column: clause.Column{Name: "at_rev", Table: "records"}, Value: nil},
+				// 		clause.Eq{Column: clause.Column{Name: "at_rev", Table: "records"}, Value: ""},
+				// 		clause.Lt{
+				// 			Column: clause.Column{Name: "at_rev", Table: "records"},
+				// 			Value:  clause.Column{Name: "at_rev", Table: "excluded"}},
+				// 	)}},
+				// 	DoUpdates: clause.AssignmentColumns([]string{"content", "at_rev"}),
+				// 	Columns:   []clause.Column{{Name: "repo"}, {Name: "collection"}, {Name: "rkey"}}}).
 				Create(recs).Error
 			if err != nil {
 				return fmt.Errorf("inserting records into the database: %w", err)
