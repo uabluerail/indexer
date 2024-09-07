@@ -47,6 +47,11 @@ func EnsureExists(ctx context.Context, db *gorm.DB, host string) (*PDS, error) {
 }
 
 func IsWhitelisted(host string) bool {
+	if host[len(host)-1] == '/' {
+		// Discard inginificant path to avoid string comparison mismatches,
+		// as well as glob pattern false negatives.
+		host = host[:len(host)-1]
+	}
 	for _, p := range whitelist {
 		if match, _ := filepath.Match(p, host); match {
 			return true
