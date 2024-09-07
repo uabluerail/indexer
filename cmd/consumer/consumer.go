@@ -551,6 +551,10 @@ func (c *Consumer) processMessage(ctx context.Context, typ string, r io.Reader, 
 		resolver.Resolver.FlushCacheFor(payload.Did)
 
 		// TODO: fetch DID doc and update PDS field?
+
+	case "#account":
+		// Ignore for now.
+
 	default:
 		b, err := io.ReadAll(r)
 		if err != nil {
