@@ -228,6 +228,7 @@ retry:
 	if err != nil {
 		return fmt.Errorf("failed to extract records: %w", err)
 	}
+	recordsFetched.Add(float64(len(newRecs)))
 	recs := []repo.Record{}
 	for k, v := range newRecs {
 		parts := strings.SplitN(k, "/", 2)
@@ -251,7 +252,6 @@ retry:
 			AtRev:   newRev,
 		})
 	}
-	recordsFetched.Add(float64(len(recs)))
 	if len(recs) > 0 {
 		for _, batch := range splitInBatshes(recs, 500) {
 			result := p.db.Model(&repo.Record{}).
