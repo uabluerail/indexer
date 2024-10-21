@@ -177,7 +177,7 @@ services:
     environment:
       POSTGRES_URL: "postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/bluesky?sslmode=disable"
     volumes:
-      - "./metrics/prometheus/exporters/query-exporter/config.yaml:/config.yaml"
+      - "./metrics/prometheus/exporters/query-exporter/config.yaml:/config/config.yaml:ro"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
