@@ -31,12 +31,13 @@ import (
 )
 
 type Config struct {
-	LogFile     string
-	LogFormat   string `default:"text"`
-	LogLevel    int64  `default:"1"`
-	MetricsPort string `split_words:"true"`
-	DBUrl       string `envconfig:"POSTGRES_URL"`
-	Relays      string
+	LogFile             string
+	LogFormat           string `default:"text"`
+	LogLevel            int64  `default:"1"`
+	MetricsPort         string `split_words:"true"`
+	DBUrl               string `envconfig:"POSTGRES_URL"`
+	Relays              string
+	CollectionBlacklist []string `split_words:"true"`
 }
 
 var config Config
@@ -141,6 +142,7 @@ func runConsumers(ctx context.Context, db *gorm.DB, doneCh chan struct{}) {
 					cancel()
 					continue
 				}
+				c.BlacklistCollections(config.CollectionBlacklist)
 				if err := c.Start(subCtx); err != nil {
 					log.Error().Err(err).Msgf("Failed ot start a consumer for %q: %s", remote.Host, err)
 					cancel()

@@ -45,9 +45,10 @@ type BadRecord struct {
 }
 
 type Consumer struct {
-	db      *gorm.DB
-	remote  pds.PDS
-	running chan struct{}
+	db                  *gorm.DB
+	remote              pds.PDS
+	running             chan struct{}
+	collectionBlacklist map[string]bool
 
 	lastCursorPersist time.Time
 }
@@ -58,10 +59,17 @@ func NewConsumer(ctx context.Context, remote *pds.PDS, db *gorm.DB) (*Consumer, 
 	}
 
 	return &Consumer{
-		db:      db,
-		remote:  *remote,
-		running: make(chan struct{}),
+		db:                  db,
+		remote:              *remote,
+		running:             make(chan struct{}),
+		collectionBlacklist: map[string]bool{},
 	}, nil
+}
+
+func (c *Consumer) BlacklistCollections(colls []string) {
+	for _, coll := range colls {
+		c.collectionBlacklist[coll] = true
+	}
 }
 
 func (c *Consumer) Start(ctx context.Context) error {
@@ -390,6 +398,9 @@ func (c *Consumer) processMessage(ctx context.Context, typ string, r io.Reader, 
 				log.Warn().Msgf("Unexpected key format: %q", k)
 				continue
 			}
+			if c.collectionBlacklist[parts[0]] {
+				continue
+			}
 			langs, _, err := repo.GetLang(ctx, v)
 			if err == nil {
 				for _, lang := range langs {
@@ -407,7 +418,7 @@ func (c *Consumer) processMessage(ctx context.Context, typ string, r io.Reader, 
 				AtRev:   payload.Rev,
 			})
 		}
-		if len(recs) == 0 && expectRecords {
+		if len(c.collectionBlacklist) == 0 && len(recs) == 0 && expectRecords {
 			log.Debug().Int64("seq", payload.Seq).Str("pds", c.remote.Host).Msgf("len(recs) == 0")
 		}
 		if len(recs) > 0 {

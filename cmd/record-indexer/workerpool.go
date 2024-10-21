@@ -31,9 +31,10 @@ type WorkItem struct {
 }
 
 type WorkerPool struct {
-	db      *gorm.DB
-	input   <-chan WorkItem
-	limiter *Limiter
+	db                  *gorm.DB
+	input               <-chan WorkItem
+	limiter             *Limiter
+	collectionBlacklist map[string]bool
 
 	workerSignals []chan struct{}
 	resize        chan int
@@ -41,10 +42,11 @@ type WorkerPool struct {
 
 func NewWorkerPool(input <-chan WorkItem, db *gorm.DB, size int, limiter *Limiter) *WorkerPool {
 	r := &WorkerPool{
-		db:      db,
-		input:   input,
-		limiter: limiter,
-		resize:  make(chan int),
+		db:                  db,
+		input:               input,
+		limiter:             limiter,
+		resize:              make(chan int),
+		collectionBlacklist: map[string]bool{},
 	}
 	r.workerSignals = make([]chan struct{}, size)
 	for i := range r.workerSignals {
@@ -53,6 +55,11 @@ func NewWorkerPool(input <-chan WorkItem, db *gorm.DB, size int, limiter *Limite
 	return r
 }
 
+func (p *WorkerPool) BlacklistCollections(colls []string) {
+	for _, c := range colls {
+		p.collectionBlacklist[c] = true
+	}
+}
 func (p *WorkerPool) Start(ctx context.Context) error {
 	go p.run(ctx)
 	return nil
@@ -226,6 +233,9 @@ retry:
 		parts := strings.SplitN(k, "/", 2)
 		if len(parts) != 2 {
 			log.Warn().Msgf("Unexpected key format: %q", k)
+			continue
+		}
+		if p.collectionBlacklist[parts[0]] {
 			continue
 		}
 		v = regexp.MustCompile(`[^\\](\\\\)*(\\u0000)`).ReplaceAll(v, []byte(`$1<0x00>`))

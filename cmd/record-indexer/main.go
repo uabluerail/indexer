@@ -29,12 +29,13 @@ import (
 )
 
 type Config struct {
-	LogFile     string
-	LogFormat   string `default:"text"`
-	LogLevel    int64  `default:"1"`
-	MetricsPort string `split_words:"true"`
-	DBUrl       string `envconfig:"POSTGRES_URL"`
-	Workers     int    `default:"2"`
+	LogFile             string
+	LogFormat           string   `default:"text"`
+	LogLevel            int64    `default:"1"`
+	MetricsPort         string   `split_words:"true"`
+	DBUrl               string   `envconfig:"POSTGRES_URL"`
+	Workers             int      `default:"2"`
+	CollectionBlacklist []string `split_words:"true"`
 }
 
 var config Config
@@ -64,6 +65,7 @@ func runMain(ctx context.Context) error {
 	if err := pool.Start(ctx); err != nil {
 		return fmt.Errorf("failed to start worker pool: %w", err)
 	}
+	pool.BlacklistCollections(config.CollectionBlacklist)
 
 	scheduler := NewScheduler(ch, db)
 	if err := scheduler.Start(ctx); err != nil {
