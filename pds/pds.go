@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"gorm.io/gorm"
@@ -35,7 +36,12 @@ func AutoMigrate(db *gorm.DB) error {
 	return db.AutoMigrate(&PDS{})
 }
 
+func NormalizeHost(host string) string {
+	return strings.TrimRight(host, "/")
+}
+
 func EnsureExists(ctx context.Context, db *gorm.DB, host string) (*PDS, error) {
+	host = NormalizeHost(host)
 	if !IsWhitelisted(host) {
 		return nil, fmt.Errorf("host %q is not whitelisted", host)
 	}
@@ -47,11 +53,7 @@ func EnsureExists(ctx context.Context, db *gorm.DB, host string) (*PDS, error) {
 }
 
 func IsWhitelisted(host string) bool {
-	if host[len(host)-1] == '/' {
-		// Discard inginificant path to avoid string comparison mismatches,
-		// as well as glob pattern false negatives.
-		host = host[:len(host)-1]
-	}
+	host = NormalizeHost(host)
 	for _, p := range whitelist {
 		if match, _ := filepath.Match(p, host); match {
 			return true
