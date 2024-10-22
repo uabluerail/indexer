@@ -30,7 +30,7 @@ func NewLister(ctx context.Context, db *gorm.DB) (*Lister, error) {
 	return &Lister{
 		db:                  db,
 		resolver:            resolver.Resolver,
-		pollInterval:        5 * time.Minute,
+		pollInterval:        1 * time.Minute,
 		listRefreshInterval: 24 * time.Hour,
 	}, nil
 }
