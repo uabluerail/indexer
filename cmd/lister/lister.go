@@ -77,6 +77,7 @@ func (l *Lister) run(ctx context.Context) {
 			// We actually got some work to do, so avoid sleeping between iterations.
 			select {
 			case t <- time.Now():
+			default:
 			}
 
 			client := xrpcauth.NewAnonymousClient(ctx)
@@ -132,6 +133,7 @@ func (l *Lister) run(ctx context.Context) {
 		case v := <-ticker.C:
 			select {
 			case t <- v:
+			default:
 			}
 		}
 	}
