@@ -74,6 +74,11 @@ func (l *Lister) run(ctx context.Context) {
 				break
 			}
 
+			// We actually got some work to do, so avoid sleeping between iterations.
+			select {
+			case t <- time.Now():
+			}
+
 			client := xrpcauth.NewAnonymousClient(ctx)
 			client.Host = remote.Host
 
