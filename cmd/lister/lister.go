@@ -130,7 +130,9 @@ func (l *Lister) run(ctx context.Context) {
 				log.Error().Err(err).Msgf("Failed to update the timestamp of last list for %q: %s", remote.Host, err)
 			}
 		case v := <-ticker.C:
-			t <- v
+			select {
+			case t <- v:
+			}
 		}
 	}
 
