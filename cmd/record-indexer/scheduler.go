@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"slices"
+	"sync"
 	"time"
 
 	"github.com/rs/zerolog"
@@ -16,6 +17,7 @@ type Scheduler struct {
 	db     *gorm.DB
 	output chan<- WorkItem
 
+	mu         sync.Mutex
 	queue      map[string]*repo.Repo
 	inProgress map[string]*repo.Repo
 }
@@ -45,23 +47,33 @@ func (s *Scheduler) run(ctx context.Context) {
 
 	done := make(chan string)
 	for {
-		if len(s.queue) > 0 {
+		s.mu.Lock()
+		q := len(s.queue)
+		s.mu.Unlock()
+		if q > 0 {
 			next := WorkItem{signal: make(chan struct{})}
+			s.mu.Lock()
 			for _, r := range s.queue {
 				next.Repo = r
 				break
 			}
+			s.mu.Unlock()
 
 			select {
 			case <-ctx.Done():
 				return
 			case <-t.C:
-				if err := s.fillQueue(ctx); err != nil {
-					log.Error().Err(err).Msgf("Failed to get more tasks for the queue: %s", err)
-				}
+				go func() {
+					if err := s.fillQueue(ctx); err != nil {
+						log.Error().Err(err).Msgf("Failed to get more tasks for the queue: %s", err)
+					}
+				}()
 			case s.output <- next:
+				s.mu.Lock()
 				delete(s.queue, next.Repo.DID)
 				s.inProgress[next.Repo.DID] = next.Repo
+				s.mu.Unlock()
+
 				go func(did string, ch chan struct{}) {
 					select {
 					case <-ch:
@@ -71,7 +83,9 @@ func (s *Scheduler) run(ctx context.Context) {
 				}(next.Repo.DID, next.signal)
 				s.updateQueueLenMetrics()
 			case did := <-done:
+				s.mu.Lock()
 				delete(s.inProgress, did)
+				s.mu.Unlock()
 				s.updateQueueLenMetrics()
 			}
 		} else {
@@ -83,7 +97,9 @@ func (s *Scheduler) run(ctx context.Context) {
 					log.Error().Err(err).Msgf("Failed to get more tasks for the queue: %s", err)
 				}
 			case did := <-done:
+				s.mu.Lock()
 				delete(s.inProgress, did)
+				s.mu.Unlock()
 				s.updateQueueLenMetrics()
 			}
 		}
@@ -94,7 +110,10 @@ func (s *Scheduler) fillQueue(ctx context.Context) error {
 	const maxQueueLen = 10000
 	const maxAttempts = 3
 
-	if len(s.queue)+len(s.inProgress) >= maxQueueLen {
+	s.mu.Lock()
+	queueLen := len(s.queue) + len(s.inProgress)
+	s.mu.Unlock()
+	if queueLen >= maxQueueLen {
 		return nil
 	}
 
@@ -138,6 +157,7 @@ SELECT "repos".* FROM "repos" left join "pds" on repos.pds = pds.id WHERE pds = 
 		if err != nil {
 			return fmt.Errorf("querying DB: %w", err)
 		}
+		s.mu.Lock()
 		for _, r := range repos {
 			if s.queue[r.DID] != nil || s.inProgress[r.DID] != nil {
 				continue
@@ -146,6 +166,7 @@ SELECT "repos".* FROM "repos" left join "pds" on repos.pds = pds.id WHERE pds = 
 			s.queue[r.DID] = &copied
 			reposQueued.Inc()
 		}
+		s.mu.Unlock()
 		s.updateQueueLenMetrics()
 	}
 
@@ -153,6 +174,8 @@ SELECT "repos".* FROM "repos" left join "pds" on repos.pds = pds.id WHERE pds = 
 }
 
 func (s *Scheduler) updateQueueLenMetrics() {
+	s.mu.Lock()
 	queueLenght.WithLabelValues("queued").Set(float64(len(s.queue)))
 	queueLenght.WithLabelValues("inProgress").Set(float64(len(s.inProgress)))
+	s.mu.Unlock()
 }
