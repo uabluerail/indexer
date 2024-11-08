@@ -4,6 +4,8 @@ create table records
 (like records_old including defaults)
 partition by hash (repo);
 
+alter sequence records_id_seq owned by records.id;
+
 do $$
 begin
 for i in 0..1023 loop
@@ -16,3 +18,4 @@ with moved_rows as (
         returning r.*
 )
 insert into records select * from moved_rows;
+drop table records_old;
