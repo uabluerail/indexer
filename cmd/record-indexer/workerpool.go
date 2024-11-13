@@ -256,6 +256,12 @@ retry:
 	}
 	if len(recs) > 0 {
 		if p.recordsDB != nil {
+			// We're querying for a matching record before insert to avoid
+			// unnecessary record duplication. If we didn't, virtually all
+			// records from a repo download would create new rows, because `at_rev`
+			// would not match any existing entries.
+			// So we fetch the last version of a record and skip insert if
+			// it's identical to the one we just fetched.
 			for _, rec := range recs {
 				iter := p.recordsDB.Query(
 					qb.Select("bluesky.records").Columns("at_rev", "deleted", "record").
