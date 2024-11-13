@@ -3,13 +3,15 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
-	"regexp"
 	"strings"
 	"time"
 
 	"github.com/imax9000/errors"
 	"github.com/rs/zerolog"
+	"github.com/scylladb/gocqlx/qb"
+	"github.com/scylladb/gocqlx/v3"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
@@ -21,7 +23,6 @@ import (
 	"github.com/uabluerail/indexer/models"
 	"github.com/uabluerail/indexer/pds"
 	"github.com/uabluerail/indexer/repo"
-	"github.com/uabluerail/indexer/util/fix"
 	"github.com/uabluerail/indexer/util/resolver"
 )
 
@@ -32,6 +33,7 @@ type WorkItem struct {
 
 type WorkerPool struct {
 	db                  *gorm.DB
+	recordsDB           *gocqlx.Session
 	input               <-chan WorkItem
 	limiter             *Limiter
 	collectionBlacklist map[string]bool
@@ -40,9 +42,10 @@ type WorkerPool struct {
 	resize        chan int
 }
 
-func NewWorkerPool(input <-chan WorkItem, db *gorm.DB, size int, limiter *Limiter) *WorkerPool {
+func NewWorkerPool(input <-chan WorkItem, db *gorm.DB, session *gocqlx.Session, size int, limiter *Limiter) *WorkerPool {
 	r := &WorkerPool{
 		db:                  db,
+		recordsDB:           session,
 		input:               input,
 		limiter:             limiter,
 		resize:              make(chan int),
@@ -239,7 +242,6 @@ retry:
 		if p.collectionBlacklist[parts[0]] {
 			continue
 		}
-		v = regexp.MustCompile(`[^\\](\\\\)*(\\u0000)`).ReplaceAll(v, []byte(`$1<0x00>`))
 
 		recs = append(recs, repo.Record{
 			Repo:       models.ID(work.Repo.ID),
@@ -248,33 +250,68 @@ retry:
 			// XXX: proper replacement of \u0000 would require full parsing of JSON
 			// and recursive iteration over all string values, but this
 			// should work well enough for now.
-			Content: fix.EscapeNullCharForPostgres(v),
+			Content: v, //fix.EscapeNullCharForPostgres(v),
 			AtRev:   newRev,
 		})
 	}
 	if len(recs) > 0 {
-		for _, batch := range splitInBatshes(recs, 500) {
-			result := p.db.Model(&repo.Record{}).
-				Clauses(clause.OnConflict{
-					Where: clause.Where{Exprs: []clause.Expression{
-						clause.Neq{
-							Column: clause.Column{Name: "content", Table: "records"},
-							Value:  clause.Column{Name: "content", Table: "excluded"}},
-						clause.Or(
-							clause.Eq{Column: clause.Column{Name: "at_rev", Table: "records"}, Value: nil},
-							clause.Eq{Column: clause.Column{Name: "at_rev", Table: "records"}, Value: ""},
-							clause.Lt{
-								Column: clause.Column{Name: "at_rev", Table: "records"},
-								Value:  clause.Column{Name: "at_rev", Table: "excluded"}},
-						)}},
-					DoUpdates: clause.AssignmentColumns([]string{"content", "at_rev"}),
-					Columns:   []clause.Column{{Name: "repo"}, {Name: "collection"}, {Name: "rkey"}}}).
-				Create(batch)
-			if err := result.Error; err != nil {
-				return fmt.Errorf("inserting records into the database: %w", err)
-			}
-			recordsInserted.Add(float64(result.RowsAffected))
+		if p.recordsDB != nil {
+			for _, rec := range recs {
+				iter := p.recordsDB.Query(
+					qb.Select("bluesky.records").Columns("at_rev", "deleted", "record").
+						Where(qb.Eq("repo"), qb.Eq("collection"), qb.Eq("rkey")).
+						OrderBy("at_rev", qb.DESC).Limit(1).ToCql()).
+					WithContext(ctx).Bind(work.Repo.DID, rec.Collection, rec.Rkey).Iter()
 
+				var (
+					skip    = false
+					atRev   string
+					deleted bool
+					record  json.RawMessage
+				)
+				for iter.Scan(&atRev, &deleted, &record) {
+					if bytes.Equal(record, rec.Content) {
+						skip = true
+					}
+				}
+				if err := iter.Close(); err != nil {
+					return fmt.Errorf("failed to check for existing record: %w", err)
+				}
+				if skip {
+					continue
+				}
+				err := p.recordsDB.Query(qb.Insert("bluesky.records").
+					Columns("repo", "collection", "rkey", "at_rev", "record").
+					Unique().ToCql()).WithContext(ctx).
+					Bind(work.Repo.DID, rec.Collection, rec.Rkey, rec.AtRev, rec.Content).ExecRelease()
+				if err != nil {
+					return fmt.Errorf("inserting record %s/%s/%s into the database: %w", work.Repo.DID, rec.Collection, rec.Rkey, err)
+				}
+				recordsInserted.Add(1)
+			}
+		} else {
+			for _, batch := range splitInBatshes(recs, 500) {
+				result := p.db.Model(&repo.Record{}).
+					Clauses(clause.OnConflict{
+						Where: clause.Where{Exprs: []clause.Expression{
+							clause.Neq{
+								Column: clause.Column{Name: "content", Table: "records"},
+								Value:  clause.Column{Name: "content", Table: "excluded"}},
+							clause.Or(
+								clause.Eq{Column: clause.Column{Name: "at_rev", Table: "records"}, Value: nil},
+								clause.Eq{Column: clause.Column{Name: "at_rev", Table: "records"}, Value: ""},
+								clause.Lt{
+									Column: clause.Column{Name: "at_rev", Table: "records"},
+									Value:  clause.Column{Name: "at_rev", Table: "excluded"}},
+							)}},
+						DoUpdates: clause.AssignmentColumns([]string{"content", "at_rev"}),
+						Columns:   []clause.Column{{Name: "repo"}, {Name: "collection"}, {Name: "rkey"}}}).
+					Create(batch)
+				if err := result.Error; err != nil {
+					return fmt.Errorf("inserting records into the database: %w", err)
+				}
+				recordsInserted.Add(float64(result.RowsAffected))
+			}
 		}
 	}
 

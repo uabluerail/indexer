@@ -17,10 +17,12 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/gocql/gocql"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
+	"github.com/scylladb/gocqlx/v3"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -36,6 +38,7 @@ type Config struct {
 	DBUrl               string   `envconfig:"POSTGRES_URL"`
 	Workers             int      `default:"2"`
 	CollectionBlacklist []string `split_words:"true"`
+	ScyllaDBAddr        string   `envconfig:"SCYLLADB_ADDR"`
 }
 
 var config Config
@@ -60,8 +63,14 @@ func runMain(ctx context.Context) error {
 		return fmt.Errorf("failed to create limiter: %w", err)
 	}
 
+	scylla := gocql.NewCluster(config.ScyllaDBAddr)
+	session, err := gocqlx.WrapSession(scylla.CreateSession())
+	if err != nil {
+		return fmt.Errorf("Creating ScyllaDB session: %w", err)
+	}
+
 	ch := make(chan WorkItem)
-	pool := NewWorkerPool(ch, db, config.Workers, limiter)
+	pool := NewWorkerPool(ch, db, &session, config.Workers, limiter)
 	if err := pool.Start(ctx); err != nil {
 		return fmt.Errorf("failed to start worker pool: %w", err)
 	}

@@ -18,10 +18,12 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/gocql/gocql"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
+	"github.com/scylladb/gocqlx/v3"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -38,6 +40,7 @@ type Config struct {
 	DBUrl               string `envconfig:"POSTGRES_URL"`
 	Relays              string
 	CollectionBlacklist []string `split_words:"true"`
+	ScyllaDBAddr        string   `envconfig:"SCYLLADB_ADDR"`
 }
 
 var config Config
@@ -67,8 +70,14 @@ func runMain(ctx context.Context) error {
 		}
 	}
 
+	scylla := gocql.NewCluster(config.ScyllaDBAddr)
+	session, err := gocqlx.WrapSession(scylla.CreateSession())
+	if err != nil {
+		return fmt.Errorf("Creating ScyllaDB session: %w", err)
+	}
+
 	consumersCh := make(chan struct{})
-	go runConsumers(ctx, db, consumersCh)
+	go runConsumers(ctx, db, &session, consumersCh)
 
 	log.Info().Msgf("Starting HTTP listener on %q...", config.MetricsPort)
 	http.Handle("/metrics", promhttp.Handler())
@@ -88,7 +97,7 @@ func runMain(ctx context.Context) error {
 	return <-errCh
 }
 
-func runConsumers(ctx context.Context, db *gorm.DB, doneCh chan struct{}) {
+func runConsumers(ctx context.Context, db *gorm.DB, session *gocqlx.Session, doneCh chan struct{}) {
 	log := zerolog.Ctx(ctx)
 	defer close(doneCh)
 
@@ -136,7 +145,7 @@ func runConsumers(ctx context.Context, db *gorm.DB, doneCh chan struct{}) {
 				}
 				subCtx, cancel := context.WithCancel(ctx)
 
-				c, err := NewConsumer(subCtx, &remote, db)
+				c, err := NewConsumer(subCtx, &remote, db, session)
 				if err != nil {
 					log.Error().Err(err).Msgf("Failed to create a consumer for %q: %s", remote.Host, err)
 					cancel()

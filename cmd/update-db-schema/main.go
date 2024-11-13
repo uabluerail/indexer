@@ -16,9 +16,11 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/gocql/gocql"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/rs/zerolog"
+	"github.com/scylladb/gocqlx/v3"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -29,10 +31,11 @@ import (
 )
 
 type Config struct {
-	LogFile   string
-	LogFormat string `default:"text"`
-	LogLevel  int64  `default:"1"`
-	DBUrl     string `envconfig:"POSTGRES_URL"`
+	LogFile      string
+	LogFormat    string `default:"text"`
+	LogLevel     int64  `default:"1"`
+	DBUrl        string `envconfig:"POSTGRES_URL"`
+	ScyllaDBAddr string `envconfig:"SCYLLADB_ADDR"`
 }
 
 var config Config
@@ -60,6 +63,32 @@ func runMain(ctx context.Context) error {
 			return fmt.Errorf("auto-migrating DB schema: %w", err)
 		}
 	}
+
+	scylla := gocql.NewCluster(config.ScyllaDBAddr)
+	session, err := gocqlx.WrapSession(scylla.CreateSession())
+	if err != nil {
+		return fmt.Errorf("Creating ScyllaDB session: %w", err)
+	}
+
+	err = session.ExecStmt(
+		`CREATE KEYSPACE IF NOT EXISTS bluesky WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1}`)
+	if err != nil {
+		return fmt.Errorf("Creating keyspace: %w", err)
+	}
+
+	err = session.ExecStmt(`CREATE TABLE IF NOT EXISTS bluesky.records (
+			repo text,
+			collection text,
+			rkey text,
+			at_rev text,
+			deleted boolean,
+			record text,
+			PRIMARY KEY ((repo, collection), rkey, at_rev)
+		) WITH CLUSTERING ORDER BY (rkey ASC, at_rev DESC)`)
+	if err != nil {
+		return fmt.Errorf("Creating records table: %w", err)
+	}
+
 	log.Debug().Msgf("DB schema updated")
 	return nil
 }

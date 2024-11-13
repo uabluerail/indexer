@@ -17,6 +17,8 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog"
+	"github.com/scylladb/gocqlx/qb"
+	"github.com/scylladb/gocqlx/v3"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
@@ -29,7 +31,6 @@ import (
 	"github.com/uabluerail/indexer/models"
 	"github.com/uabluerail/indexer/pds"
 	"github.com/uabluerail/indexer/repo"
-	"github.com/uabluerail/indexer/util/fix"
 	"github.com/uabluerail/indexer/util/resolver"
 )
 
@@ -46,6 +47,7 @@ type BadRecord struct {
 
 type Consumer struct {
 	db                  *gorm.DB
+	recordsDB           *gocqlx.Session
 	remote              pds.PDS
 	running             chan struct{}
 	collectionBlacklist map[string]bool
@@ -53,13 +55,14 @@ type Consumer struct {
 	lastCursorPersist time.Time
 }
 
-func NewConsumer(ctx context.Context, remote *pds.PDS, db *gorm.DB) (*Consumer, error) {
+func NewConsumer(ctx context.Context, remote *pds.PDS, db *gorm.DB, session *gocqlx.Session) (*Consumer, error) {
 	if err := db.AutoMigrate(&BadRecord{}); err != nil {
 		return nil, fmt.Errorf("db.AutoMigrate: %s", err)
 	}
 
 	return &Consumer{
 		db:                  db,
+		recordsDB:           session,
 		remote:              *remote,
 		running:             make(chan struct{}),
 		collectionBlacklist: map[string]bool{},
@@ -352,19 +355,37 @@ func (c *Consumer) processMessage(ctx context.Context, typ string, r io.Reader, 
 				deletions = append(deletions, op.Path)
 			}
 		}
-		for _, d := range deletions {
-			parts := strings.SplitN(d, "/", 2)
-			if len(parts) != 2 {
-				continue
+		if c.recordsDB != nil && len(deletions) > 0 {
+			for _, d := range deletions {
+				parts := strings.SplitN(d, "/", 2)
+				if len(parts) != 2 {
+					continue
+				}
+
+				err := c.recordsDB.Query(qb.Insert("bluesky.records").
+					Columns("repo", "collection", "rkey", "at_rev", "deleted").
+					Unique().ToCql()).WithContext(ctx).
+					Bind(repoInfo.DID, parts[0], parts[1], payload.Rev, true).ExecRelease()
+				if err != nil {
+					return fmt.Errorf("failed to mark %s/%s as deleted: %w", payload.Repo, d, err)
+				}
 			}
-			err := c.db.Model(&repo.Record{}).
-				Where(&repo.Record{
-					Repo:       models.ID(repoInfo.ID),
-					Collection: parts[0],
-					Rkey:       parts[1]}).
-				Updates(&repo.Record{Deleted: true}).Error
-			if err != nil {
-				return fmt.Errorf("failed to mark %s/%s as deleted: %w", payload.Repo, d, err)
+
+		} else {
+			for _, d := range deletions {
+				parts := strings.SplitN(d, "/", 2)
+				if len(parts) != 2 {
+					continue
+				}
+				err := c.db.Model(&repo.Record{}).
+					Where(&repo.Record{
+						Repo:       models.ID(repoInfo.ID),
+						Collection: parts[0],
+						Rkey:       parts[1]}).
+					Updates(&repo.Record{Deleted: true}).Error
+				if err != nil {
+					return fmt.Errorf("failed to mark %s/%s as deleted: %w", payload.Repo, d, err)
+				}
 			}
 		}
 
@@ -414,7 +435,7 @@ func (c *Consumer) processMessage(ctx context.Context, typ string, r io.Reader, 
 				// XXX: proper replacement of \u0000 would require full parsing of JSON
 				// and recursive iteration over all string values, but this
 				// should work well enough for now.
-				Content: fix.EscapeNullCharForPostgres(v),
+				Content: v, // fix.EscapeNullCharForPostgres(v),
 				AtRev:   payload.Rev,
 			})
 		}
@@ -422,20 +443,33 @@ func (c *Consumer) processMessage(ctx context.Context, typ string, r io.Reader, 
 			log.Debug().Int64("seq", payload.Seq).Str("pds", c.remote.Host).Msgf("len(recs) == 0")
 		}
 		if len(recs) > 0 {
-			err = c.db.Model(&repo.Record{}).
-				Clauses(clause.OnConflict{
-					Where: clause.Where{Exprs: []clause.Expression{clause.Or(
-						clause.Eq{Column: clause.Column{Name: "at_rev", Table: "records"}, Value: nil},
-						clause.Eq{Column: clause.Column{Name: "at_rev", Table: "records"}, Value: ""},
-						clause.Lt{
-							Column: clause.Column{Name: "at_rev", Table: "records"},
-							Value:  clause.Column{Name: "at_rev", Table: "excluded"}},
-					)}},
-					DoUpdates: clause.AssignmentColumns([]string{"content", "at_rev"}),
-					Columns:   []clause.Column{{Name: "repo"}, {Name: "collection"}, {Name: "rkey"}}}).
-				Create(recs).Error
-			if err != nil {
-				return fmt.Errorf("inserting records into the database: %w", err)
+			if c.recordsDB != nil {
+				for _, r := range recs {
+					err := c.recordsDB.Query(qb.Insert("bluesky.records").
+						Columns("repo", "collection", "rkey", "at_rev", "record").
+						Unique().ToCql()).WithContext(ctx).
+						Bind(repoInfo.DID, r.Collection, r.Rkey, r.AtRev, r.Content).ExecRelease()
+					if err != nil {
+						return fmt.Errorf("inserting record %s/%s/%s into the database: %w", repoInfo.DID, r.Collection, r.Rkey, err)
+					}
+				}
+
+			} else {
+				err = c.db.Model(&repo.Record{}).
+					Clauses(clause.OnConflict{
+						Where: clause.Where{Exprs: []clause.Expression{clause.Or(
+							clause.Eq{Column: clause.Column{Name: "at_rev", Table: "records"}, Value: nil},
+							clause.Eq{Column: clause.Column{Name: "at_rev", Table: "records"}, Value: ""},
+							clause.Lt{
+								Column: clause.Column{Name: "at_rev", Table: "records"},
+								Value:  clause.Column{Name: "at_rev", Table: "excluded"}},
+						)}},
+						DoUpdates: clause.AssignmentColumns([]string{"content", "at_rev"}),
+						Columns:   []clause.Column{{Name: "repo"}, {Name: "collection"}, {Name: "rkey"}}}).
+					Create(recs).Error
+				if err != nil {
+					return fmt.Errorf("inserting records into the database: %w", err)
+				}
 			}
 		}
 
