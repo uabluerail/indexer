@@ -142,6 +142,7 @@ func (l *Lister) run(ctx context.Context) {
 
 func (l *Lister) addRepos(ctx context.Context, repos chan *comatproto.SyncListRepos_Repo, host string) {
 	log := zerolog.Ctx(ctx)
+	count := 0
 
 	for repoInfo := range repos {
 		record, created, err := repo.EnsureExists(ctx, l.db, repoInfo.Did)
@@ -175,6 +176,10 @@ func (l *Lister) addRepos(ctx context.Context, repos chan *comatproto.SyncListRe
 			if err != nil {
 				log.Error().Err(err).Msgf("Failed to set the initial FirstRevSinceReset value for %q: %s", repoInfo.Did, err)
 			}
+		}
+		count++
+		if count%10_000 == 0 {
+			log.Info().Str("remote", host).Msgf("Received %d repos from %q so far...", count, host)
 		}
 	}
 
