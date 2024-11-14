@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sync"
 	"time"
 
@@ -80,55 +81,8 @@ func (l *Lister) run(ctx context.Context) {
 			default:
 			}
 
-			client := xrpcauth.NewAnonymousClient(ctx)
-			client.Host = remote.Host
-
-			log.Info().Msgf("Listing repos from %q...", remote.Host)
-
-			repos := make(chan *comatproto.SyncListRepos_Repo, 1000)
-			wg := &sync.WaitGroup{}
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
-				l.addRepos(ctx, repos, remote.Host)
-			}()
-
-			total, err := pagination.Reduce(
-				func(cursor string) (resp *comatproto.SyncListRepos_Output, nextCursor string, err error) {
-					resp, err = comatproto.SyncListRepos(ctx, client, cursor, 200)
-					if err == nil && resp.Cursor != nil {
-						nextCursor = *resp.Cursor
-					}
-					return
-				},
-				func(resp *comatproto.SyncListRepos_Output, acc int) (int, error) {
-					for _, repo := range resp.Repos {
-						if repo == nil {
-							continue
-						}
-						acc++
-						repos <- repo
-					}
-					return acc, nil
-				})
-
-			if err != nil {
+			if err := l.listOneHost(ctx, &remote); err != nil {
 				log.Error().Err(err).Msgf("Failed to list repos from %q: %s", remote.Host, err)
-				// Update the timestamp so we don't get stuck on a single broken PDS
-				if err := db.Model(&remote).Updates(&pds.PDS{LastList: time.Now()}).Error; err != nil {
-					log.Error().Err(err).Msgf("Failed to update the timestamp of last list for %q: %s", remote.Host, err)
-				}
-				close(repos)
-				wg.Wait()
-				break
-			}
-			close(repos)
-			wg.Wait()
-			log.Info().Msgf("Received %d DIDs from %q", total, remote.Host)
-			reposListed.WithLabelValues(remote.Host).Add(float64(total))
-
-			if err := db.Model(&remote).Updates(&pds.PDS{LastList: time.Now()}).Error; err != nil {
-				log.Error().Err(err).Msgf("Failed to update the timestamp of last list for %q: %s", remote.Host, err)
 			}
 		case v := <-ticker.C:
 			select {
@@ -137,50 +91,110 @@ func (l *Lister) run(ctx context.Context) {
 			}
 		}
 	}
+}
 
+func (l *Lister) listOneHost(ctx context.Context, remote *pds.PDS) error {
+	log := zerolog.Ctx(ctx).With().Str("remote", remote.Host).Logger()
+	ctx = log.WithContext(ctx)
+	db := l.db.WithContext(ctx)
+	client := xrpcauth.NewAnonymousClient(ctx)
+	client.Host = remote.Host
+
+	log.Info().Msgf("Listing repos from %q...", remote.Host)
+
+	repos := make(chan *comatproto.SyncListRepos_Repo, 1000)
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		l.addRepos(ctx, repos, remote.Host)
+	}()
+
+	total, err := pagination.Reduce(
+		func(cursor string) (resp *comatproto.SyncListRepos_Output, nextCursor string, err error) {
+			resp, err = comatproto.SyncListRepos(ctx, client, cursor, 200)
+			if err == nil && resp.Cursor != nil {
+				nextCursor = *resp.Cursor
+			}
+			return
+		},
+		func(resp *comatproto.SyncListRepos_Output, acc int) (int, error) {
+			for _, repo := range resp.Repos {
+				if repo == nil {
+					continue
+				}
+				acc++
+				repos <- repo
+			}
+			return acc, nil
+		})
+
+	if err != nil {
+		// Update the timestamp so we don't get stuck on a single broken PDS
+		if err := db.Model(&remote).Updates(&pds.PDS{LastList: time.Now()}).Error; err != nil {
+			log.Error().Err(err).Msgf("Failed to update the timestamp of last list for %q: %s", remote.Host, err)
+		}
+		close(repos)
+		wg.Wait()
+		return err
+	}
+	close(repos)
+	wg.Wait()
+
+	log.Info().Msgf("Received %d DIDs from %q", total, remote.Host)
+	reposListed.WithLabelValues(remote.Host).Add(float64(total))
+
+	if err := db.Model(&remote).Updates(&pds.PDS{LastList: time.Now()}).Error; err != nil {
+		return fmt.Errorf("failed to update the timestamp: %w", err)
+	}
+	return nil
 }
 
 func (l *Lister) addRepos(ctx context.Context, repos chan *comatproto.SyncListRepos_Repo, host string) {
 	log := zerolog.Ctx(ctx)
 	count := 0
 
-	for repoInfo := range repos {
-		record, created, err := repo.EnsureExists(ctx, l.db, repoInfo.Did)
-		if err != nil {
-			log.Error().Err(err).Msgf("Failed to ensure that we have a record for the repo %q: %s", repoInfo.Did, err)
-		} else if created {
-			reposDiscovered.WithLabelValues(host).Inc()
-		}
-
-		if err == nil && record.FirstRevSinceReset == "" {
-			// Populate this field in case it's empty, so we don't have to wait for the first firehose event
-			// to trigger a resync.
-			err := l.db.Transaction(func(tx *gorm.DB) error {
-				var currentRecord repo.Repo
-				if err := tx.Model(&record).Where(&repo.Repo{ID: record.ID}).Take(&currentRecord).Error; err != nil {
-					return err
-				}
-				if currentRecord.FirstRevSinceReset != "" {
-					// Someone else already updated it, nothing to do.
-					return nil
-				}
-				var remote pds.PDS
-				if err := tx.Model(&remote).Where(&pds.PDS{ID: record.PDS}).Take(&remote).Error; err != nil {
-					return err
-				}
-				return tx.Model(&record).Where(&repo.Repo{ID: record.ID}).Updates(&repo.Repo{
-					FirstRevSinceReset:    repoInfo.Rev,
-					FirstCursorSinceReset: remote.FirstCursorSinceReset,
-				}).Error
-			})
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case repoInfo := <-repos:
+			record, created, err := repo.EnsureExists(ctx, l.db, repoInfo.Did)
 			if err != nil {
-				log.Error().Err(err).Msgf("Failed to set the initial FirstRevSinceReset value for %q: %s", repoInfo.Did, err)
+				log.Error().Err(err).Msgf("Failed to ensure that we have a record for the repo %q: %s", repoInfo.Did, err)
+			} else if created {
+				reposDiscovered.WithLabelValues(host).Inc()
+			}
+
+			if err == nil && record.FirstRevSinceReset == "" {
+				// Populate this field in case it's empty, so we don't have to wait for the first firehose event
+				// to trigger a resync.
+				err := l.db.Transaction(func(tx *gorm.DB) error {
+					var currentRecord repo.Repo
+					if err := tx.Model(&record).Where(&repo.Repo{ID: record.ID}).Take(&currentRecord).Error; err != nil {
+						return err
+					}
+					if currentRecord.FirstRevSinceReset != "" {
+						// Someone else already updated it, nothing to do.
+						return nil
+					}
+					var remote pds.PDS
+					if err := tx.Model(&remote).Where(&pds.PDS{ID: record.PDS}).Take(&remote).Error; err != nil {
+						return err
+					}
+					return tx.Model(&record).Where(&repo.Repo{ID: record.ID}).Updates(&repo.Repo{
+						FirstRevSinceReset:    repoInfo.Rev,
+						FirstCursorSinceReset: remote.FirstCursorSinceReset,
+					}).Error
+				})
+				if err != nil {
+					log.Error().Err(err).Msgf("Failed to set the initial FirstRevSinceReset value for %q: %s", repoInfo.Did, err)
+				}
+			}
+			count++
+			if count%10_000 == 0 {
+				log.Info().Msgf("Received %d repos from %q so far...", count, host)
 			}
 		}
-		count++
-		if count%10_000 == 0 {
-			log.Info().Str("remote", host).Msgf("Received %d repos from %q so far...", count, host)
-		}
 	}
-
 }
