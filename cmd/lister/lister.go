@@ -44,50 +44,66 @@ func (l *Lister) Start(ctx context.Context) error {
 
 func (l *Lister) run(ctx context.Context) {
 	log := zerolog.Ctx(ctx)
-	ticker := time.NewTicker(l.pollInterval)
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 
 	log.Info().Msgf("Lister starting...")
-	t := make(chan time.Time, 1)
-	t <- time.Now()
+	tokens := make(chan struct{}, 10)
+	doneCh := make(chan string, 1)
+	inProgress := map[string]bool{}
 	for {
 		select {
 		case <-ctx.Done():
 			log.Info().Msgf("Lister stopped (context expired)")
 			return
-		case <-t:
+		case done := <-doneCh:
+			delete(inProgress, done)
+		case tokens <- struct{}{}:
 			db := l.db.WithContext(ctx)
 
-			remote := pds.PDS{}
-			if err := db.Model(&remote).
+			remotes := []pds.PDS{}
+			if err := db.Model(&remotes).
 				Where("(disabled=false or disabled is null) and (last_list is null or last_list < ?)", time.Now().Add(-l.listRefreshInterval)).
-				Take(&remote).Error; err != nil {
+				Find(&remotes).Error; err != nil {
 				if !errors.Is(err, gorm.ErrRecordNotFound) {
 					log.Error().Err(err).Msgf("Failed to query DB for a PDS to list repos from: %s", err)
 				}
-				break
-			}
-
-			if !pds.IsWhitelisted(remote.Host) {
-				log.Info().Msgf("PDS %q is not whitelisted, disabling it", remote.Host)
-				if err := db.Model(&remote).Where(&pds.PDS{ID: remote.ID}).Updates(&pds.PDS{Disabled: true}).Error; err != nil {
-					log.Error().Err(err).Msgf("Failed to disable PDS %q: %s", remote.Host, err)
+				if errors.Is(err, gorm.ErrRecordNotFound) || len(remotes) == 0 {
+					time.Sleep(l.pollInterval)
 				}
+				<-tokens
 				break
 			}
 
-			// We actually got some work to do, so avoid sleeping between iterations.
-			select {
-			case t <- time.Now():
-			default:
-			}
+			started := false
+			for _, remote := range remotes {
+				if !pds.IsWhitelisted(remote.Host) {
+					log.Info().Msgf("PDS %q is not whitelisted, disabling it", remote.Host)
+					if err := db.Model(&remote).Where(&pds.PDS{ID: remote.ID}).Updates(&pds.PDS{Disabled: true}).Error; err != nil {
+						log.Error().Err(err).Msgf("Failed to disable PDS %q: %s", remote.Host, err)
+					}
+					continue
+				}
 
-			if err := l.listOneHost(ctx, &remote); err != nil {
-				log.Error().Err(err).Msgf("Failed to list repos from %q: %s", remote.Host, err)
+				if inProgress[remote.Host] {
+					continue
+				}
+
+				inProgress[remote.Host] = true
+
+				go func(remote pds.PDS) {
+					if err := l.listOneHost(ctx, &remote); err != nil {
+						log.Error().Err(err).Msgf("Failed to list repos from %q: %s", remote.Host, err)
+					}
+
+					doneCh <- remote.Host
+					<-tokens
+				}(remote)
+				started = true
+				break
 			}
-		case v := <-ticker.C:
-			select {
-			case t <- v:
-			default:
+			if !started {
+				<-tokens
 			}
 		}
 	}
