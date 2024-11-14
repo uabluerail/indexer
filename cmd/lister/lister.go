@@ -174,7 +174,10 @@ func (l *Lister) addRepos(ctx context.Context, repos chan *comatproto.SyncListRe
 		select {
 		case <-ctx.Done():
 			return
-		case repoInfo := <-repos:
+		case repoInfo, ok := <-repos:
+			if !ok {
+				return
+			}
 			record, created, err := repo.EnsureExists(ctx, l.db, repoInfo.Did)
 			if err != nil {
 				log.Error().Err(err).Msgf("Failed to ensure that we have a record for the repo %q: %s", repoInfo.Did, err)
