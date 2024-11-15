@@ -90,14 +90,18 @@ func runMain(ctx context.Context) error {
 		}
 	}
 
-	scylla := gocql.NewCluster(config.ScyllaDBAddr)
-	session, err := gocqlx.WrapSession(scylla.CreateSession())
-	if err != nil {
-		return fmt.Errorf("Creating ScyllaDB session: %w", err)
+	var session *gocqlx.Session
+	if config.ScyllaDBAddr != "" {
+		scylla := gocql.NewCluster(config.ScyllaDBAddr)
+		s, err := gocqlx.WrapSession(scylla.CreateSession())
+		if err != nil {
+			return fmt.Errorf("Creating ScyllaDB session: %w", err)
+		}
+		session = &s
 	}
 
 	consumersCh := make(chan struct{})
-	go runConsumers(ctx, db, &session, consumersCh)
+	go runConsumers(ctx, db, session, consumersCh)
 
 	log.Info().Msgf("Starting HTTP listener on %q...", config.MetricsPort)
 	http.Handle("/metrics", promhttp.Handler())

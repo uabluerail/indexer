@@ -63,14 +63,18 @@ func runMain(ctx context.Context) error {
 		return fmt.Errorf("failed to create limiter: %w", err)
 	}
 
-	scylla := gocql.NewCluster(config.ScyllaDBAddr)
-	session, err := gocqlx.WrapSession(scylla.CreateSession())
-	if err != nil {
-		return fmt.Errorf("Creating ScyllaDB session: %w", err)
+	var session *gocqlx.Session
+	if config.ScyllaDBAddr != "" {
+		scylla := gocql.NewCluster(config.ScyllaDBAddr)
+		s, err := gocqlx.WrapSession(scylla.CreateSession())
+		if err != nil {
+			return fmt.Errorf("Creating ScyllaDB session: %w", err)
+		}
+		session = &s
 	}
 
 	ch := make(chan WorkItem)
-	pool := NewWorkerPool(ch, db, &session, config.Workers, limiter)
+	pool := NewWorkerPool(ch, db, session, config.Workers, limiter)
 	if err := pool.Start(ctx); err != nil {
 		return fmt.Errorf("failed to start worker pool: %w", err)
 	}
