@@ -132,7 +132,7 @@ services:
       CONSUMER_POSTGRES_URL: "postgres://postgres:${POSTGRES_PASSWORD}@db/bluesky?sslmode=disable"
       # CONSUMER_RELAYS: "https://bsky.network"  # Effectively doubles inbound network traffic. Set this in docker-compose.override.yml if needed.
       ATP_PLC_ADDR: "http://plc:8080"
-      CONSUMER_COLLECTION_BLACKLIST: ${COLLECTION_BLACKLIST}
+      CONSUMER_COLLECTION_BLACKLIST: ${COLLECTION_BLACKLIST:-}
     ports:
       - "${METRICS_ADDR:-0.0.0.0}:11002:8080"
     command: [ "--log-level=0" ]
@@ -167,7 +167,7 @@ services:
       INDEXER_POSTGRES_URL: "postgres://postgres:${POSTGRES_PASSWORD}@db/bluesky?sslmode=disable"
       INDEXER_WORKERS: 50
       ATP_PLC_ADDR: "http://plc:8080"
-      INDEXER_COLLECTION_BLACKLIST: ${COLLECTION_BLACKLIST}
+      INDEXER_COLLECTION_BLACKLIST: ${COLLECTION_BLACKLIST:-}
     ports:
       - "${METRICS_ADDR:-0.0.0.0}:11003:8080"
     command: [ "--log-level=0" ]
