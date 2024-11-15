@@ -31,6 +31,7 @@ import (
 	"github.com/uabluerail/indexer/models"
 	"github.com/uabluerail/indexer/pds"
 	"github.com/uabluerail/indexer/repo"
+	"github.com/uabluerail/indexer/util/fix"
 	"github.com/uabluerail/indexer/util/resolver"
 )
 
@@ -429,16 +430,20 @@ func (c *Consumer) processMessage(ctx context.Context, typ string, r io.Reader, 
 					postsByLanguageIndexed.WithLabelValues(c.remote.Host, lang).Inc()
 				}
 			}
-			recs = append(recs, repo.Record{
+			rec := repo.Record{
 				Repo:       models.ID(repoInfo.ID),
 				Collection: parts[0],
 				Rkey:       parts[1],
+				Content:    v,
+				AtRev:      payload.Rev,
+			}
+			if c.recordsDB == nil {
 				// XXX: proper replacement of \u0000 would require full parsing of JSON
 				// and recursive iteration over all string values, but this
 				// should work well enough for now.
-				Content: v, // fix.EscapeNullCharForPostgres(v),
-				AtRev:   payload.Rev,
-			})
+				rec.Content = fix.EscapeNullCharForPostgres(rec.Content)
+			}
+			recs = append(recs, rec)
 		}
 		if len(c.collectionBlacklist) == 0 && len(recs) == 0 && expectRecords {
 			log.Debug().Int64("seq", payload.Seq).Str("pds", c.remote.Host).Msgf("len(recs) == 0")

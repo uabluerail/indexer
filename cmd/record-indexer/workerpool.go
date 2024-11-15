@@ -23,6 +23,7 @@ import (
 	"github.com/uabluerail/indexer/models"
 	"github.com/uabluerail/indexer/pds"
 	"github.com/uabluerail/indexer/repo"
+	"github.com/uabluerail/indexer/util/fix"
 	"github.com/uabluerail/indexer/util/resolver"
 )
 
@@ -242,17 +243,20 @@ retry:
 		if p.collectionBlacklist[parts[0]] {
 			continue
 		}
-
-		recs = append(recs, repo.Record{
+		rec := repo.Record{
 			Repo:       models.ID(work.Repo.ID),
 			Collection: parts[0],
 			Rkey:       parts[1],
+			Content:    v,
+			AtRev:      newRev,
+		}
+		if p.recordsDB == nil {
 			// XXX: proper replacement of \u0000 would require full parsing of JSON
 			// and recursive iteration over all string values, but this
 			// should work well enough for now.
-			Content: v, //fix.EscapeNullCharForPostgres(v),
-			AtRev:   newRev,
-		})
+			rec.Content = fix.EscapeNullCharForPostgres(rec.Content)
+		}
+		recs = append(recs, rec)
 	}
 	if len(recs) > 0 {
 		if p.recordsDB != nil {
