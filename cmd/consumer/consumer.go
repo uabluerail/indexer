@@ -259,7 +259,7 @@ func (c *Consumer) resetCursor(ctx context.Context, seq int64) error {
 }
 
 func (c *Consumer) updateCursor(ctx context.Context, seq int64) error {
-	if math.Abs(float64(seq-c.remote.Cursor)) < 100 && time.Since(c.lastCursorPersist) < 5*time.Second {
+	if math.Abs(float64(seq-c.remote.Cursor)) < 100000 && time.Since(c.lastCursorPersist) < 15*time.Second {
 		c.remote.Cursor = seq
 		return nil
 	}
