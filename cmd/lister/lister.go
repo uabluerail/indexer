@@ -68,10 +68,10 @@ func (l *Lister) run(ctx context.Context) {
 				if !errors.Is(err, gorm.ErrRecordNotFound) {
 					log.Error().Err(err).Msgf("Failed to query DB for a PDS to list repos from: %s", err)
 				}
+				<-tokens
 				if errors.Is(err, gorm.ErrRecordNotFound) || len(remotes) == 0 {
 					time.Sleep(l.pollInterval)
 				}
-				<-tokens
 				break
 			}
 
@@ -104,6 +104,7 @@ func (l *Lister) run(ctx context.Context) {
 			}
 			if !started {
 				<-tokens
+				time.Sleep(l.pollInterval)
 			}
 		}
 	}
