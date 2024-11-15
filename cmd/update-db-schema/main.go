@@ -64,19 +64,20 @@ func runMain(ctx context.Context) error {
 		}
 	}
 
-	scylla := gocql.NewCluster(config.ScyllaDBAddr)
-	session, err := gocqlx.WrapSession(scylla.CreateSession())
-	if err != nil {
-		return fmt.Errorf("Creating ScyllaDB session: %w", err)
-	}
+	if config.ScyllaDBAddr != "" {
+		scylla := gocql.NewCluster(config.ScyllaDBAddr)
+		session, err := gocqlx.WrapSession(scylla.CreateSession())
+		if err != nil {
+			return fmt.Errorf("Creating ScyllaDB session: %w", err)
+		}
 
-	err = session.ExecStmt(
-		`CREATE KEYSPACE IF NOT EXISTS bluesky WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1}`)
-	if err != nil {
-		return fmt.Errorf("Creating keyspace: %w", err)
-	}
+		err = session.ExecStmt(
+			`CREATE KEYSPACE IF NOT EXISTS bluesky WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1}`)
+		if err != nil {
+			return fmt.Errorf("Creating keyspace: %w", err)
+		}
 
-	err = session.ExecStmt(`CREATE TABLE IF NOT EXISTS bluesky.records (
+		err = session.ExecStmt(`CREATE TABLE IF NOT EXISTS bluesky.records (
 			repo text,
 			collection text,
 			rkey text,
@@ -85,8 +86,9 @@ func runMain(ctx context.Context) error {
 			record text,
 			PRIMARY KEY ((repo, collection), rkey, at_rev)
 		) WITH CLUSTERING ORDER BY (rkey ASC, at_rev DESC)`)
-	if err != nil {
-		return fmt.Errorf("Creating records table: %w", err)
+		if err != nil {
+			return fmt.Errorf("Creating records table: %w", err)
+		}
 	}
 
 	log.Debug().Msgf("DB schema updated")
