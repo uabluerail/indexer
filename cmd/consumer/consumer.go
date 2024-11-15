@@ -271,6 +271,7 @@ func (c *Consumer) updateCursor(ctx context.Context, seq int64) error {
 		return fmt.Errorf("updating Cursor: %w", err)
 	}
 	c.remote.Cursor = seq
+	c.lastCursorPersist = time.Now()
 	return nil
 
 }
