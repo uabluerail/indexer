@@ -50,6 +50,8 @@ func runMain(ctx context.Context) error {
 	log := zerolog.Ctx(ctx)
 	log.Debug().Msgf("Starting up...")
 	db, err := gorm.Open(postgres.Open(config.DBUrl), &gorm.Config{
+		SkipDefaultTransaction: true,
+		PrepareStmt:            true,
 		Logger: gormzerolog.New(&logger.Config{
 			SlowThreshold:             3 * time.Second,
 			IgnoreRecordNotFoundError: true,
