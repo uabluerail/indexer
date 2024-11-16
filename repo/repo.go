@@ -43,8 +43,17 @@ type Record struct {
 	Deleted    bool            `gorm:"default:false"`
 }
 
+type BadRecord struct {
+	ID        models.ID `gorm:"primarykey"`
+	CreatedAt time.Time
+	PDS       models.ID `gorm:"index"`
+	Cursor    int64
+	Error     string
+	Content   []byte
+}
+
 func AutoMigrate(db *gorm.DB) error {
-	return db.AutoMigrate(&Repo{}, &Record{})
+	return db.AutoMigrate(&Repo{}, &Record{}, &BadRecord{})
 }
 
 func EnsureExists(ctx context.Context, db *gorm.DB, did string) (*Repo, bool, error) {

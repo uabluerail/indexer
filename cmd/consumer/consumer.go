@@ -37,15 +37,6 @@ import (
 
 const lastRevUpdateInterval = 24 * time.Hour
 
-type BadRecord struct {
-	ID        models.ID `gorm:"primarykey"`
-	CreatedAt time.Time
-	PDS       models.ID `gorm:"index"`
-	Cursor    int64
-	Error     string
-	Content   []byte
-}
-
 type Consumer struct {
 	db                  *gorm.DB
 	recordsDB           *gocqlx.Session
@@ -57,7 +48,7 @@ type Consumer struct {
 }
 
 func NewConsumer(ctx context.Context, remote *pds.PDS, db *gorm.DB, session *gocqlx.Session) (*Consumer, error) {
-	if err := db.AutoMigrate(&BadRecord{}); err != nil {
+	if err := db.AutoMigrate(&repo.BadRecord{}); err != nil {
 		return nil, fmt.Errorf("db.AutoMigrate: %s", err)
 	}
 
@@ -210,7 +201,7 @@ func (c *Consumer) runOnce(ctx context.Context) error {
 
 					const maxBadRecords = 500
 					var count int64
-					if err2 := c.db.Model(&BadRecord{}).Where(&BadRecord{PDS: c.remote.ID}).Count(&count).Error; err2 != nil {
+					if err2 := c.db.Model(&repo.BadRecord{}).Where(&repo.BadRecord{PDS: c.remote.ID}).Count(&count).Error; err2 != nil {
 						return err
 					}
 
@@ -219,7 +210,7 @@ func (c *Consumer) runOnce(ctx context.Context) error {
 					}
 
 					log.Error().Err(err).Str("pds", c.remote.Host).Msgf("Failed to process message at cursor %d: %s", c.remote.Cursor, err)
-					err := c.db.Create(&BadRecord{
+					err := c.db.Create(&repo.BadRecord{
 						PDS:     c.remote.ID,
 						Cursor:  c.remote.Cursor,
 						Error:   err.Error(),
