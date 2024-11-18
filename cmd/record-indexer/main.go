@@ -18,6 +18,8 @@ import (
 	"time"
 
 	"github.com/gocql/gocql"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5/stdlib"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -47,7 +49,23 @@ func runMain(ctx context.Context) error {
 	ctx = setupLogging(ctx)
 	log := zerolog.Ctx(ctx)
 	log.Debug().Msgf("Starting up...")
-	db, err := gorm.Open(postgres.Open(config.DBUrl), &gorm.Config{
+	dbCfg, err := pgxpool.ParseConfig(config.DBUrl)
+	if err != nil {
+		return fmt.Errorf("parsing DB URL: %w", err)
+	}
+	dbCfg.MaxConns = 1024
+	dbCfg.MinConns = 10
+	dbCfg.MaxConnLifetime = 6 * time.Hour
+	conn, err := pgxpool.NewWithConfig(ctx, dbCfg)
+	if err != nil {
+		return fmt.Errorf("connecting to postgres: %w", err)
+	}
+
+	sqldb := stdlib.OpenDBFromPool(conn)
+
+	db, err := gorm.Open(postgres.New(postgres.Config{
+		Conn: sqldb,
+	}), &gorm.Config{
 		Logger: gormzerolog.New(&logger.Config{
 			SlowThreshold:             3 * time.Second,
 			IgnoreRecordNotFoundError: true,
