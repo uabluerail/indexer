@@ -8,8 +8,8 @@ alter sequence records_id_seq owned by records.id;
 
 do $$
 begin
-for i in 0..1023 loop
-   execute 'create table records_' || i || ' partition of records for values with (modulus 1024, remainder ' || i || ')';
+for i in 0..15 loop
+   execute 'create table records_' || i || ' partition of records for values with (modulus 16, remainder ' || i || ')';
 end loop;
 end $$;
 
