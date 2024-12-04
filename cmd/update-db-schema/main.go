@@ -81,6 +81,7 @@ func runMain(ctx context.Context) error {
 			repo text,
 			collection text,
 			rkey text,
+			created_at timestamp,
 			at_rev text,
 			deleted boolean,
 			record text,

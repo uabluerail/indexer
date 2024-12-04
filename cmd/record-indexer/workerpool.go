@@ -291,9 +291,9 @@ retry:
 					continue
 				}
 				err := p.recordsDB.Query(qb.Insert("bluesky.records").
-					Columns("repo", "collection", "rkey", "at_rev", "record").
+					Columns("repo", "collection", "rkey", "at_rev", "record", "created_at").
 					Unique().ToCql()).WithContext(ctx).
-					Bind(work.Repo.DID, rec.Collection, rec.Rkey, rec.AtRev, rec.Content).ExecRelease()
+					Bind(work.Repo.DID, rec.Collection, rec.Rkey, rec.AtRev, rec.Content, time.Now()).ExecRelease()
 				if err != nil {
 					return fmt.Errorf("inserting record %s/%s/%s into the database: %w", work.Repo.DID, rec.Collection, rec.Rkey, err)
 				}

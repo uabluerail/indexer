@@ -356,9 +356,9 @@ func (c *Consumer) processMessage(ctx context.Context, typ string, r io.Reader, 
 				}
 
 				err := c.recordsDB.Query(qb.Insert("bluesky.records").
-					Columns("repo", "collection", "rkey", "at_rev", "deleted").
+					Columns("repo", "collection", "rkey", "at_rev", "deleted", "created_at").
 					Unique().ToCql()).WithContext(ctx).
-					Bind(repoInfo.DID, parts[0], parts[1], payload.Rev, true).ExecRelease()
+					Bind(repoInfo.DID, parts[0], parts[1], payload.Rev, true, time.Now()).ExecRelease()
 				if err != nil {
 					return fmt.Errorf("failed to mark %s/%s as deleted: %w", payload.Repo, d, err)
 				}
@@ -443,9 +443,9 @@ func (c *Consumer) processMessage(ctx context.Context, typ string, r io.Reader, 
 			if c.recordsDB != nil {
 				for _, r := range recs {
 					err := c.recordsDB.Query(qb.Insert("bluesky.records").
-						Columns("repo", "collection", "rkey", "at_rev", "record").
+						Columns("repo", "collection", "rkey", "at_rev", "record", "created_at").
 						Unique().ToCql()).WithContext(ctx).
-						Bind(repoInfo.DID, r.Collection, r.Rkey, r.AtRev, r.Content).ExecRelease()
+						Bind(repoInfo.DID, r.Collection, r.Rkey, r.AtRev, r.Content, time.Now()).ExecRelease()
 					if err != nil {
 						return fmt.Errorf("inserting record %s/%s/%s into the database: %w", repoInfo.DID, r.Collection, r.Rkey, err)
 					}
