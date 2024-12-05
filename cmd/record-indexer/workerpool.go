@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gocql/gocql"
 	"github.com/imax9000/errors"
 	"github.com/rs/zerolog"
 	"github.com/scylladb/gocqlx/qb"
@@ -332,22 +331,19 @@ func (p *WorkerPool) insertRecords(ctx context.Context, newRecs map[string]json.
 					lastRkey = row.Rkey
 				}
 
-				// Now do bulk insert. All records belong to the same partition,
+				// Now do the inserts. All records belong to the same partition,
 				// and we've removed all duplicates.
-				batch := &gocqlx.Batch{Batch: p.recordsDB.NewBatch(gocql.LoggedBatch).WithContext(ctx)}
 				query := p.recordsDB.Query(qb.Insert("bluesky.records").
 					Columns("repo", "collection", "rkey", "at_rev", "record", "created_at").
-					ToCql())
+					ToCql()).WithContext(ctx)
+				defer query.Release()
 				for _, rec := range recs {
-					err := batch.Bind(query, work.Repo.DID, collection, rec.Rkey, rec.AtRev, rec.Content, time.Now())
+					err := query.Bind(work.Repo.DID, rec.Collection, rec.Rkey, rec.AtRev, rec.Content, time.Now()).Exec()
 					if err != nil {
-						return fmt.Errorf("batch.Bind: %w", err)
+						return fmt.Errorf("inserting record %s/%s/%s into the database: %w", work.Repo.DID, rec.Collection, rec.Rkey, err)
 					}
+					recordsInserted.Add(1)
 				}
-				if err := p.recordsDB.ExecuteBatch(batch); err != nil {
-					return fmt.Errorf("ExecuteBatch: %w", err)
-				}
-				recordsInserted.Add(float64(len(recs)))
 			}
 		} else {
 			for _, batch := range splitInBatshes(recs, 500) {
