@@ -8,19 +8,20 @@ it is a good idea to partition it by collection.
 
 ## System requirements
 
-NOTE: all of this is valid as of April 2024, when Bluesky has ~5.5M accounts,
-~1.2B records total, and average daily peak of ~100 commits/s.
+NOTE: all of this is valid as of December 2024, when Bluesky has ~24M accounts,
+~4.7B records total, and average daily peak of ~1000 commits/s.
 
+* Local PLC mirror. Without it you'll get throttled hard all the time. So go
+  to https://github.com/bsky-watch/plc-mirror and set it up now. It'll need
+  a few hours to replicate everything and become useable.
+* 32GB of RAM, but the more the better, obviously.
 * One decent SATA SSD is plenty fast to keep up. Preferably a dedicated one
   (definitely not the same that your system is installed on). There will be a
   lot of writes happening, so the total durability of the disk will be used up
   at non-negligible rate.
-* 16GB of RAM, but the more the better, obviously.
-* ZFS with compression enabled is highly recommended, but not strictly
-  necessary.
-    * Compression will cut down on IO bandwidth quite a bit, as well as on used
-      disk space. On a compressed FS the whole database takes up about 270GB,
-      without compression - almost 3 times as much.
+* XFS is mandatory to get a decent performance out of ScyllaDB.
+
+With a SATA SSD dedicated to ScyllaDB it can handle about 6000 commits/s from firehose. The actual number you'll get might be lower, if your CPU is not fast enough.
 
 ## Overview of components
 
@@ -58,14 +59,6 @@ hitting rate limits.
   `docker-compose.override.yml` to change some parts of `docker-compose.yml`
   without actually editing it (and introducing possibility of merge conflicts
   later on).
-* `make start-plc`
-    * This will start PostgreSQL and PLC mirror
-* `make wait-for-plc`
-    * This will wait until PLC mirror has fully replicated the operations log.
-      That's gonna take a few hours.
-    * Technically you can start everything before it is caught up: it will
-      return errors and other components will fallback to querying
-      https://plc.directory. But you will be rate-limited quite hard.
 * `make init-db`
     * This will add the initial set of PDS hosts into the database.
     * You can skip this if you're specifying `CONSUMER_RELAYS` in
