@@ -233,6 +233,13 @@ retry:
 		return fmt.Errorf("failed to extract records: %w", err)
 	}
 	recordsFetched.Add(float64(len(newRecs)))
+
+	return p.insertRecords(ctx, newRecs, work, newRev, knownCursorBeforeFetch)
+}
+
+func (p *WorkerPool) insertRecords(ctx context.Context, newRecs map[string]json.RawMessage, work WorkItem, newRev string, knownCursorBeforeFetch int64) error {
+	log := zerolog.Ctx(ctx)
+
 	recs := []repo.Record{}
 	for k, v := range newRecs {
 		parts := strings.SplitN(k, "/", 2)
@@ -325,7 +332,7 @@ retry:
 		}
 	}
 
-	err = p.db.Model(&repo.Repo{}).Where(&repo.Repo{ID: work.Repo.ID}).
+	err := p.db.Model(&repo.Repo{}).Where(&repo.Repo{ID: work.Repo.ID}).
 		Updates(&repo.Repo{LastIndexedRev: newRev}).Error
 	if err != nil {
 		return fmt.Errorf("updating repo rev: %w", err)
