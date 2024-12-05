@@ -1,7 +1,0 @@
-*
-**/*
-!go.mod
-!go.sum
-!**/*.go
-cmd/**
-!cmd/plc-mirror
