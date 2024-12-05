@@ -5,9 +5,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
+	"github.com/gocql/gocql"
 	"github.com/imax9000/errors"
 	"github.com/rs/zerolog"
 	"github.com/scylladb/gocqlx/qb"
@@ -265,46 +267,87 @@ func (p *WorkerPool) insertRecords(ctx context.Context, newRecs map[string]json.
 		}
 		recs = append(recs, rec)
 	}
+
 	if len(recs) > 0 {
 		if p.recordsDB != nil {
-			// We're querying for a matching record before insert to avoid
-			// unnecessary record duplication. If we didn't, virtually all
-			// records from a repo download would create new rows, because `at_rev`
-			// would not match any existing entries.
-			// So we fetch the last version of a record and skip insert if
-			// it's identical to the one we just fetched.
+			collections := map[string]map[string]repo.Record{}
 			for _, rec := range recs {
-				iter := p.recordsDB.Query(
-					qb.Select("bluesky.records").Columns("at_rev", "deleted", "record").
-						Where(qb.Eq("repo"), qb.Eq("collection"), qb.Eq("rkey")).
-						OrderBy("at_rev", qb.DESC).Limit(1).ToCql()).
-					WithContext(ctx).Bind(work.Repo.DID, rec.Collection, rec.Rkey).Iter()
+				if collections[rec.Collection] == nil {
+					collections[rec.Collection] = map[string]repo.Record{}
+				}
+				collections[rec.Collection][rec.Rkey] = rec
+			}
 
-				var (
-					skip    = false
-					atRev   string
-					deleted bool
-					record  json.RawMessage
-				)
-				for iter.Scan(&atRev, &deleted, &record) {
-					if bytes.Equal(record, rec.Content) {
-						skip = true
+			type row struct {
+				Rkey    string          `db:"rkey"`
+				AtRev   string          `db:"at_rev"`
+				Deleted bool            `db:"deleted"`
+				Record  json.RawMessage `db:"record"`
+			}
+
+			for collection, recs := range collections {
+				// Select all already existing records and remove from recs
+				// any that we already have.
+				iter := p.recordsDB.Query(
+					qb.Select("bluesky.records").Columns("rkey", "at_rev", "deleted", "record").
+						Where(qb.Eq("repo"), qb.Eq("collection")).ToCql()).
+					WithContext(ctx).Bind(work.Repo.DID, collection).
+					Iter()
+
+				rows := []row{}
+				if err := iter.Select(&rows); err != nil {
+					return fmt.Errorf("selecting all existing rows from collection %q: %w", collection, err)
+				}
+
+				sort.Slice(rows, func(i, j int) bool {
+					if rows[i].Rkey != rows[j].Rkey {
+						return rows[i].Rkey < rows[j].Rkey
+					}
+					// Reverse order by at_rev
+					return rows[i].AtRev > rows[j].AtRev
+				})
+
+				// Record deduplication happens here.
+				lastRkey := ""
+				for _, row := range rows {
+					rec, found := recs[row.Rkey]
+					if !found {
+						// No fetched record matches the row. Nothing to do.
+						lastRkey = row.Rkey
+						continue
+					}
+					if row.AtRev > rec.AtRev {
+						// We already have a newer row.
+						delete(recs, row.Rkey)
+						lastRkey = row.Rkey
+						continue
+					}
+					if lastRkey != row.Rkey {
+						// First (newest) row with this rkey.
+						if !row.Deleted && bytes.Equal(row.Record, rec.Content) {
+							// Same content, skip inserting a copy.
+							delete(recs, row.Rkey)
+						}
+					}
+					lastRkey = row.Rkey
+				}
+
+				// Now do bulk insert. All records belong to the same partition,
+				// and we've removed all duplicates.
+				batch := &gocqlx.Batch{Batch: p.recordsDB.NewBatch(gocql.LoggedBatch).WithContext(ctx)}
+				query := p.recordsDB.Query(qb.Insert("bluesky.records").
+					Columns("repo", "collection", "rkey", "at_rev", "record", "created_at").
+					ToCql())
+				for _, rec := range recs {
+					err := batch.Bind(query, work.Repo.DID, collection, rec.Rkey, rec.AtRev, rec.Content, time.Now())
+					if err != nil {
+						return fmt.Errorf("batch.Bind: %w", err)
 					}
 				}
-				if err := iter.Close(); err != nil {
-					return fmt.Errorf("failed to check for existing record: %w", err)
+				if err := p.recordsDB.ExecuteBatch(batch); err != nil {
+					return fmt.Errorf("ExecuteBatch: %w", err)
 				}
-				if skip {
-					continue
-				}
-				err := p.recordsDB.Query(qb.Insert("bluesky.records").
-					Columns("repo", "collection", "rkey", "at_rev", "record", "created_at").
-					ToCql()).WithContext(ctx).
-					Bind(work.Repo.DID, rec.Collection, rec.Rkey, rec.AtRev, rec.Content, time.Now()).ExecRelease()
-				if err != nil {
-					return fmt.Errorf("inserting record %s/%s/%s into the database: %w", work.Repo.DID, rec.Collection, rec.Rkey, err)
-				}
-				recordsInserted.Add(1)
+				recordsInserted.Add(float64(len(recs)))
 			}
 		} else {
 			for _, batch := range splitInBatshes(recs, 500) {
