@@ -107,7 +107,7 @@ func (s *Scheduler) run(ctx context.Context) {
 }
 
 func (s *Scheduler) fillQueue(ctx context.Context) error {
-	const maxQueueLen = 10000
+	const maxQueueLen = 30000
 	const maxAttempts = 3
 
 	s.mu.Lock()
