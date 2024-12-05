@@ -43,39 +43,6 @@ services:
       UPDATE-DB-SCHEMA_POSTGRES_URL: "postgres://postgres:${POSTGRES_PASSWORD}@db/bluesky?sslmode=disable"
     command: [ "--log-level=0" ]
 
-  plc:
-    build:
-      context: .
-      dockerfile: cmd/plc-mirror/Dockerfile
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    restart: always
-    image: uabluerail/plc-mirror
-    deploy:
-      resources:
-        limits:
-          memory: 1G
-    links:
-      - postgres:db
-    depends_on:
-      postgres:
-        condition: service_healthy
-      update-db-schema:
-        condition: service_completed_successfully
-    environment:
-      PLC_METRICS_PORT: '8080'
-      PLC_POSTGRES_URL: "postgres://postgres:${POSTGRES_PASSWORD}@db/bluesky?sslmode=disable"
-    ports:
-      - "${METRICS_ADDR:-0.0.0.0}:11004:8080"
-    command: [ "--log-level=0" ]
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/ready"]
-      interval: 30s
-      timeout: 5s
-      retries: 30
-      start_period: 6h
-      start_interval: 15s
-
   lister:
     build:
       context: .
@@ -90,11 +57,8 @@ services:
           memory: 1G
     links:
       - postgres:db
-      - plc:plc
     depends_on:
       postgres:
-        condition: service_healthy
-      plc:
         condition: service_healthy
       update-db-schema:
         condition: service_completed_successfully
@@ -119,11 +83,8 @@ services:
           memory: 1G
     links:
       - postgres:db
-      - plc:plc
     depends_on:
       postgres:
-        condition: service_healthy
-      plc:
         condition: service_healthy
       update-db-schema:
         condition: service_completed_successfully
@@ -151,11 +112,8 @@ services:
           memory: 4G
     links:
       - postgres:db
-      - plc:plc
     depends_on:
       postgres:
-        condition: service_healthy
-      plc:
         condition: service_healthy
       update-db-schema:
         condition: service_completed_successfully
