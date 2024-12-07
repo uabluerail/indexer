@@ -209,6 +209,11 @@ retry:
 	repoFetchSize.Observe(float64(len(b)))
 
 	if len(b) > largeRepoThreshold {
+		// XXX: instead of blocking the workers on a mutex, it would be better
+		// to have a separate queue for large repos and run just one worker on
+		// it (or a few). But that would be easier to implement if the work was
+		// split into downloading and inserting stages (which is a good idea
+		// anyway).
 		largeRepoCount.Inc()
 		log.Info().Int("size", len(b)).Msgf("Repo size: %s. Acquiring large repo lock", humanize.Bytes(uint64(len(b))))
 		start := time.Now()
