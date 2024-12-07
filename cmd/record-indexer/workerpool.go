@@ -7,8 +7,10 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
+	"github.com/dustin/go-humanize"
 	"github.com/imax9000/errors"
 	"github.com/rs/zerolog"
 	"github.com/scylladb/gocqlx/qb"
@@ -28,6 +30,8 @@ import (
 	"github.com/uabluerail/indexer/util/resolver"
 )
 
+const largeRepoThreshold = 5 * 1024 * 1024
+
 type WorkItem struct {
 	Repo   *repo.Repo
 	signal chan struct{}
@@ -42,6 +46,8 @@ type WorkerPool struct {
 
 	workerSignals []chan struct{}
 	resize        chan int
+
+	largeRepoLock sync.Mutex
 }
 
 func NewWorkerPool(input <-chan WorkItem, db *gorm.DB, session *gocqlx.Session, size int, limiter *Limiter) *WorkerPool {
@@ -146,7 +152,7 @@ func (p *WorkerPool) worker(ctx context.Context, signal chan struct{}) {
 }
 
 func (p *WorkerPool) doWork(ctx context.Context, work WorkItem) error {
-	log := zerolog.Ctx(ctx)
+	log := zerolog.Ctx(ctx).With().Str("did", work.Repo.DID).Logger()
 	defer close(work.signal)
 
 	u, pubKey, err := resolver.GetPDSEndpointAndPublicKey(ctx, work.Repo.DID)
@@ -201,6 +207,19 @@ retry:
 	reposFetched.WithLabelValues(u.String(), "true").Inc()
 
 	repoFetchSize.Observe(float64(len(b)))
+
+	if len(b) > largeRepoThreshold {
+		largeRepoCount.Inc()
+		log.Info().Int("size", len(b)).Msgf("Repo size: %s. Acquiring large repo lock", humanize.Bytes(uint64(len(b))))
+		start := time.Now()
+
+		p.largeRepoLock.Lock()
+		defer p.largeRepoLock.Unlock()
+
+		elapsed := time.Since(start)
+		largeRepoLockWaitTime.Observe(elapsed.Seconds())
+		log.Info().Dur("wait", elapsed).Msgf("Large repo lock acquired")
+	}
 
 	if work.Repo.PDS == pds.Unknown {
 		remote, err := pds.EnsureExists(ctx, p.db, u.String())

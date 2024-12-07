@@ -50,3 +50,14 @@ var repoFetchSize = promauto.NewHistogram(prometheus.HistogramOpts{
 		prometheus.LinearBuckets(1024*1024, 1024*1024, 9),
 		prometheus.LinearBuckets(10*1024*1024, 5*1024*1024, 10)),
 })
+
+var largeRepoCount = promauto.NewCounter(prometheus.CounterOpts{
+	Name: "indexer_large_repo_fetch_count",
+	Help: "Number of repos fetched that were deemed large",
+})
+
+var largeRepoLockWaitTime = promauto.NewHistogram(prometheus.HistogramOpts{
+	Name:    "indexer_large_repo_lock_wait_duration",
+	Help:    "Amount of time spent waiting for the large repo lock",
+	Buckets: prometheus.ExponentialBucketsRange(0.001, 300, 30),
+})

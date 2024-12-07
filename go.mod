@@ -5,9 +5,9 @@ go 1.22
 toolchain go1.22.3
 
 require (
-	github.com/Jille/convreq v1.7.1
 	github.com/bluesky-social/indigo v0.0.0-20240517204223-0daef8805413
 	github.com/cenkalti/backoff/v4 v4.3.0
+	github.com/dustin/go-humanize v1.0.1
 	github.com/gocql/gocql v1.7.0
 	github.com/gorilla/websocket v1.5.1
 	github.com/imax9000/errors v1.0.0
@@ -20,7 +20,6 @@ require (
 	github.com/multiformats/go-multibase v0.2.0
 	github.com/multiformats/go-multicodec v0.9.0
 	github.com/multiformats/go-multihash v0.2.3
-	github.com/nuts-foundation/go-did v0.13.0
 	github.com/prometheus/client_golang v1.19.1
 	github.com/rs/zerolog v1.32.0
 	github.com/scylladb/gocqlx v1.5.0
@@ -46,8 +45,6 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/uuid v1.6.0 // indirect
-	github.com/gorilla/mux v1.8.1 // indirect
-	github.com/gorilla/schema v1.3.0 // indirect
 	github.com/hailocab/go-hostpool v0.0.0-20160125115350-e80d13ce29ed // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.6 // indirect
@@ -99,7 +96,6 @@ require (
 	github.com/prometheus/procfs v0.15.0 // indirect
 	github.com/scylladb/go-reflectx v1.0.1 // indirect
 	github.com/segmentio/asm v1.2.0 // indirect
-	github.com/shengdoushi/base58 v1.0.0 // indirect
 	github.com/spaolacci/murmur3 v1.1.0 // indirect
 	github.com/whyrusleeping/go-did v0.0.0-20230824162731-404d1707d5d6 // indirect
 	gitlab.com/yawning/tuplehash v0.0.0-20230713102510-df83abbf9a02 // indirect
