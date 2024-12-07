@@ -43,15 +43,13 @@ that have records sent through a relay.
 Goes over all repos that might have missing data, gets a full checkout from the
 PDS and adds all missing records to the database.
 
-### PLC mirror
-
-Syncs PLC operations log into a local table, and allows other components to
-resolve `did:plc:` DIDs without putting strain on https://plc.directory and
-hitting rate limits.
-
 ## Setup
 
-* Decide where do you want to store the data
+* Set up a [PLC mirror](https://github.com/bsky-watch/plc-mirror). It'll need
+  a few hours to fetch all the data. You can use any other implementation too,
+  the only requirement is that `/${did}` request returns a DID document.
+* Decide where do you want to store the data. It needs to be on XFS,
+  otherwise ScyllaDB's performance will be very poor.
 * Copy `example.env` to `.env` and edit it to your liking.
     * `POSTGRES_PASSWORD` can be anything, it will be used on the first start of
       `postgres` container to initialize the database.
