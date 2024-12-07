@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"sort"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/dustin/go-humanize"
@@ -31,6 +30,7 @@ import (
 )
 
 const largeRepoThreshold = 20 * 1024 * 1024
+const maxLargeReposInParallel = 10
 
 type WorkItem struct {
 	Repo   *repo.Repo
@@ -47,7 +47,7 @@ type WorkerPool struct {
 	workerSignals []chan struct{}
 	resize        chan int
 
-	largeRepoLock sync.Mutex
+	largeRepoLock chan struct{}
 }
 
 func NewWorkerPool(input <-chan WorkItem, db *gorm.DB, session *gocqlx.Session, size int, limiter *Limiter) *WorkerPool {
@@ -58,6 +58,7 @@ func NewWorkerPool(input <-chan WorkItem, db *gorm.DB, session *gocqlx.Session, 
 		limiter:             limiter,
 		resize:              make(chan int),
 		collectionBlacklist: map[string]bool{},
+		largeRepoLock:       make(chan struct{}, maxLargeReposInParallel),
 	}
 	r.workerSignals = make([]chan struct{}, size)
 	for i := range r.workerSignals {
@@ -218,8 +219,12 @@ retry:
 		log.Info().Int("size", len(b)).Msgf("Repo size: %s. Acquiring large repo lock", humanize.Bytes(uint64(len(b))))
 		start := time.Now()
 
-		p.largeRepoLock.Lock()
-		defer p.largeRepoLock.Unlock()
+		select {
+		case p.largeRepoLock <- struct{}{}:
+		case <-ctx.Done():
+			return ctx.Err()
+		}
+		defer func() { <-p.largeRepoLock }()
 
 		elapsed := time.Since(start)
 		largeRepoLockWaitTime.Observe(elapsed.Seconds())
