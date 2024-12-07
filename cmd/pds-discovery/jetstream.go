@@ -8,7 +8,7 @@ import (
 	"path"
 	"time"
 
-	"github.com/dgraph-io/ristretto/v2"
+	"github.com/coocood/freecache"
 	"github.com/rs/zerolog"
 	slogzerolog "github.com/samber/slog-zerolog"
 	"gorm.io/gorm"
@@ -24,7 +24,7 @@ import (
 type JetstreamConsumer struct {
 	url   string
 	db    *gorm.DB
-	cache *ristretto.Cache[string, struct{}]
+	cache *freecache.Cache
 }
 
 func NewJetstreamConsumer(ctx context.Context, host string, db *gorm.DB) (*JetstreamConsumer, error) {
@@ -40,18 +40,10 @@ func NewJetstreamConsumer(ctx context.Context, host string, db *gorm.DB) (*Jetst
 		addr.Scheme = "wss"
 	}
 	addr.Path = path.Join(addr.Path, "subscribe")
-	cache, err := ristretto.NewCache(&ristretto.Config[string, struct{}]{
-		MaxCost:     100_000,
-		NumCounters: 1_000_000,
-		BufferItems: 64,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("creating cache: %w", err)
-	}
 	return &JetstreamConsumer{
 		db:    db,
 		url:   addr.String(),
-		cache: cache,
+		cache: freecache.NewCache(25 * 100_000),
 	}, nil
 }
 
@@ -98,8 +90,8 @@ func (c *JetstreamConsumer) handleEvent(ctx context.Context, event *models.Event
 		return nil
 	}
 
-	_, found := c.cache.Get(event.Did)
-	if found {
+	_, err := c.cache.Get([]byte(event.Did))
+	if err == nil {
 		return nil
 	}
 
@@ -112,6 +104,6 @@ func (c *JetstreamConsumer) handleEvent(ctx context.Context, event *models.Event
 		return err
 	}
 
-	c.cache.Set(event.Did, struct{}{}, 1)
+	c.cache.Set([]byte(event.Did), nil, 0)
 	return nil
 }
