@@ -18,12 +18,18 @@ services:
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?specify password in .env file}"
     command: [
       "-c", "max_connections=1000",
-      "-c", "shared_buffers=8GB",
-      "-c", "work_mem=2GB",
       "-c", "max_parallel_workers_per_gather=8",
-      "-c", "max_wal_size=8GB"
       ]
-    shm_size: '16gb'
+    shm_size: '1gb'
+    stop_grace_period: 24h
+
+  scylladb:
+    image: scylladb/scylla
+    command: --memory ${SCYLLADB_RAM:-16G} --smp ${SCYLLADB_CPUS:-6} --overprovisioned 1 --prometheus-address 0.0.0.0
+    volumes:
+      - "${DATA_DIR}/scylla:/var/lib/scylla"
+    ports:
+      - "${METRICS_ADDR:-0.0.0.0}:9180:9180"  # metrics for prometheus
     stop_grace_period: 24h
 
   update-db-schema:
@@ -41,6 +47,7 @@ services:
         condition: service_healthy
     environment:
       UPDATE-DB-SCHEMA_POSTGRES_URL: "postgres://postgres:${POSTGRES_PASSWORD}@db/bluesky?sslmode=disable"
+      UPDATE-DB-SCHEMA_SCYLLADB_ADDR: scylladb
     command: [ "--log-level=0" ]
 
   lister:
@@ -66,6 +73,7 @@ services:
       LISTER_METRICS_PORT: '8080'
       LISTER_POSTGRES_URL: "postgres://postgres:${POSTGRES_PASSWORD}@db/bluesky?sslmode=disable"
       ATP_PLC_ADDR: "${ATP_PLC_ADDR:-https://plc.directory}"
+      LISTER_SCYLLADB_ADDR: scylladb
     ports:
       - "${METRICS_ADDR:-0.0.0.0}:11001:8080"
     command: [ "--log-level=0" ]
@@ -94,6 +102,7 @@ services:
       # CONSUMER_RELAYS: "https://bsky.network"  # Effectively doubles inbound network traffic. Set this in docker-compose.override.yml if needed.
       ATP_PLC_ADDR: "${ATP_PLC_ADDR:-https://plc.directory}"
       CONSUMER_COLLECTION_BLACKLIST: ${COLLECTION_BLACKLIST:-}
+      CONSUMER_SCYLLADB_ADDR: scylladb
     ports:
       - "${METRICS_ADDR:-0.0.0.0}:11002:8080"
     command: [ "--log-level=0" ]
@@ -126,6 +135,7 @@ services:
       INDEXER_WORKERS: 50
       ATP_PLC_ADDR: "${ATP_PLC_ADDR:-https://plc.directory}"
       INDEXER_COLLECTION_BLACKLIST: ${COLLECTION_BLACKLIST:-}
+      INDEXER_SCYLLADB_ADDR: scylladb
     ports:
       - "${METRICS_ADDR:-0.0.0.0}:11003:8080"
     command: [ "--log-level=0" ]
