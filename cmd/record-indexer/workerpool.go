@@ -224,7 +224,11 @@ retry:
 		case <-ctx.Done():
 			return ctx.Err()
 		}
-		defer func() { <-p.largeRepoLock }()
+		startWork := time.Now()
+		defer func() {
+			log.Info().Dur("processing", time.Since(startWork)).Msgf("Finished processing large repo")
+			<-p.largeRepoLock
+		}()
 
 		elapsed := time.Since(start)
 		largeRepoLockWaitTime.Observe(elapsed.Seconds())
