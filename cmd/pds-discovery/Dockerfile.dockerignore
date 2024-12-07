@@ -1,0 +1,7 @@
+*
+**/*
+!go.mod
+!go.sum
+!**/*.go
+cmd/**
+!cmd/pds-discovery

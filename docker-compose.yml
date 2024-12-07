@@ -77,6 +77,7 @@ services:
     ports:
       - "${METRICS_ADDR:-0.0.0.0}:11001:8080"
     command: [ "--log-level=0" ]
+
   consumer:
     build:
       context: .
@@ -105,6 +106,34 @@ services:
       CONSUMER_SCYLLADB_ADDR: scylladb
     ports:
       - "${METRICS_ADDR:-0.0.0.0}:11002:8080"
+    command: [ "--log-level=0" ]
+
+  pds-discovery:
+    build:
+      context: .
+      dockerfile: cmd/pds-discovery/Dockerfile
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: always
+    image: uabluerail/pds-discovery
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    links:
+      - postgres:db
+    depends_on:
+      postgres:
+        condition: service_healthy
+      update-db-schema:
+        condition: service_completed_successfully
+    environment:
+      PDS-DISCOVERY_METRICS_PORT: '8080'
+      PDS-DISCOVERY_POSTGRES_URL: "postgres://postgres:${POSTGRES_PASSWORD}@db/bluesky?sslmode=disable"
+      PDS-DISCOVERY_JETSTREAM: wss://jetstream2.us-east.bsky.network
+      ATP_PLC_ADDR: "${ATP_PLC_ADDR:-https://plc.directory}"
+    ports:
+      - "${METRICS_ADDR:-0.0.0.0}:11004:8080"
     command: [ "--log-level=0" ]
 
   record-indexer:
