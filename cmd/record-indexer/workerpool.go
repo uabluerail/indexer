@@ -30,7 +30,7 @@ import (
 	"github.com/uabluerail/indexer/util/resolver"
 )
 
-const largeRepoThreshold = 5 * 1024 * 1024
+const largeRepoThreshold = 20 * 1024 * 1024
 
 type WorkItem struct {
 	Repo   *repo.Repo
