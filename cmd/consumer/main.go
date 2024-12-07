@@ -36,11 +36,10 @@ import (
 
 type Config struct {
 	LogFile             string
-	LogFormat           string `default:"text"`
-	LogLevel            int64  `default:"1"`
-	MetricsPort         string `split_words:"true"`
-	DBUrl               string `envconfig:"POSTGRES_URL"`
-	Relays              string
+	LogFormat           string   `default:"text"`
+	LogLevel            int64    `default:"1"`
+	MetricsPort         string   `split_words:"true"`
+	DBUrl               string   `envconfig:"POSTGRES_URL"`
 	CollectionBlacklist []string `split_words:"true"`
 	ScyllaDBAddr        string   `envconfig:"SCYLLADB_ADDR"`
 }
@@ -79,16 +78,6 @@ func runMain(ctx context.Context) error {
 		return fmt.Errorf("connecting to the database: %w", err)
 	}
 	log.Debug().Msgf("DB connection established")
-
-	if config.Relays != "" {
-		for _, host := range strings.Split(config.Relays, ",") {
-			c, err := NewRelayConsumer(ctx, host, db)
-			if err != nil {
-				log.Error().Err(err).Msgf("Failed to create relay consumer for %q: %s", host, err)
-			}
-			c.Start(ctx)
-		}
-	}
 
 	var session *gocqlx.Session
 	if config.ScyllaDBAddr != "" {
@@ -215,7 +204,6 @@ func main() {
 	flag.StringVar(&config.LogFile, "log", "", "Path to the log file. If empty, will log to stderr")
 	flag.StringVar(&config.LogFormat, "log-format", "text", "Logging format. 'text' or 'json'")
 	flag.Int64Var(&config.LogLevel, "log-level", 1, "Log level. -1 - trace, 0 - debug, 1 - info, 5 - panic")
-	flag.StringVar(&config.Relays, "relays", "", "List of relays to connect to (for discovering new PDSs)")
 
 	if err := envconfig.Process("consumer", &config); err != nil {
 		log.Fatalf("envconfig.Process: %s", err)

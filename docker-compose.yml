@@ -100,7 +100,6 @@ services:
     environment:
       CONSUMER_METRICS_PORT: '8080'
       CONSUMER_POSTGRES_URL: "postgres://postgres:${POSTGRES_PASSWORD}@db/bluesky?sslmode=disable"
-      # CONSUMER_RELAYS: "https://bsky.network"  # Effectively doubles inbound network traffic. Set this in docker-compose.override.yml if needed.
       ATP_PLC_ADDR: "${ATP_PLC_ADDR:-https://plc.directory}"
       CONSUMER_COLLECTION_BLACKLIST: ${COLLECTION_BLACKLIST:-}
       CONSUMER_SCYLLADB_ADDR: scylladb
@@ -130,7 +129,7 @@ services:
     environment:
       PDS-DISCOVERY_METRICS_PORT: '8080'
       PDS-DISCOVERY_POSTGRES_URL: "postgres://postgres:${POSTGRES_PASSWORD}@db/bluesky?sslmode=disable"
-      PDS-DISCOVERY_JETSTREAM: wss://jetstream2.us-east.bsky.network
+      PDS-DISCOVERY_JETSTREAM: ${JETSTREAM:-wss://jetstream2.us-east.bsky.network}
       ATP_PLC_ADDR: "${ATP_PLC_ADDR:-https://plc.directory}"
     ports:
       - "${METRICS_ADDR:-0.0.0.0}:11004:8080"

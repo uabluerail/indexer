@@ -12,8 +12,3 @@ services:
     environment:
       INDEXER_WORKERS: 15
 
-  # Enable PDS discovery via a relay
-  consumer:
-    environment:
-      CONSUMER_RELAYS: "https://bsky.network"
-
