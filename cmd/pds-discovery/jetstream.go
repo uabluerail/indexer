@@ -43,6 +43,7 @@ func NewJetstreamConsumer(ctx context.Context, host string, db *gorm.DB) (*Jetst
 	cache, err := ristretto.NewCache(&ristretto.Config[string, struct{}]{
 		MaxCost:     100_000,
 		NumCounters: 1_000_000,
+		BufferItems: 64,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("creating cache: %w", err)
