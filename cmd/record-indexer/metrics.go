@@ -47,6 +47,6 @@ var repoFetchSize = promauto.NewHistogram(prometheus.HistogramOpts{
 	Help: "Size of the fetched repo in bytes",
 	Buckets: slices.Concat(
 		prometheus.LinearBuckets(100*1024, 100*1024, 9),
-		prometheus.LinearBuckets(1024*1024, 1024*1024, 10),
+		prometheus.LinearBuckets(1024*1024, 1024*1024, 9),
 		prometheus.LinearBuckets(10*1024*1024, 5*1024*1024, 10)),
 })
