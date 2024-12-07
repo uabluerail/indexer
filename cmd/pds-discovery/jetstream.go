@@ -8,19 +8,23 @@ import (
 	"path"
 	"time"
 
+	"github.com/dgraph-io/ristretto/v2"
+	"github.com/rs/zerolog"
+	slogzerolog "github.com/samber/slog-zerolog"
+	"gorm.io/gorm"
+
 	"github.com/bluesky-social/jetstream/pkg/client"
 	"github.com/bluesky-social/jetstream/pkg/client/schedulers/sequential"
 	"github.com/bluesky-social/jetstream/pkg/models"
-	"github.com/rs/zerolog"
-	slogzerolog "github.com/samber/slog-zerolog"
+
 	"github.com/uabluerail/indexer/pds"
 	"github.com/uabluerail/indexer/util/resolver"
-	"gorm.io/gorm"
 )
 
 type JetstreamConsumer struct {
-	url string
-	db  *gorm.DB
+	url   string
+	db    *gorm.DB
+	cache *ristretto.Cache[string, struct{}]
 }
 
 func NewJetstreamConsumer(ctx context.Context, host string, db *gorm.DB) (*JetstreamConsumer, error) {
@@ -36,7 +40,18 @@ func NewJetstreamConsumer(ctx context.Context, host string, db *gorm.DB) (*Jetst
 		addr.Scheme = "wss"
 	}
 	addr.Path = path.Join(addr.Path, "subscribe")
-	return &JetstreamConsumer{db: db, url: addr.String()}, nil
+	cache, err := ristretto.NewCache(&ristretto.Config[string, struct{}]{
+		MaxCost:     100_000,
+		NumCounters: 1_000_000,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("creating cache: %w", err)
+	}
+	return &JetstreamConsumer{
+		db:    db,
+		url:   addr.String(),
+		cache: cache,
+	}, nil
 }
 
 func (c *JetstreamConsumer) Start(ctx context.Context) {
@@ -82,13 +97,20 @@ func (c *JetstreamConsumer) handleEvent(ctx context.Context, event *models.Event
 		return nil
 	}
 
-	// TODO: add some in-process caching to avoid needlessly repeating the same
-	// query.
+	_, found := c.cache.Get(event.Did)
+	if found {
+		return nil
+	}
+
 	u, _, err := resolver.GetPDSEndpointAndPublicKey(ctx, event.Did)
 	if err != nil {
 		return err
 	}
 	_, err = pds.EnsureExists(ctx, c.db, u.String())
+	if err != nil {
+		return err
+	}
 
-	return err
+	c.cache.Set(event.Did, struct{}{}, 1)
+	return nil
 }
