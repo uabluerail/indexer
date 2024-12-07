@@ -83,6 +83,7 @@ func runMain(ctx context.Context) error {
 		c, err := NewJetstreamConsumer(ctx, host, db)
 		if err != nil {
 			log.Error().Err(err).Msgf("Failed to create relay consumer for %q: %s", host, err)
+			return err
 		}
 		c.Start(ctx)
 	}
