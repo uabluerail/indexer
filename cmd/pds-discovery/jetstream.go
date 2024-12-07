@@ -65,10 +65,10 @@ func (c *JetstreamConsumer) runOnce(ctx context.Context) error {
 	log := zerolog.Ctx(ctx)
 	slog := slog.New(slogzerolog.Option{Level: slog.LevelDebug, Logger: log}.NewZerologHandler())
 
-	jetstream, err := client.NewClient(&client.ClientConfig{
-		Compress:     true,
-		WebsocketURL: c.url,
-	}, slog, sequential.NewScheduler("uabluerail/indexer/pds-discovery", slog, c.handleEvent))
+	cfg := client.DefaultClientConfig()
+	cfg.Compress = true
+	cfg.WebsocketURL = c.url
+	jetstream, err := client.NewClient(cfg, slog, sequential.NewScheduler("uabluerail/indexer/pds-discovery", slog, c.handleEvent))
 
 	if err != nil {
 		return fmt.Errorf("creating jetstream client: %w", err)
