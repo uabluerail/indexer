@@ -39,7 +39,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: on-failure
-    image: uabluerail/update-db-schema
+    image: ${IMAGE_NAME_PREFIX:-uabluerail}/update-db-schema
     links:
       - postgres:db
     depends_on:
@@ -57,7 +57,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: always
-    image: uabluerail/repo-lister
+    image: ${IMAGE_NAME_PREFIX:-uabluerail}/repo-lister
     deploy:
       resources:
         limits:
@@ -85,7 +85,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: always
-    image: uabluerail/firehose-consumer
+    image: ${IMAGE_NAME_PREFIX:-uabluerail}/firehose-consumer
     deploy:
       resources:
         limits:
@@ -114,7 +114,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: always
-    image: uabluerail/pds-discovery
+    image: ${IMAGE_NAME_PREFIX:-uabluerail}/pds-discovery
     deploy:
       resources:
         limits:
@@ -142,7 +142,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: always
-    image: uabluerail/record-indexer
+    image: ${IMAGE_NAME_PREFIX:-uabluerail}/record-indexer
     deploy:
       resources:
         limits:
