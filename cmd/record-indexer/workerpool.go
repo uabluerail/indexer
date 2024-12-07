@@ -200,6 +200,8 @@ retry:
 	}
 	reposFetched.WithLabelValues(u.String(), "true").Inc()
 
+	repoFetchSize.Observe(float64(len(b)))
+
 	if work.Repo.PDS == pds.Unknown {
 		remote, err := pds.EnsureExists(ctx, p.db, u.String())
 		if err != nil {

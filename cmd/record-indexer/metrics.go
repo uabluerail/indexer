@@ -1,6 +1,8 @@
 package main
 
 import (
+	"slices"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
@@ -38,4 +40,13 @@ var recordsInserted = promauto.NewCounter(prometheus.CounterOpts{
 var workerPoolSize = promauto.NewGauge(prometheus.GaugeOpts{
 	Name: "indexer_workers_count",
 	Help: "Current number of workers running",
+})
+
+var repoFetchSize = promauto.NewHistogram(prometheus.HistogramOpts{
+	Name: "indexer_repo_fetched_size_bytes",
+	Help: "Size of the fetched repo in bytes",
+	Buckets: slices.Concat(
+		prometheus.LinearBuckets(100*1024, 100*1024, 9),
+		prometheus.LinearBuckets(1024*1024, 1024*1024, 10),
+		prometheus.LinearBuckets(10*1024*1024, 5*1024*1024, 10)),
 })
