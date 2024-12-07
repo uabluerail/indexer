@@ -132,7 +132,7 @@ services:
       PDS-DISCOVERY_JETSTREAM: ${JETSTREAM:-wss://jetstream2.us-east.bsky.network}
       ATP_PLC_ADDR: "${ATP_PLC_ADDR:-https://plc.directory}"
     ports:
-      - "${METRICS_ADDR:-0.0.0.0}:11004:8080"
+      - "${METRICS_ADDR:-0.0.0.0}:11005:8080"
     command: [ "--log-level=0" ]
 
   record-indexer:
