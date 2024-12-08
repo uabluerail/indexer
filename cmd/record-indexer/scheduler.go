@@ -3,12 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
-	"slices"
 	"sync"
 	"time"
 
 	"github.com/rs/zerolog"
-	"github.com/uabluerail/indexer/pds"
+	"github.com/uabluerail/indexer/models"
 	"github.com/uabluerail/indexer/repo"
 	"gorm.io/gorm"
 )
@@ -107,51 +106,70 @@ func (s *Scheduler) run(ctx context.Context) {
 }
 
 func (s *Scheduler) fillQueue(ctx context.Context) error {
-	const maxQueueLen = 30000
+	const maxQueueLen = 300000
+	const lowWatermark = 30000
 	const maxAttempts = 3
 
 	s.mu.Lock()
 	queueLen := len(s.queue) + len(s.inProgress)
 	s.mu.Unlock()
-	if queueLen >= maxQueueLen {
+	if queueLen >= lowWatermark {
 		return nil
 	}
 
-	remotes := []pds.PDS{}
-	if err := s.db.Find(&remotes).Error; err != nil {
-		return fmt.Errorf("failed to get the list of PDSs: %w", err)
+	counts := []pdsCounts{}
+	err := s.db.Raw(`select * from (
+	  SELECT pds, count(*) FROM "repos" left join "pds" on repos.pds = pds.id WHERE
+	    (
+	      (last_indexed_rev is null OR last_indexed_rev = '') OR
+	      (first_rev_since_reset is not null AND first_rev_since_reset <> ''
+	        AND last_indexed_rev < first_rev_since_reset)
+	      OR
+	      ("repos".first_cursor_since_reset is not null AND "repos".first_cursor_since_reset <> 0
+	        AND "repos".first_cursor_since_reset < "pds".first_cursor_since_reset)
+	    )
+	  AND failed_attempts < 3
+	  AND not pds.disabled
+	  GROUP BY pds
+	) order by count desc`).Scan(&counts).Error
+	if err != nil {
+		return fmt.Errorf("querying DB: %w", err)
 	}
 
-	remotes = slices.DeleteFunc(remotes, func(pds pds.PDS) bool {
-		return pds.Disabled
-	})
-	perPDSLimit := maxQueueLen
-	if len(remotes) > 0 {
-		perPDSLimit = maxQueueLen * 2 / len(remotes)
+	sum := 0
+	for _, c := range counts {
+		sum += c.Count
 	}
-	if perPDSLimit < maxQueueLen/10 {
-		perPDSLimit = maxQueueLen / 10
+	perBatchLimit := maxQueueLen
+	if sum > maxQueueLen {
+		nBatches := int(float64(sum)/float64(maxQueueLen)) + 1
+		perBatchLimit = maxQueueLen / nBatches
+	}
+	if perBatchLimit < lowWatermark {
+		perBatchLimit = lowWatermark
 	}
 
-	// Fake remote to account for repos we didn't have a PDS for yet.
-	remotes = append(remotes, pds.PDS{ID: pds.Unknown})
-
-	for _, remote := range remotes {
+	for _, batch := range batchBySize(counts, perBatchLimit) {
 		repos := []repo.Repo{}
 
-		err := s.db.Raw(`SELECT * FROM "repos" WHERE pds = ? AND (last_indexed_rev is null OR last_indexed_rev = '') AND failed_attempts < ?
-UNION
-SELECT "repos".* FROM "repos" left join "pds" on repos.pds = pds.id WHERE pds = ?
-	AND
-		(
-			(first_rev_since_reset is not null AND first_rev_since_reset <> ''
-				AND last_indexed_rev < first_rev_since_reset)
-			OR
-			("repos".first_cursor_since_reset is not null AND "repos".first_cursor_since_reset <> 0
-				AND "repos".first_cursor_since_reset < "pds".first_cursor_since_reset)
-		)
-	AND failed_attempts < ? LIMIT ?`,
-			remote.ID, maxAttempts, remote.ID, maxAttempts, perPDSLimit).
+		ids := []models.ID{}
+		for _, c := range batch {
+			ids = append(ids, c.PDS)
+		}
+
+		err := s.db.Raw(`SELECT repos.* FROM repos left join pds on repos.pds = pds.id WHERE pds IN ?
+			AND
+				(
+					(last_indexed_rev is null OR last_indexed_rev = '')
+					OR
+					(first_rev_since_reset is not null AND first_rev_since_reset <> ''
+						AND last_indexed_rev < first_rev_since_reset)
+					OR
+					(repos.first_cursor_since_reset is not null AND repos.first_cursor_since_reset <> 0
+						AND repos.first_cursor_since_reset < pds.first_cursor_since_reset)
+				)
+			AND failed_attempts < ? LIMIT ?`,
+			ids, maxAttempts, perBatchLimit).
 			Scan(&repos).Error
 
 		if err != nil {
@@ -178,4 +196,30 @@ func (s *Scheduler) updateQueueLenMetrics() {
 	queueLenght.WithLabelValues("queued").Set(float64(len(s.queue)))
 	queueLenght.WithLabelValues("inProgress").Set(float64(len(s.inProgress)))
 	s.mu.Unlock()
+}
+
+type pdsCounts struct {
+	PDS   models.ID
+	Count int
+}
+
+func batchBySize(counts []pdsCounts, size int) [][]pdsCounts {
+	r := [][]pdsCounts{}
+	sum := 0
+	start := 0
+
+	for i := 0; i < len(counts); i++ {
+		sum += counts[i].Count
+
+		if sum >= size {
+			r = append(r, counts[start:i-start+1])
+			start = i + 1
+			sum = 0
+		}
+	}
+	if start < len(counts) {
+		r = append(r, counts[start:])
+	}
+
+	return r
 }
