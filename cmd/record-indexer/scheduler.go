@@ -136,20 +136,10 @@ func (s *Scheduler) fillQueue(ctx context.Context) error {
 		return fmt.Errorf("querying DB: %w", err)
 	}
 
-	sum := 0
-	for _, c := range counts {
-		sum += c.Count
-	}
-	perBatchLimit := maxQueueLen
-	if sum > maxQueueLen {
-		nBatches := int(float64(sum)/float64(maxQueueLen)) + 1
-		perBatchLimit = maxQueueLen / nBatches
-	}
-	if perBatchLimit < lowWatermark {
-		perBatchLimit = lowWatermark
-	}
+	batches := batchBySize(counts, maxQueueLen)
+	perBatchLimit := maxQueueLen / len(batches)
 
-	for _, batch := range batchBySize(counts, perBatchLimit) {
+	for _, batch := range batches {
 		repos := []repo.Repo{}
 
 		ids := []models.ID{}
