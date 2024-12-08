@@ -189,6 +189,7 @@ func runConsumers(ctx context.Context, db *gorm.DB, session *gocqlx.Session, don
 				delete(running, host)
 			}
 			wg.Wait()
+			return
 
 		case v := <-ticker.C:
 			// Non-blocking send.
