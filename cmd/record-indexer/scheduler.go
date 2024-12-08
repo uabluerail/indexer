@@ -212,7 +212,7 @@ func batchBySize(counts []pdsCounts, size int) [][]pdsCounts {
 		sum += counts[i].Count
 
 		if sum >= size {
-			r = append(r, counts[start:i-start+1])
+			r = append(r, counts[start:i+1])
 			start = i + 1
 			sum = 0
 		}
