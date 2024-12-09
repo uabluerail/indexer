@@ -40,13 +40,11 @@ services:
       - "host.docker.internal:host-gateway"
     restart: on-failure
     image: ${IMAGE_NAME_PREFIX:-uabluerail}/update-db-schema
-    links:
-      - postgres:db
     depends_on:
       postgres:
         condition: service_healthy
     environment:
-      UPDATE-DB-SCHEMA_POSTGRES_URL: "postgres://postgres:${POSTGRES_PASSWORD}@db/bluesky?sslmode=disable"
+      UPDATE-DB-SCHEMA_POSTGRES_URL: "postgres://postgres:${POSTGRES_PASSWORD}@postgres/bluesky?sslmode=disable"
       UPDATE-DB-SCHEMA_SCYLLADB_ADDR: scylladb
     command: [ "--log-level=0" ]
 
@@ -62,8 +60,6 @@ services:
       resources:
         limits:
           memory: 1G
-    links:
-      - postgres:db
     depends_on:
       postgres:
         condition: service_healthy
@@ -71,7 +67,7 @@ services:
         condition: service_completed_successfully
     environment:
       LISTER_METRICS_PORT: '8080'
-      LISTER_POSTGRES_URL: "postgres://postgres:${POSTGRES_PASSWORD}@db/bluesky?sslmode=disable"
+      LISTER_POSTGRES_URL: "postgres://postgres:${POSTGRES_PASSWORD}@postgres/bluesky?sslmode=disable"
       ATP_PLC_ADDR: "${ATP_PLC_ADDR:-https://plc.directory}"
       LISTER_SCYLLADB_ADDR: scylladb
     ports:
@@ -90,8 +86,6 @@ services:
       resources:
         limits:
           memory: 1G
-    links:
-      - postgres:db
     depends_on:
       postgres:
         condition: service_healthy
@@ -99,7 +93,7 @@ services:
         condition: service_completed_successfully
     environment:
       CONSUMER_METRICS_PORT: '8080'
-      CONSUMER_POSTGRES_URL: "postgres://postgres:${POSTGRES_PASSWORD}@db/bluesky?sslmode=disable"
+      CONSUMER_POSTGRES_URL: "postgres://postgres:${POSTGRES_PASSWORD}@postgres/bluesky?sslmode=disable"
       ATP_PLC_ADDR: "${ATP_PLC_ADDR:-https://plc.directory}"
       CONSUMER_COLLECTION_BLACKLIST: ${COLLECTION_BLACKLIST:-}
       CONSUMER_SCYLLADB_ADDR: scylladb
@@ -119,8 +113,6 @@ services:
       resources:
         limits:
           memory: 1G
-    links:
-      - postgres:db
     depends_on:
       postgres:
         condition: service_healthy
@@ -128,7 +120,7 @@ services:
         condition: service_completed_successfully
     environment:
       PDS-DISCOVERY_METRICS_PORT: '8080'
-      PDS-DISCOVERY_POSTGRES_URL: "postgres://postgres:${POSTGRES_PASSWORD}@db/bluesky?sslmode=disable"
+      PDS-DISCOVERY_POSTGRES_URL: "postgres://postgres:${POSTGRES_PASSWORD}@postgres/bluesky?sslmode=disable"
       PDS-DISCOVERY_JETSTREAM: ${JETSTREAM:-wss://jetstream2.us-east.bsky.network}
       ATP_PLC_ADDR: "${ATP_PLC_ADDR:-https://plc.directory}"
     ports:
@@ -147,8 +139,6 @@ services:
       resources:
         limits:
           memory: 4G
-    links:
-      - postgres:db
     depends_on:
       postgres:
         condition: service_healthy
@@ -159,7 +149,7 @@ services:
       - 8.8.8.8
     environment:
       INDEXER_METRICS_PORT: '8080'
-      INDEXER_POSTGRES_URL: "postgres://postgres:${POSTGRES_PASSWORD}@db/bluesky?sslmode=disable"
+      INDEXER_POSTGRES_URL: "postgres://postgres:${POSTGRES_PASSWORD}@postgres/bluesky?sslmode=disable"
       INDEXER_WORKERS: 50
       ATP_PLC_ADDR: "${ATP_PLC_ADDR:-https://plc.directory}"
       INDEXER_COLLECTION_BLACKLIST: ${COLLECTION_BLACKLIST:-}
@@ -172,7 +162,7 @@ services:
     image: adonato/query-exporter:latest
     restart: always
     environment:
-      POSTGRES_URL: "postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/bluesky?sslmode=disable"
+      POSTGRES_URL: "postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/bluesky?sslmode=disable"
     volumes:
       - "./metrics/prometheus/exporters/query-exporter/config.yaml:/config/config.yaml:ro"
     extra_hosts:
