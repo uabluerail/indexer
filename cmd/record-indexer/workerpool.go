@@ -383,11 +383,12 @@ func (p *WorkerPool) insertRecords(ctx context.Context, newRecs map[string]json.
 		} else {
 			for _, batch := range splitInBatshes(recs, 500) {
 				result := p.db.Model(&repo.Record{}).
+					// Update all records included in the repo download with the
+					// new revision, unless we have newer data from the
+					// Firehose. This allows us to then mark anything older than
+					// the downloaded revision as deleted.
 					Clauses(clause.OnConflict{
 						Where: clause.Where{Exprs: []clause.Expression{
-							clause.Neq{
-								Column: clause.Column{Name: "content", Table: "records"},
-								Value:  clause.Column{Name: "content", Table: "excluded"}},
 							clause.Or(
 								clause.Eq{Column: clause.Column{Name: "at_rev", Table: "records"}, Value: nil},
 								clause.Eq{Column: clause.Column{Name: "at_rev", Table: "records"}, Value: ""},
@@ -402,6 +403,14 @@ func (p *WorkerPool) insertRecords(ctx context.Context, newRecs map[string]json.
 					return fmt.Errorf("inserting records into the database: %w", err)
 				}
 				recordsInserted.Add(float64(result.RowsAffected))
+			}
+
+			// Mark records not in the downloaded commit as deleted.
+			err := p.db.
+				Where("repo = ? AND at_rev < ?", work.Repo.ID, newRev).
+				Updates(&repo.Record{Deleted: true}).Error
+			if err != nil {
+				return fmt.Errorf("marking obsolete records in the dadeleted: %w", err)
 			}
 		}
 	}
@@ -418,7 +427,7 @@ func (p *WorkerPool) insertRecords(ctx context.Context, newRecs map[string]json.
 		}
 	}
 	// TODO: check for records that are missing in the repo download
-	// and mark them as deleted.
+	// and mark them as deleted when using ScyllaDB.
 
 	return nil
 }
