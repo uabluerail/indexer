@@ -109,6 +109,7 @@ func (s *Scheduler) fillQueue(ctx context.Context) error {
 	const maxQueueLen = 300000
 	const lowWatermark = 30000
 	const maxAttempts = 3
+	log := zerolog.Ctx(ctx)
 
 	s.mu.Lock()
 	queueLen := len(s.queue) + len(s.inProgress)
@@ -135,9 +136,14 @@ func (s *Scheduler) fillQueue(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("querying DB: %w", err)
 	}
+	log.Debug().Msgf("Found %d PDSs with repos that need fetching", len(counts))
 
 	batches := batchBySize(counts, maxQueueLen)
-	perBatchLimit := maxQueueLen / len(batches)
+	perBatchLimit := maxQueueLen
+	// Avoid division by zero if there is no work.
+	if len(batches) > 0 {
+		perBatchLimit = maxQueueLen / len(batches)
+	}
 
 	for _, batch := range batches {
 		repos := []repo.Repo{}
