@@ -18,12 +18,12 @@ type Repo struct {
 	ID                    models.ID `gorm:"primarykey"`
 	CreatedAt             time.Time
 	UpdatedAt             time.Time
-	PDS                   models.ID `gorm:"default:0;index:rev_state_index,priority:2;index:was_indexed,priority:2"`
+	PDS                   models.ID `gorm:"default:0;index:rev_state_index,priority:2;index:was_indexed,priority:2;index:indexed_count,priority:1,where:((failed_attempts < 3) AND (last_indexed_rev <> ''::text) AND ((last_indexed_rev >= first_rev_since_reset) OR (first_rev_since_reset IS NULL) OR (first_rev_since_reset = ''::text)))"`
 	DID                   string    `gorm:"uniqueIndex;column:did"`
 	LastIndexedRev        string    `gorm:"index:rev_state_index,expression:(last_indexed_rev < first_rev_since_reset),priority:1;index:was_indexed,expression:(last_indexed_rev is null OR last_indexed_rev = ''),priority:1"`
 	FirstRevSinceReset    string
 	LastFirehoseRev       string
-	FirstCursorSinceReset int64
+	FirstCursorSinceReset int64 `gorm:"index:indexed_count,priority:2"`
 	TombstonedAt          time.Time
 	LastIndexAttempt      time.Time
 	LastError             string
