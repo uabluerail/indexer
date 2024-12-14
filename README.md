@@ -9,8 +9,10 @@
 > an explicit permission of the user that piece of data belongs to.
 >
 > We also do not condone any use of the data obtained with this code for
-> the purposes of training ML/AI models w/o explicit consent of the users
-> who own the data.
+> the purposes of:
+>
+>   * training ML/AI models w/o explicit consent of the users who own the data
+>   * aiding any kind of harassment campaigns against anyone
 
 This is a bunch of code that can download all of Bluesky into a giant table in
 PostgreSQL.
