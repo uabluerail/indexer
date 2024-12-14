@@ -130,7 +130,7 @@ func (s *Scheduler) fillQueue(ctx context.Context) error {
 	        AND "repos".first_cursor_since_reset < "pds".first_cursor_since_reset)
 	    )
 	  AND failed_attempts < 3
-	  AND not pds.disabled
+	  AND (not pds.disabled OR pds.disabled is null)
 	  GROUP BY pds
 	) order by count desc`).Scan(&counts).Error
 	if err != nil {
