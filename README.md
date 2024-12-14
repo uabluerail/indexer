@@ -1,5 +1,17 @@
 # Bluesky indexer
 
+> [!IMPORTANT]
+> Any use of this code and the data obtained with its help must adhere to
+> Bluesky's [Terms of Service](https://bsky.social/about/support/tos)
+> and [Community Guidelines](https://bsky.social/about/support/community-guidelines).
+>
+> In particular, you are not allowed to distribute any of the data without
+> an explicit permission of the user that piece of data belongs to.
+>
+> We also do not condone any use of the data obtained with this code for
+> the purposes of training ML/AI models w/o explicit consent of the users
+> who own the data.
+
 This is a bunch of code that can download all of Bluesky into a giant table in
 PostgreSQL.
 
