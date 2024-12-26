@@ -70,6 +70,7 @@ services:
       LISTER_POSTGRES_URL: "postgres://postgres:${POSTGRES_PASSWORD}@postgres/bluesky?sslmode=disable"
       ATP_PLC_ADDR: "${ATP_PLC_ADDR:-https://plc.directory}"
       LISTER_SCYLLADB_ADDR: scylladb
+      LISTER_CONTACT_INFO: "${CONTACT_INFO:?specify your contact info in .env file}"
     ports:
       - "${METRICS_ADDR:-0.0.0.0}:11001:8080"
     command: [ "--log-level=0" ]
@@ -97,6 +98,7 @@ services:
       ATP_PLC_ADDR: "${ATP_PLC_ADDR:-https://plc.directory}"
       CONSUMER_COLLECTION_BLACKLIST: ${COLLECTION_BLACKLIST:-}
       CONSUMER_SCYLLADB_ADDR: scylladb
+      CONSUMER_CONTACT_INFO: "${CONTACT_INFO:?specify your contact info in .env file}"
     ports:
       - "${METRICS_ADDR:-0.0.0.0}:11002:8080"
     command: [ "--log-level=0" ]
@@ -154,6 +156,7 @@ services:
       ATP_PLC_ADDR: "${ATP_PLC_ADDR:-https://plc.directory}"
       INDEXER_COLLECTION_BLACKLIST: ${COLLECTION_BLACKLIST:-}
       INDEXER_SCYLLADB_ADDR: scylladb
+      INDEXER_CONTACT_INFO: "${CONTACT_INFO:?specify your contact info in .env file}"
     ports:
       - "${METRICS_ADDR:-0.0.0.0}:11003:8080"
     command: [ "--log-level=0" ]

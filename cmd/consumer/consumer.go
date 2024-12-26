@@ -43,11 +43,12 @@ type Consumer struct {
 	remote              pds.PDS
 	running             chan struct{}
 	collectionBlacklist map[string]bool
+	contactInfo         string
 
 	lastCursorPersist time.Time
 }
 
-func NewConsumer(ctx context.Context, remote *pds.PDS, db *gorm.DB, session *gocqlx.Session) (*Consumer, error) {
+func NewConsumer(ctx context.Context, remote *pds.PDS, db *gorm.DB, session *gocqlx.Session, contactInfo string) (*Consumer, error) {
 	if err := db.AutoMigrate(&repo.BadRecord{}); err != nil {
 		return nil, fmt.Errorf("db.AutoMigrate: %s", err)
 	}
@@ -58,6 +59,7 @@ func NewConsumer(ctx context.Context, remote *pds.PDS, db *gorm.DB, session *goc
 		remote:              *remote,
 		running:             make(chan struct{}),
 		collectionBlacklist: map[string]bool{},
+		contactInfo:         contactInfo,
 	}, nil
 }
 
@@ -144,7 +146,9 @@ func (c *Consumer) runOnce(ctx context.Context) error {
 		addr.RawQuery = params.Encode()
 	}
 
-	conn, _, err := websocket.DefaultDialer.DialContext(ctx, addr.String(), http.Header{})
+	headers := http.Header{}
+	headers.Set("User-Agent", fmt.Sprintf("Go-http-client/1.1 indexerbot/0.1 (based on github.com/uabluerail/indexer; %s)", c.contactInfo))
+	conn, _, err := websocket.DefaultDialer.DialContext(ctx, addr.String(), headers)
 	if err != nil {
 		return fmt.Errorf("establishing websocker connection: %w", err)
 	}

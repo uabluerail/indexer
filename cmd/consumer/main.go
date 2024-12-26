@@ -42,6 +42,7 @@ type Config struct {
 	DBUrl               string   `envconfig:"POSTGRES_URL"`
 	CollectionBlacklist []string `split_words:"true"`
 	ScyllaDBAddr        string   `envconfig:"SCYLLADB_ADDR"`
+	ContactInfo         string   `split_words:"true"`
 }
 
 var config Config
@@ -50,6 +51,11 @@ func runMain(ctx context.Context) error {
 	ctx = setupLogging(ctx)
 	log := zerolog.Ctx(ctx)
 	log.Debug().Msgf("Starting up...")
+
+	if config.ContactInfo == "" {
+		config.ContactInfo = "<contact info unspecified>"
+	}
+
 	dbCfg, err := pgxpool.ParseConfig(config.DBUrl)
 	if err != nil {
 		return fmt.Errorf("parsing DB URL: %w", err)
@@ -158,7 +164,7 @@ func runConsumers(ctx context.Context, db *gorm.DB, session *gocqlx.Session, don
 				}
 				subCtx, cancel := context.WithCancel(ctx)
 
-				c, err := NewConsumer(subCtx, &remote, db, session)
+				c, err := NewConsumer(subCtx, &remote, db, session, config.ContactInfo)
 				if err != nil {
 					log.Error().Err(err).Msgf("Failed to create a consumer for %q: %s", remote.Host, err)
 					cancel()

@@ -43,6 +43,7 @@ type WorkerPool struct {
 	input               <-chan WorkItem
 	limiter             *Limiter
 	collectionBlacklist map[string]bool
+	contactInfo         string
 
 	workerSignals []chan struct{}
 	resize        chan int
@@ -50,7 +51,7 @@ type WorkerPool struct {
 	largeRepoLock chan struct{}
 }
 
-func NewWorkerPool(input <-chan WorkItem, db *gorm.DB, session *gocqlx.Session, size int, limiter *Limiter) *WorkerPool {
+func NewWorkerPool(input <-chan WorkItem, db *gorm.DB, session *gocqlx.Session, size int, limiter *Limiter, contactInfo string) *WorkerPool {
 	r := &WorkerPool{
 		db:                  db,
 		recordsDB:           session,
@@ -176,6 +177,8 @@ func (p *WorkerPool) doWork(ctx context.Context, work WorkItem) error {
 	client.Host = u.String()
 	client.Client = util.RobustHTTPClient()
 	client.Client.Timeout = 30 * time.Minute
+	userAgent := fmt.Sprintf("Go-http-client/1.1 indexerbot/0.1 (based on github.com/uabluerail/indexer; %s)", p.contactInfo)
+	client.UserAgent = &userAgent
 
 	knownCursorBeforeFetch := remote.FirstCursorSinceReset
 

@@ -34,6 +34,7 @@ type Config struct {
 	LogLevel    int64  `default:"1"`
 	MetricsPort string `split_words:"true"`
 	DBUrl       string `envconfig:"POSTGRES_URL"`
+	ContactInfo string `split_words:"true"`
 }
 
 var config Config
@@ -53,7 +54,11 @@ func runMain(ctx context.Context) error {
 	}
 	log.Debug().Msgf("DB connection established")
 
-	lister, err := NewLister(ctx, db)
+	if config.ContactInfo == "" {
+		config.ContactInfo = "<contact info unspecified>"
+	}
+
+	lister, err := NewLister(ctx, db, config.ContactInfo)
 	if err != nil {
 		return fmt.Errorf("failed to create lister: %w", err)
 	}

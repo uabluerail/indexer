@@ -21,17 +21,19 @@ import (
 )
 
 type Lister struct {
-	db       *gorm.DB
-	resolver did.Resolver
+	db          *gorm.DB
+	resolver    did.Resolver
+	contactInfo string
 
 	pollInterval        time.Duration
 	listRefreshInterval time.Duration
 }
 
-func NewLister(ctx context.Context, db *gorm.DB) (*Lister, error) {
+func NewLister(ctx context.Context, db *gorm.DB, contactInfo string) (*Lister, error) {
 	return &Lister{
 		db:                  db,
 		resolver:            resolver.Resolver,
+		contactInfo:         contactInfo,
 		pollInterval:        1 * time.Minute,
 		listRefreshInterval: 24 * time.Hour,
 	}, nil
@@ -116,6 +118,8 @@ func (l *Lister) listOneHost(ctx context.Context, remote *pds.PDS) error {
 	db := l.db.WithContext(ctx)
 	client := xrpcauth.NewAnonymousClient(ctx)
 	client.Host = remote.Host
+	userAgent := fmt.Sprintf("Go-http-client/1.1 indexerbot/0.1 (based on github.com/uabluerail/indexer; %s)", l.contactInfo)
+	client.UserAgent = &userAgent
 
 	log.Info().Msgf("Listing repos from %q...", remote.Host)
 

@@ -41,6 +41,7 @@ type Config struct {
 	Workers             int      `default:"2"`
 	CollectionBlacklist []string `split_words:"true"`
 	ScyllaDBAddr        string   `envconfig:"SCYLLADB_ADDR"`
+	ContactInfo         string   `split_words:"true"`
 }
 
 var config Config
@@ -49,6 +50,11 @@ func runMain(ctx context.Context) error {
 	ctx = setupLogging(ctx)
 	log := zerolog.Ctx(ctx)
 	log.Debug().Msgf("Starting up...")
+
+	if config.ContactInfo == "" {
+		config.ContactInfo = "<contact info unspecified>"
+	}
+
 	dbCfg, err := pgxpool.ParseConfig(config.DBUrl)
 	if err != nil {
 		return fmt.Errorf("parsing DB URL: %w", err)
@@ -92,7 +98,7 @@ func runMain(ctx context.Context) error {
 	}
 
 	ch := make(chan WorkItem)
-	pool := NewWorkerPool(ch, db, session, config.Workers, limiter)
+	pool := NewWorkerPool(ch, db, session, config.Workers, limiter, config.ContactInfo)
 	if err := pool.Start(ctx); err != nil {
 		return fmt.Errorf("failed to start worker pool: %w", err)
 	}
