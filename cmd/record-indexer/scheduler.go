@@ -189,8 +189,8 @@ func (s *Scheduler) fillQueue(ctx context.Context) error {
 
 func (s *Scheduler) updateQueueLenMetrics() {
 	s.mu.Lock()
-	queueLenght.WithLabelValues("queued").Set(float64(len(s.queue)))
-	queueLenght.WithLabelValues("inProgress").Set(float64(len(s.inProgress)))
+	queueLength.WithLabelValues("queued").Set(float64(len(s.queue)))
+	queueLength.WithLabelValues("inProgress").Set(float64(len(s.inProgress)))
 	s.mu.Unlock()
 }
 
