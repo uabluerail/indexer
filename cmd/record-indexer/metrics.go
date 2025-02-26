@@ -12,7 +12,7 @@ var reposQueued = promauto.NewCounter(prometheus.CounterOpts{
 	Help: "Number of repos added to the queue",
 })
 
-var queueLenght = promauto.NewGaugeVec(prometheus.GaugeOpts{
+var queueLength = promauto.NewGaugeVec(prometheus.GaugeOpts{
 	Name: "indexer_queue_length",
 	Help: "Current length of indexing queue",
 }, []string{"state"})
